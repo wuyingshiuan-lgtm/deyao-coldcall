@@ -13,7 +13,7 @@
 <section class="box"><h2>客戶名單</h2><div class="grid"><div class="wide"><label>搜尋</label><input id="search" type="search" placeholder="公司、聯絡人、電話、地址、Email、備註…"></div><div><label>依電訪日期</label><input id="dateFilter" type="date"></div></div>
 <div class="tools"><button class="btn" id="clearDate">清除日期</button><button class="btn" id="exportCsv">匯出 CSV</button><button class="btn" id="exportExcel">匯出 Excel</button></div><div id="summary" class="summary"></div><div id="records" class="records"></div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const SUPABASE_URL="https://qprzfciypaiwvbkiiapo.supabase.co",KEY="sb_publishable_Bmn5OtlbGuGqQC4x0dNv7A_9_zldV2B",EMAIL="dy53886231@gmail.com";
+const SUPABASE_URL="https://qprzfciypaiwvbkiiapo.supabase.co",KEY="sb_publishable_Bmn5OtlbGuGqQC4x0dNv7A_9_zldV2B",EMAIL="sales@de-yao.com.tw";
 const sb=supabase.createClient(SUPABASE_URL,KEY),$=x=>document.getElementById(x);let data=[],editing=null;
 const fields=["visit_date","company_name","company_address","contact_name","phone","email","recorder","area","website","notes"];
 function today(){return new Date().toISOString().slice(0,10)} function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
