@@ -1,0 +1,17 @@
+{
+  "name":"deyao-coldcall-desktop",
+  "version":"1.0.0",
+  "description":"德曜精密業務電訪記錄 Windows 桌面版",
+  "main":"main.js",
+  "scripts":{"start":"electron .","dist":"electron-builder --win nsis"},
+  "devDependencies":{"electron":"^38.1.0","electron-builder":"^26.0.12"},
+  "build":{
+    "appId":"tw.com.de-yao.coldcall",
+    "productName":"德曜精密業務電訪記錄",
+    "asar":true,
+    "files":["main.js","package.json"],
+    "win":{"target":[{"target":"nsis","arch":["x64"]}]},
+    "nsis":{"oneClick":false,"allowToChangeInstallationDirectory":true,"createDesktopShortcut":true,"createStartMenuShortcut":true,"shortcutName":"德曜精密業務電訪記錄"},
+    "artifactName":"DeYao-ColdCall-Setup-${version}.${ext}"
+  }
+}
