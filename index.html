@@ -14,6 +14,109 @@ body{background:linear-gradient(180deg,#d8ebff 0,#e8f4ff 60%,#dceeff 100%);font-
 .status-dock{position:fixed;top:10px;right:14px;z-index:12;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 28px)}.status-dock .online-count,.status-dock .account-actions{position:static;inset:auto;margin:0;flex:none}.status-dock .online-count{white-space:nowrap}.status-dock .account-actions{display:flex;align-items:center;gap:4px;white-space:nowrap}@media(max-width:760px){.status-dock{top:6px;right:6px;gap:4px;max-width:calc(100vw - 12px);transform:scale(.78);transform-origin:top right}}
 .side-nav a.active,.side-nav a.active:first-child{background:#c8e5ff;color:#124b9c}.home-hero{padding:30px 24px;text-align:center}.home-hero h2{font-size:30px;margin:0 0 10px}.home-hero p{color:#355b91}.home-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:25px}.home-links a{display:block;border:1px solid #c7dfff;background:#f0f8ff;border-radius:15px;padding:22px;text-decoration:none;color:#164786;font-weight:800;font-size:19px}.home-links a:hover,.home-links a:focus-visible{background:#d9ecff;outline:2px solid #71adf3}.excel-help{color:#436494;line-height:1.7}.excel-actions{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}
 .batch-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}.batch-tools .btn:disabled{opacity:.45;cursor:not-allowed}.select-cell{width:42px;text-align:center}.select-cell input{width:19px;height:19px;cursor:pointer;accent-color:#2576d7}
+/* Responsive layout: keep the desktop composition while giving tablets and phones their own flow. */
+html,body{max-width:100%;overflow-x:clip}
+.wrap,.box,#form,#records{min-width:0}
+.record-table td{white-space:normal;overflow-wrap:anywhere}
+.record-table th{white-space:nowrap}
+.staff-row,.batch-tools,.tools,.actions{min-width:0}
+@media(max-width:1280px) and (min-width:901px){
+  header{padding-right:18px}
+  header .brand-logo{width:min(320px,32vw)}
+  header p{font-size:clamp(16px,1.7vw,21px)}
+  .wrap{margin-left:212px;margin-right:0;padding-inline:14px}
+  .side-nav{width:200px}
+  .encouragement{display:none}
+  #form .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #form .grid>div{grid-column:auto!important;grid-row:auto!important}
+  #form .grid>div:has(#notes){grid-column:span 2!important}
+  #customerSection .grid{grid-template-columns:2fr 1fr 1fr}
+  .form-heading .sticky-note{display:none}
+}
+@media(max-width:900px){
+  header{height:auto;min-height:0;padding:16px 18px 12px;display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;text-align:center}
+  header .brand-logo{width:min(330px,75vw);max-height:78px;margin:0}
+  header p{font-size:clamp(16px,2.5vw,21px);transform:none;max-width:none;letter-spacing:0}
+  .status-dock{position:static;transform:none;max-width:none;width:100%;padding:8px 12px;justify-content:center;flex-wrap:wrap}
+  .status-dock .account-actions{white-space:normal;flex-wrap:wrap;justify-content:center}
+  .side-nav{position:static;width:auto;margin:0 12px;padding:8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow:visible}
+  .side-nav a{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;padding:10px 8px;text-align:center;white-space:normal;font-size:14px;line-height:1.35}
+  .side-nav a span{width:auto;font-size:18px;flex:none}
+  .side-note,.side-mascot,.encouragement{display:none}
+  .wrap{margin:0;padding:12px 14px 70px}
+  .form-heading .sticky-note{display:none}
+  #form .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #form .grid>div{grid-column:auto!important;grid-row:auto!important}
+  #form .grid>div:has(#notes){grid-column:span 2!important}
+  #customerSection .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #customerSection .grid>div:has(#search){grid-column:span 2!important}
+  .home-links{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  header{padding:10px 12px}
+  header .brand-logo{width:min(290px,82vw);max-height:68px}
+  header p{font-size:15px}
+  .status-dock{padding:7px 8px;gap:6px}
+  .status-dock .online-count{font-size:12px;white-space:normal}
+  .status-dock .account-actions{padding:4px;gap:5px}
+  .role-pill{font-size:12px}
+  .logout{min-height:38px}
+  .side-nav{grid-template-columns:repeat(2,minmax(0,1fr));margin:0 8px}
+  .side-nav a{min-height:44px;padding:8px 5px;font-size:13px}
+  .wrap{padding:10px 10px 80px}
+  .box,#customerSection{padding:14px}
+  .box h2,#customerSection h2{font-size:21px;line-height:1.35}
+  .home-hero{padding:20px 14px}
+  .home-hero h2{font-size:23px}
+  .home-links{grid-template-columns:1fr;gap:9px;margin-top:14px}
+  .home-links a{padding:13px;font-size:16px}
+  .form-heading{padding:4px 2px 12px}
+  .form-heading h2{font-size:22px}
+  .form-heading .form-intro{margin:5px 0 0;font-size:14px}
+  #form{padding:14px}
+  #form .grid,#customerSection .grid{grid-template-columns:1fr}
+  #form .grid>div:has(#notes),#customerSection .grid>div:has(#search){grid-column:auto!important}
+  input,select,textarea{font-size:16px;min-height:44px}
+  .state-buttons{min-height:44px}
+  .actions,.tools,.excel-actions{align-items:stretch}
+  .actions .btn,.tools .btn,.excel-actions .btn{min-height:44px}
+  .staff-row{align-items:flex-start;flex-direction:column}
+  .staff-row .btn{min-height:40px}
+  .maker-credit{position:static;width:max-content;max-width:calc(100% - 20px);margin:0 10px 8px auto;font-size:12px}
+  #records{overflow:visible}
+  .record-table{display:block;width:100%;min-width:0;background:transparent}
+  .record-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .record-table tbody{display:grid;gap:12px}
+  .record-table tr{display:block;background:#fff;border:1px solid #cfe1f7;border-radius:14px;padding:11px 13px;box-shadow:0 3px 12px #3672bc12;min-width:0}
+  .record-table td{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border:0;border-bottom:1px solid #e3effc;padding:8px 0;text-align:right;min-width:0;font-size:14px;white-space:normal;overflow-wrap:anywhere}
+  .record-table td:last-child{border-bottom:0}
+  .record-table td::before{content:attr(data-label);flex:0 0 38%;color:#315d95;font-weight:700;text-align:left}
+  .record-table td.select-cell{width:auto;justify-content:flex-start;text-align:left;align-items:center}
+  .record-table td.select-cell::before{flex:0 0 38%}
+  .record-table .btn{min-width:40px;min-height:40px;font-size:16px}
+  .record-table .badge{white-space:normal;text-align:center}
+  .batch-tools{align-items:stretch}
+  .batch-tools .btn{min-height:42px}
+  .login{padding:12px;overflow-y:auto}
+  .loginbox{padding:20px 16px;max-height:calc(100dvh - 24px);overflow-y:auto}
+}
+@media(min-width:601px) and (max-width:900px){
+  #records{overflow:visible}
+  .record-table{display:block;width:100%;min-width:0;background:transparent}
+  .record-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .record-table tbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .record-table tr{display:block;min-width:0;padding:12px;background:#fff;border:1px solid #cfe1f7;border-radius:14px}
+  .record-table td{display:flex;justify-content:space-between;gap:8px;min-width:0;padding:7px 0;border:0;border-bottom:1px solid #e3effc;text-align:right;font-size:13px;overflow-wrap:anywhere}
+  .record-table td:last-child{border-bottom:0}
+  .record-table td::before{content:attr(data-label);flex:0 0 42%;text-align:left;color:#315d95;font-weight:700}
+  .record-table td.select-cell{width:auto;justify-content:flex-start;align-items:center}
+  .record-table .btn{min-width:38px;min-height:38px}
+}
+@media(max-width:360px){
+  .side-nav a{font-size:12px}
+  .status-dock .account-actions{width:100%}
+  .record-table td::before{flex-basis:43%}
+}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
@@ -54,7 +157,8 @@ async function load(){if(!currentProfile)return;let {data:d,error}=await sb.from
 function shown(){let q=$("search").value.toLowerCase().replace(/\s/g,""),dt=$("dateFilter").value,af=$("areaFilter").value;return data.filter(r=>(!dt||r.visit_date===dt)&&(!af||(af==="未分類"?!r.area:r.area===af))&&(!q||Object.values(r).join(" ").toLowerCase().replace(/\s/g,"").includes(q)))}
 function renderStats(){if(!currentProfile||currentProfile.role!=="admin")return;let d=$("statsDate").value||today(),rows=data.filter(r=>{let vd=String(r.visit_date||"").slice(0,10),cd=String(r.created_at||"").slice(0,10);return vd===d||(!vd&&cd===d)}),counts={};rows.forEach(r=>{let n=(r.recorder||"未指定").trim()||"未指定";counts[n]=(counts[n]||0)+1});let arr=Object.entries(counts).sort((a,b)=>b[1]-a[1]);$("statsSummary").textContent=d+" 共新增 "+rows.length+" 筆｜"+arr.length+" 位人員";$("statsRecords").innerHTML=arr.length?arr.map(([n,v])=>'<article class="card"><div class="top"><div class="company">'+esc(n)+'</div><span class="badge">'+v+' 筆</span></div></article>').join(""):"<p>此日期尚無新增資料。</p>"}
 function updateSelection(){let visible=shown().map(r=>String(r.id)),allowed=new Set(visible);for(const id of selectedIds)if(!allowed.has(id))selectedIds.delete(id);$("selectedCount").textContent="已選 "+selectedIds.size+" 筆";$("exportSelected").disabled=$("deleteSelected").disabled=!selectedIds.size;let all=$("selectAllRecords");if(all){all.checked=visible.length>0&&visible.every(id=>selectedIds.has(id));all.indeterminate=selectedIds.size>0&&!all.checked}}
-function render(){let a=shown(),dt=$("dateFilter").value,admin=currentProfile?.role==="admin";$("summary").textContent=(dt?dt+" 當日電訪共 ":"搜尋結果共 ")+a.length+" 筆｜雲端總資料 "+data.length+" 筆";$("records").innerHTML=a.length?`<table class="record-table"><thead><tr>${admin?'<th class="select-cell"><input id="selectAllRecords" type="checkbox" aria-label="全選目前篩選結果"></th>':""}<th>#</th><th>電訪日期</th><th>公司名稱</th><th>聯絡人</th><th>電話</th><th>公司地址</th><th>公司區域</th><th>Email</th><th>是否適合拜訪</th><th>是否已寄送 Mail</th><th>備註</th><th>紀錄人員</th>${admin?"<th>操作</th>":""}</tr></thead><tbody>${a.map((r,i)=>`<tr>${admin?`<td class="select-cell"><input type="checkbox" data-select-id="${esc(r.id)}" aria-label="選取 ${esc(r.company_name)}" ${selectedIds.has(String(r.id))?"checked":""}></td>`:""}<td>${i+1}</td><td>${esc(r.visit_date||"")}</td><td><strong>${esc(r.company_name)}</strong></td><td>${esc(r.contact_name||"未填")}</td><td>${esc(r.phone||"—")}</td><td>${esc(r.company_address||"—")}</td><td>${esc(r.area||"未分類")}</td><td>${esc(r.email||"—")}</td><td><span class="badge ${r.visit_suitable?"":"no"}">${r.visit_suitable?"👍 是":"👎 否"}</span></td><td><span class="badge">${r.mail_sent?"✉ 已寄送":"◷ 不需要"}</span></td><td>${esc(r.notes||"—")}</td><td>${esc(r.recorder||"未指定")}</td>${admin?`<td><button class="btn" data-action="edit" data-record-id="${esc(r.id)}" aria-label="編輯 ${esc(r.company_name)}">✎</button> <button class="btn danger" data-action="delete" data-record-id="${esc(r.id)}" aria-label="刪除 ${esc(r.company_name)}">♲</button></td>`:""}</tr>`).join("")}</tbody></table>`:'<p>目前沒有符合條件的資料。</p>';updateSelection();renderStats()}
+function labelRecordCells(){const table=document.querySelector("#records .record-table");if(!table)return;const labels=[...table.querySelectorAll("thead th")].map(th=>th.textContent.trim()||"選取");table.querySelectorAll("tbody tr").forEach(row=>[...row.cells].forEach((cell,i)=>cell.dataset.label=labels[i]||""))}
+function render(){let a=shown(),dt=$("dateFilter").value,admin=currentProfile?.role==="admin";$("summary").textContent=(dt?dt+" 當日電訪共 ":"搜尋結果共 ")+a.length+" 筆｜雲端總資料 "+data.length+" 筆";$("records").innerHTML=a.length?`<table class="record-table"><thead><tr>${admin?'<th class="select-cell"><input id="selectAllRecords" type="checkbox" aria-label="全選目前篩選結果"></th>':""}<th>#</th><th>電訪日期</th><th>公司名稱</th><th>聯絡人</th><th>電話</th><th>公司地址</th><th>公司區域</th><th>Email</th><th>是否適合拜訪</th><th>是否已寄送 Mail</th><th>備註</th><th>紀錄人員</th>${admin?"<th>操作</th>":""}</tr></thead><tbody>${a.map((r,i)=>`<tr>${admin?`<td class="select-cell"><input type="checkbox" data-select-id="${esc(r.id)}" aria-label="選取 ${esc(r.company_name)}" ${selectedIds.has(String(r.id))?"checked":""}></td>`:""}<td>${i+1}</td><td>${esc(r.visit_date||"")}</td><td><strong>${esc(r.company_name)}</strong></td><td>${esc(r.contact_name||"未填")}</td><td>${esc(r.phone||"—")}</td><td>${esc(r.company_address||"—")}</td><td>${esc(r.area||"未分類")}</td><td>${esc(r.email||"—")}</td><td><span class="badge ${r.visit_suitable?"":"no"}">${r.visit_suitable?"👍 是":"👎 否"}</span></td><td><span class="badge">${r.mail_sent?"✉ 已寄送":"◷ 不需要"}</span></td><td>${esc(r.notes||"—")}</td><td>${esc(r.recorder||"未指定")}</td>${admin?`<td><button class="btn" data-action="edit" data-record-id="${esc(r.id)}" aria-label="編輯 ${esc(r.company_name)}">✎</button> <button class="btn danger" data-action="delete" data-record-id="${esc(r.id)}" aria-label="刪除 ${esc(r.company_name)}">♲</button></td>`:""}</tr>`).join("")}</tbody></table>`:'<p>目前沒有符合條件的資料。</p>';labelRecordCells();updateSelection();renderStats()}
 $("records").addEventListener("change",e=>{if(currentProfile?.role!=="admin")return;if(e.target.id==="selectAllRecords"){for(const r of shown())e.target.checked?selectedIds.add(String(r.id)):selectedIds.delete(String(r.id));$("records").querySelectorAll("[data-select-id]").forEach(box=>box.checked=e.target.checked)}else if(e.target.matches("[data-select-id]")){e.target.checked?selectedIds.add(e.target.dataset.selectId):selectedIds.delete(e.target.dataset.selectId)}updateSelection()});
 $("records").addEventListener("click",e=>{const btn=e.target.closest("button[data-action]");if(!btn||currentProfile?.role!=="admin")return;const id=btn.dataset.recordId;const record=data.find(r=>String(r.id)===id);if(!record)return;if(btn.dataset.action==="edit")editRec(record.id);else delRec(record.id)});
 window.editRec=id=>{let r=data.find(x=>x.id===id);if(!r)return;editing=id;fields.forEach(k=>$(k).value=r[k]??"");syncMailStatus();if(detectCity(r.company_address))syncCityFromAddress();$("visit_suitable").value=String(!!r.visit_suitable);syncVisitStatus();$("formTitle").textContent="編輯電訪紀錄";location.hash="new";showPage()}
