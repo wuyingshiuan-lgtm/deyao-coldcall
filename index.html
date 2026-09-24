@@ -177,7 +177,7 @@ $("refresh").onclick=load;
 $("importExcel").onclick=()=>$("importFile").click();
 $("importFile").onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:"array"}),rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});if(!rows.length){alert("Excel 沒有可匯入的資料");return}
 let yn=v=>["是","true","1","yes","y","已寄送","適合","適合拜訪"].includes(String(v).trim().toLowerCase());
-let mapped=rows.map(r=>({visit_date:String(r["電訪日期"]||today()).slice(0,10),company_name:String(r["公司名稱"]||"").trim(),company_address:String(r["公司地址"]||""),contact_name:String(r["聯絡人"]||""),phone:String(r["電話"]||""),email:String(r["Email"]||r["email"]||""),mail_sent:yn(r["是否已寄送Mail"]),visit_suitable:yn(r["是否適合拜訪"]),area:detectCity(r["公司地址"])||String(r["縣市"]||r["地區"]||""),recorder:String(r["紀錄者"]||""),website:String(r["公司官網"]||""),notes:String(r["備註"]||"")})).filter(r=>r.company_name);
+let mapped=rows.map(r=>({visit_date:String(r["電訪日期"]||today()).slice(0,10),company_name:String(r["公司名稱"]||"").trim(),company_address:String(r["公司地址"]||""),contact_name:String(r["聯絡人"]||""),phone:String(r["電話"]||""),email:String(r["Mail"]||r["mail"]||r["Email"]||r["email"]||"").trim(),mail_sent:Boolean(String(r["Mail"]||r["mail"]||r["Email"]||r["email"]||"").trim())||yn(r["是否已寄送Mail"]),visit_suitable:yn(r["是否適合拜訪"]),area:detectCity(r["公司地址"])||String(r["縣市"]||r["地區"]||""),recorder:String(r["紀錄者"]||""),website:String(r["公司官網"]||""),notes:String(r["備註"]||"")})).filter(r=>r.company_name);
 if(!mapped.length){alert("找不到「公司名稱」欄位或沒有有效資料");return}
 // Excel 匯入防重複：公司名稱、電話或 Email 任一相同即視為既有客戶。
 // 同一份 Excel 內的重複列也會先去除，避免一次匯入就建立重複資料。
