@@ -33,6 +33,8 @@ html,body{max-width:100%;overflow-x:clip}
   #customerSection .grid{grid-template-columns:2fr 1fr 1fr}
   .form-heading .sticky-note{display:none}
 }
+/* 畫面寬度不足時隱藏右側鼓勵區，讓主要操作區保有足夠空間 */
+@media(max-width:1180px){.encouragement{display:none}.wrap{margin-right:0}}
 @media(max-width:900px){
   header{height:auto;min-height:0;padding:16px 18px 12px;display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;text-align:center}
   header .brand-logo{width:min(330px,75vw);max-height:78px;margin:0}
