@@ -351,6 +351,45 @@ table{max-width:100%}
 }
 /* END FOREIGN-EMAIL-RWD-MOBILE-CARDS */
 
+
+
+/* FOREIGN-EMAIL-FULL-WIDTH-NO-SCROLL: expand workspace and remove decorative side image */
+.mascot{display:none!important}
+.wrap{width:100%;max-width:none;margin:0;padding:18px 24px 55px}
+#foreignEmailCustomerSection{width:100%;min-width:0}
+#foreignEmailCustomerSection .table-wrap{width:100%;max-width:100%;overflow-x:hidden}
+#foreignEmailCustomerSection .data-table{width:100%;min-width:0;table-layout:fixed}
+#foreignEmailCustomerSection .data-table th,
+#foreignEmailCustomerSection .data-table td{white-space:normal;overflow-wrap:anywhere;word-break:normal}
+#foreignEmailCustomerSection .data-table th:nth-child(1),
+#foreignEmailCustomerSection .data-table td:nth-child(1){width:4%;text-align:center}
+#foreignEmailCustomerSection .data-table th:nth-child(2),
+#foreignEmailCustomerSection .data-table td:nth-child(2){width:5%}
+#foreignEmailCustomerSection .data-table th:nth-child(3),
+#foreignEmailCustomerSection .data-table td:nth-child(3){width:14%}
+#foreignEmailCustomerSection .data-table th:nth-child(4),
+#foreignEmailCustomerSection .data-table td:nth-child(4){width:12%}
+#foreignEmailCustomerSection .data-table th:nth-child(5),
+#foreignEmailCustomerSection .data-table td:nth-child(5){width:13%}
+#foreignEmailCustomerSection .data-table th:nth-child(6),
+#foreignEmailCustomerSection .data-table td:nth-child(6){width:16%}
+#foreignEmailCustomerSection .data-table th:nth-child(7),
+#foreignEmailCustomerSection .data-table td:nth-child(7){width:19%}
+#foreignEmailCustomerSection .data-table th:nth-child(8),
+#foreignEmailCustomerSection .data-table td:nth-child(8){width:17%}
+#foreignEmailCustomerSection .data-table td:nth-child(7){overflow-wrap:anywhere}
+@media(min-width:761px){
+  .wrap{margin:0;padding:18px 24px 55px}
+  #foreignEmailCustomerSection .table-wrap{overflow-x:hidden}
+  #foreignEmailCustomerSection .data-table{min-width:0}
+}
+@media(max-width:760px){
+  .wrap{padding:12px 10px 38px}
+  #foreignEmailCustomerSection .table-wrap{overflow:visible}
+  #foreignEmailCustomerSection .data-table{display:block;min-width:0;table-layout:auto}
+  #foreignEmailCustomerSection .data-table tbody td{width:auto!important}
+}
+
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
@@ -667,41 +706,3 @@ sb.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"){$("login").c
 $("recoveryForm").onsubmit=async e=>{e.preventDefault();let p1=$("newPw").value,p2=$("newPw2").value;if(p1!==p2){$("recoveryMsg").textContent="兩次密碼不一致";return}$("recoveryMsg").textContent="更新中…";let {error}=await sb.auth.updateUser({password:p1});if(error){$("recoveryMsg").textContent="更新失敗："+error.message;return}$("recoveryMsg").textContent="密碼更新成功";$("recovery").classList.add("hidden");history.replaceState(null,"",location.pathname);await sb.auth.signOut();$("login").classList.remove("hidden");$("loginMsg").textContent="新密碼設定完成，請重新登入"};
 (async()=>{reset();let {data:{session}}=await sb.auth.getSession();if(session)await applyRole()})();
 </script><aside class="mascot" aria-label="德曜精密吉祥物"><img src="assets/deyao-mascot-reference.webp" alt="德曜精密藍色機器人吉祥物"><span class="mascot-bubble">加油！今天也一起完成好成績 ♡</span></aside><div class="maker-credit">製作人：蔡喜禎 20260918版</div></body></html>
-
-
-/* FOREIGN-EMAIL-FULL-WIDTH-NO-SCROLL: expand workspace and remove decorative side image */
-.mascot{display:none!important}
-.wrap{width:100%;max-width:none;margin:0;padding:18px 24px 55px}
-#foreignEmailCustomerSection{width:100%;min-width:0}
-#foreignEmailCustomerSection .table-wrap{width:100%;max-width:100%;overflow-x:hidden}
-#foreignEmailCustomerSection .data-table{width:100%;min-width:0;table-layout:fixed}
-#foreignEmailCustomerSection .data-table th,
-#foreignEmailCustomerSection .data-table td{white-space:normal;overflow-wrap:anywhere;word-break:normal}
-#foreignEmailCustomerSection .data-table th:nth-child(1),
-#foreignEmailCustomerSection .data-table td:nth-child(1){width:4%;text-align:center}
-#foreignEmailCustomerSection .data-table th:nth-child(2),
-#foreignEmailCustomerSection .data-table td:nth-child(2){width:5%}
-#foreignEmailCustomerSection .data-table th:nth-child(3),
-#foreignEmailCustomerSection .data-table td:nth-child(3){width:14%}
-#foreignEmailCustomerSection .data-table th:nth-child(4),
-#foreignEmailCustomerSection .data-table td:nth-child(4){width:12%}
-#foreignEmailCustomerSection .data-table th:nth-child(5),
-#foreignEmailCustomerSection .data-table td:nth-child(5){width:13%}
-#foreignEmailCustomerSection .data-table th:nth-child(6),
-#foreignEmailCustomerSection .data-table td:nth-child(6){width:16%}
-#foreignEmailCustomerSection .data-table th:nth-child(7),
-#foreignEmailCustomerSection .data-table td:nth-child(7){width:19%}
-#foreignEmailCustomerSection .data-table th:nth-child(8),
-#foreignEmailCustomerSection .data-table td:nth-child(8){width:17%}
-#foreignEmailCustomerSection .data-table td:nth-child(7){overflow-wrap:anywhere}
-@media(min-width:761px){
-  .wrap{margin:0;padding:18px 24px 55px}
-  #foreignEmailCustomerSection .table-wrap{overflow-x:hidden}
-  #foreignEmailCustomerSection .data-table{min-width:0}
-}
-@media(max-width:760px){
-  .wrap{padding:12px 10px 38px}
-  #foreignEmailCustomerSection .table-wrap{overflow:visible}
-  #foreignEmailCustomerSection .data-table{display:block;min-width:0;table-layout:auto}
-  #foreignEmailCustomerSection .data-table tbody td{width:auto!important}
-}
