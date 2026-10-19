@@ -399,6 +399,20 @@ aside.mascot,.mascot,.mascot-bubble{display:none!important;visibility:hidden!imp
   .wrap{padding-left:24px;padding-right:24px}
 }
 
+
+/* FIX 2026-10-19: remove right illustration without letting content slide under left navigation */
+.encouragement,.encouragement-quote,.encouragement-robot,aside.mascot,.mascot,.mascot-bubble{display:none!important;visibility:hidden!important}
+@media (min-width:901px){
+  .side-nav{left:5px;width:245px}
+  .wrap{display:block;width:auto;max-width:none;margin-left:260px!important;margin-right:0!important;padding:18px 24px 55px}
+  #foreignEmailCustomerSection{width:100%;max-width:100%;min-width:0}
+}
+@media (min-width:761px) and (max-width:900px){
+  .wrap{width:auto;max-width:none;margin-left:212px!important;margin-right:0!important;padding:14px}
+}
+@media (max-width:760px){
+  .wrap{width:auto;max-width:none;margin:0!important;padding:12px 10px 38px}
+}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
