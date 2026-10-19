@@ -318,7 +318,7 @@ async function editOutreachRecord(key,id){
  const cfg=outreachConfig[key];if(!cfg)return;const updated={...row};
  for(const [field,label] of cfg.fields){if(field==="emails"||field==="email")continue;const value=prompt("修改「"+label+"」：",String(row[field]??""));if(value===null)return;updated[field]=value.trim()}
  if(key==="foreignEmail"){const emails=Array.isArray(row.emails)?row.emails:(row.email?[{email:row.email,position:""}]:[]);const newMail=prompt("修改 Mail（每行一個 Email）：",emails.map(x=>x.email||"").join("\n"));if(newMail===null)return;const newPositions=prompt("修改所屬職位／部門（每行對應一個 Mail，可留空）：",emails.map(x=>x.position||"").join("\n"));if(newPositions===null)return;const mails=newMail.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),pos=newPositions.split(/\r?\n/);updated.emails=mails.map((email,i)=>({email,position:(pos[i]||"").trim()}));updated.email=mails.join(", ")}
- delete updated._cloudId;const {error}=await sb.from("outreach_records").update({data:updated}).eq("id",id).eq("category",key);if(error){alert("修改失敗："+error.message);return}await loadOutreachCloud();alert("資料已更新。"
+ delete updated._cloudId;const {error}=await sb.from("outreach_records").update({data:updated}).eq("id",id).eq("category",key);if(error){alert("修改失敗："+error.message);return}await loadOutreachCloud();alert("資料已更新。")}
 }
 async function deleteOutreachRecord(key,id){
  const row=getOutreachRows(key).find(r=>String(r._cloudId)===String(id));if(!row){alert("找不到這筆雲端紀錄，請重新整理。");return}
