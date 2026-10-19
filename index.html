@@ -337,9 +337,31 @@ async function editOutreachRecord(key,id){
  if(key==="foreignEmail"){const emails=Array.isArray(row.emails)?row.emails:(row.email?[{email:row.email,position:""}]:[]);const newMail=prompt("修改 Mail（每行一個 Email）：",emails.map(x=>x.email||"").join("\n"));if(newMail===null)return;const newPositions=prompt("修改所屬職位／部門（每行對應一個 Mail，可留空）：",emails.map(x=>x.position||"").join("\n"));if(newPositions===null)return;const mails=newMail.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),pos=newPositions.split(/\r?\n/);updated.emails=mails.map((email,i)=>({email,position:(pos[i]||"").trim()}));updated.email=mails.join(", ")}
  delete updated._cloudId;const {error}=await sb.from("outreach_records").update({data:updated}).eq("id",id).eq("category",key);if(error){alert("修改失敗："+error.message);return}await loadOutreachCloud();alert("資料已更新。")}
 async function deleteOutreachRecord(key,id){
- const row=getOutreachRows(key).find(r=>String(r._cloudId)===String(id));if(!row){alert("找不到這筆雲端紀錄，請重新整理。");return}
+ const rows=getOutreachRows(key),row=rows.find(r=>String(r._cloudId)===String(id));
+ if(!row){alert("找不到這筆雲端紀錄，請重新整理後再試。");return}
  if(!confirm("確定要刪除「"+(row.company||row.event||row.date||"這筆紀錄")+"」？刪除後無法復原。"))return;
- const {error}=await sb.from("outreach_records").delete().eq("id",id).eq("category",key);if(error){alert("刪除失敗："+error.message);return}await loadOutreachCloud();alert("資料已刪除。")
+ const btn=document.querySelector('[data-outreach-delete][data-cloud-id="'+CSS.escape(String(id))+'"]');
+ if(btn){btn.disabled=true;btn.textContent="刪除中…"}
+ try{
+  const {data:deleted,error}=await sb.from("outreach_records").delete().eq("id",id).eq("category",key).select("id");
+  if(error)throw error;
+  if(!deleted||deleted.length===0)throw new Error("雲端沒有回報刪除成功，可能是權限不足或資料已不存在；資料未確認刪除，請聯絡管理員檢查資料庫權限。");
+  // Remove the matching legacy local copy first. Otherwise loadOutreachCloud may re-upload it immediately.
+  const { _cloudId, ...plainRow }=row;
+  try{
+   const storageKey="deyao_outreach_"+key;
+   const cached=JSON.parse(localStorage.getItem(storageKey)||"[]");
+   const same=(a,b)=>Object.keys(b).every(k=>JSON.stringify(a?.[k])===JSON.stringify(b[k]))&&Object.keys(a||{}).every(k=>Object.prototype.hasOwnProperty.call(b,k)||k==="_cloudId");
+   let removed=false;
+   const kept=cached.filter(item=>{if(!removed&&same(item,plainRow)){removed=true;return false}return true});
+   localStorage.setItem(storageKey,JSON.stringify(kept));
+  }catch(storageError){console.warn("無法清除已刪除紀錄的本機快取",storageError)}
+  saveOutreachRows(key,rows.filter(r=>String(r._cloudId)!==String(id)));
+  await loadOutreachCloud();
+  if(getOutreachRows(key).some(r=>String(r._cloudId)===String(id)))throw new Error("雲端重新載入後仍找到這筆資料，未能確認刪除成功。");
+  alert("資料已從雲端刪除。");
+ }catch(err){console.error("刪除業務紀錄失敗",err);alert("刪除失敗："+(err?.message||"未知錯誤"))}
+ finally{if(btn){btn.disabled=false;btn.textContent="刪除"}}
 }
 document.addEventListener("click",async e=>{const edit=e.target.closest("[data-outreach-edit]"),del=e.target.closest("[data-outreach-delete]");try{if(edit)await editOutreachRecord(edit.dataset.outreachEdit,edit.dataset.cloudId);else if(del)await deleteOutreachRecord(del.dataset.outreachDelete,del.dataset.cloudId)}catch(err){alert("操作失敗："+(err.message||err))}});
 function fillForeignEmailRecorder(){
