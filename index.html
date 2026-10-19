@@ -412,6 +412,28 @@ aside.mascot,.mascot,.mascot-bubble{display:none!important;visibility:hidden!imp
 @media(min-width:1181px){.wrap{width:auto;max-width:1180px;margin:0 0 0 250px;padding:18px 18px 55px}.encouragement{display:none!important}}
 @media(max-width:1180px) and (min-width:761px){.wrap{width:auto;max-width:none;margin:0 0 0 212px;padding:18px 14px 55px}.encouragement{display:none!important}}
 @media(max-width:760px){.side-nav a span.cute-nav-icon{flex-basis:27px;width:27px;height:27px;margin-right:4px;border-radius:9px}.side-nav a span.cute-nav-icon svg{width:23px;height:23px}.wrap{margin:0;padding:12px 10px 38px}}
+
+/* FIX: keep the original sidebar layout and make every foreign-email column reachable */
+@media (min-width: 1181px) {
+  .wrap { width: calc(100% - 250px) !important; max-width: 1180px !important; margin: 0 0 0 250px !important; padding: 18px 18px 55px !important; }
+}
+@media (min-width: 761px) and (max-width: 1180px) {
+  .wrap { width: auto !important; max-width: none !important; margin: 0 0 0 212px !important; padding: 18px 14px 55px !important; }
+}
+#foreignEmailCustomerSection { overflow: visible !important; min-width: 0; }
+#foreignEmailCustomerSection .table-wrap { width: 100%; max-width: 100%; overflow-x: auto !important; overflow-y: visible; -webkit-overflow-scrolling: touch; }
+#foreignEmailCustomerSection .data-table { width: max-content !important; min-width: 1300px !important; table-layout: auto !important; }
+#foreignEmailCustomerSection .data-table th,
+#foreignEmailCustomerSection .data-table td { white-space: normal; overflow-wrap: anywhere; word-break: normal; }
+@media (max-width: 760px) {
+  .wrap { width: auto !important; max-width: none !important; margin: 0 !important; padding: 12px 10px 38px !important; }
+  #foreignEmailCustomerSection .table-wrap { overflow-x: auto !important; }
+  #foreignEmailCustomerSection .data-table { display: table !important; width: max-content !important; min-width: 1200px !important; table-layout: auto !important; }
+  #foreignEmailCustomerSection .data-table thead { position: static !important; width: auto !important; height: auto !important; margin: 0 !important; overflow: visible !important; clip: auto !important; white-space: normal !important; }
+  #foreignEmailCustomerSection .data-table tbody { display: table-row-group !important; }
+  #foreignEmailCustomerSection .data-table tbody tr { display: table-row !important; overflow: visible !important; border: 0 !important; box-shadow: none !important; }
+  #foreignEmailCustomerSection .data-table tbody td { display: table-cell !important; width: auto !important; min-width: 100px !important; }
+}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
