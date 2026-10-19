@@ -328,13 +328,14 @@ table{max-width:100%}
 <script>const statusDock=document.createElement('div');statusDock.className='status-dock';statusDock.setAttribute('aria-label','登入狀態與帳號操作');statusDock.append(document.getElementById('onlineCount'),document.querySelector('.account-actions'));document.body.append(statusDock);</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
 const SUPABASE_URL="https://qprzfciypaiwvbkiiapo.supabase.co",KEY="sb_publishable_Bmn5OtlbGuGqQC4x0dNv7A_9_zldV2B",EMAIL="sales@de-yao.com.tw";
-const sb=supabase.createClient(SUPABASE_URL,KEY),$=x=>document.getElementById(x);let data=[],historyData=[],editing=null,currentProfile=null,presenceChannel=null,selectedIds=new Set();
+let sb=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,KEY):null;const $=x=>document.getElementById(x);let data=[],historyData=[],editing=null,currentProfile=null,presenceChannel=null,selectedIds=new Set();
 $("loginSubmitBtn").addEventListener("click",()=>{const form=$("loginForm"),msg=$("loginMsg");if(!form||!msg)return;msg.textContent="正在檢查登入資料…";if(!form.reportValidity())return;form.requestSubmit()});
 $("loginForm").addEventListener("submit",async e=>{
  e.preventDefault();
  const msg=$("loginMsg"),btn=$("loginForm").querySelector("button");
  btn.disabled=true;msg.textContent="登入中…";
  try{
+  if(!sb){msg.textContent="登入服務載入中，正在重新連線…";await new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://unpkg.com/@supabase/supabase-js@2";script.onload=resolve;script.onerror=()=>reject(new Error("登入服務載入失敗，請檢查網路或瀏覽器擴充功能"));document.head.appendChild(script)});if(!window.supabase?.createClient)throw new Error("登入服務未能啟動，請重新整理頁面");sb=window.supabase.createClient(SUPABASE_URL,KEY)}
   const employeeNo=$("employeeNo").value.trim(),password=$("pw").value;
   if(!employeeNo||!password){msg.textContent="請輸入工號與密碼";return}
   const email=loginEmail(employeeNo);
