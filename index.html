@@ -329,7 +329,7 @@ table{max-width:100%}
 </section><section class="box hidden" id="exhibitionsSection"><h2>新增國內外展覽紀錄</h2><p>管理展覽資訊、參展安排及展會取得的潛在客戶。</p><form id="exhibitionsForm"><div class="grid"><div><label>展覽名稱</label><input name="event" required></div><div><label>國家／地區</label><input name="location" required></div><div><label>展覽日期</label><input type="date" name="date" required></div><div><label>展覽類型</label><select name="type"><option>國內展覽</option><option>國外展覽</option></select></div><div><label>負責人</label><input name="owner"></div><div><label>進度</label><select name="status"><option>待評估</option><option>準備中</option><option>參展中</option><option>已完成</option><option>後續追蹤</option></select></div><div class="wide"><label>展覽／客戶開發備註</label><textarea name="notes"></textarea></div></div><div class="actions"><button class="btn primary" type="submit">新增展覽紀錄</button></div></form></section><section class="box hidden" id="exhibitionsCustomerSection"><h2>國內外展覽｜客戶資料列表</h2><div class="grid"><div class="wide"><label>搜尋展覽名稱、國家／地區、負責人</label><input type="search" id="exhibitionsSearch" placeholder="輸入關鍵字"></div></div><p id="exhibitionsListSummary" class="summary"></p><div class="records" id="exhibitionsRecords"></div>
 </section><section class="box hidden" id="prospectingSection"><h2>新增陌生客戶開發紀錄</h2><p>記錄陌生客戶名單、開發進度、拜訪安排及後續行動。</p><form id="prospectingForm"><div class="grid"><div><label>開發日期</label><input type="date" name="date" required></div><div><label>公司名稱</label><input name="company" required></div><div><label>產業／地區</label><input name="industry" placeholder="例如：汽車零件／台中"></div><div><label>聯絡人</label><input name="contact"></div><div><label>電話</label><input name="phone"></div><div><label>Email</label><input type="email" name="email"></div><div><label>開發方式</label><select name="method"><option>電話開發</option><option>Email</option><option>現場拜訪</option><option>展覽取得</option><option>其他</option></select></div><div><label>開發進度</label><select name="status"><option>待聯繫</option><option>已聯繫</option><option>已安排拜訪</option><option>已拜訪</option><option>持續追蹤</option><option>暫無需求</option></select></div><div class="wide"><label>拜訪／追蹤紀錄</label><textarea name="notes"></textarea></div></div><div class="actions"><button class="btn primary" type="submit">新增開發紀錄</button></div></form></section><section class="box hidden" id="prospectingCustomerSection"><h2>陌生客戶開發拜訪｜客戶資料列表</h2><div class="grid"><div class="wide"><label>搜尋公司、聯絡人、電話或 Email</label><input type="search" id="prospectingSearch" placeholder="輸入關鍵字"></div></div><p id="prospectingListSummary" class="summary"></p><div class="records" id="prospectingRecords"></div>
 
-</section><section class="box hidden foreign-email-tool-panel" id="foreignEmailStatsSection"><h2>國外 Email｜新增統計</h2><p class="excel-help">可篩選日期區間，查看各日期、各新增者的新增筆數。</p><div class="grid"><div><label for="foreignEmailStatsStart">開始日期</label><input type="date" id="foreignEmailStatsStart"></div><div><label for="foreignEmailStatsEnd">結束日期</label><input type="date" id="foreignEmailStatsEnd"></div><div class="tools" style="align-items:end"><button class="btn primary" type="button" id="foreignEmailStatsApply">篩選統計</button><button class="btn" type="button" id="foreignEmailStatsClear">清除日期</button></div></div><p id="foreignEmailStatsSummary" class="summary"></p><div id="foreignEmailStatsRecords" class="records"></div></section>
+</section><section class="box hidden" id="foreignEmailStatsSection"><h2>國外 Email｜每日新增統計</h2><div class="grid"><div><label for="foreignEmailStatsDate">統計日期</label><input type="date" id="foreignEmailStatsDate"></div></div><p id="foreignEmailStatsSummary" class="summary"></p><div id="foreignEmailStatsRecords" class="records"></div></section>
 <section id="foreignEmailExcelSection" class="box hidden"><h2>匯入／匯出 Excel</h2><p class="excel-help">匯入國外 Email Excel、CSV 資料，或將國外 Email 雲端資料匯出備份。</p><div class="excel-actions"><button class="btn" type="button" data-outreach-import="foreignEmail">匯入 Excel</button><input type="file" accept=".xlsx,.xls,.csv" class="hidden" data-outreach-file="foreignEmail"><button class="btn" type="button" data-outreach-export="foreignEmail">匯出 Excel (.xlsx)</button><button class="btn" type="button" data-outreach-csv="foreignEmail">匯出 CSV</button></div><p id="foreignEmailExcelSummary" class="summary"></p></section>
 <section class="box hidden" id="exhibitionsStatsSection"><h2>國內外展覽｜每日新增統計</h2><div class="grid"><div><label>統計日期</label><input type="date" id="exhibitionsStatsDate"></div></div><p id="exhibitionsStatsSummary" class="summary"></p><div id="exhibitionsStatsRecords" class="records"></div></section>
 <section class="box hidden" id="exhibitionsExcelSection"><h2>國內外展覽｜匯入／匯出 Excel</h2><p>此功能只處理國內外展覽分類資料，不會更動國內電訪或其他分類資料。</p><div class="excel-actions"><button class="btn" type="button" data-outreach-import="exhibitions">匯入 Excel／CSV</button><input class="hidden" type="file" accept=".xlsx,.xls,.csv" data-outreach-file="exhibitions"><button class="btn" type="button" data-outreach-export="exhibitions">匯出 Excel (.xlsx)</button><button class="btn" type="button" data-outreach-csv="exhibitions">匯出 CSV</button></div><p id="exhibitionsExcelSummary" class="summary"></p></section>
@@ -481,35 +481,26 @@ const outreachConfig={
 function renderForeignEmailExcelPreview(){const q=String($("foreignEmailExcelSearch")?.value||"").trim().toLocaleLowerCase(),all=getOutreachRows("foreignEmail"),rows=outreachExportRows("foreignEmail");const summary=$("foreignEmailExcelSummary"),target=$("foreignEmailExcelRecords");if(summary)summary.textContent="雲端共有 "+all.length+" 筆國外 Email 資料｜目前符合搜尋 "+rows.length+" 筆；匯出會使用目前搜尋結果。";if(target)target.innerHTML=rows.length?'<div class="table-wrap"><table class="data-table"><thead><tr><th>開發信日期</th><th>國家／地區</th><th>產業</th><th>公司名稱</th><th>Email／職位</th><th>紀錄者</th></tr></thead><tbody>'+all.filter(r=>!q||[r.company,r.country,r.industry,r.recorder,r.website,r.notes,r.email,...(Array.isArray(r.emails)?r.emails.flatMap(x=>[x.email,x.position]):[])].some(v=>String(v??"").toLocaleLowerCase().includes(q))).map(r=>'<tr><td>'+esc(r.date||"—")+'</td><td>'+esc(r.country||"—")+'</td><td>'+esc(r.industry||"—")+'</td><td>'+esc(r.company||"—")+'</td><td>'+esc((Array.isArray(r.emails)?r.emails.map(x=>[x.email,x.position].filter(Boolean).join("（")+(x.email&&x.position?"）":"")).filter(Boolean).join("；"):"")||r.email||"—")+'</td><td>'+esc(r.recorder||"—")+'</td></tr>').join("")+'</tbody></table></div>':'<div class="history-empty">沒有符合搜尋條件的國外 Email 紀錄。</div>'}
 function renderOutreachStats(key){
  const cfg=outreachConfig[key],dateEl=$(key+"StatsDate"),summary=$(key+"StatsSummary"),target=$(key+"StatsRecords");
- if(!cfg||!summary||!target)return;
- if(key==="foreignEmail"){
-  const start=$("foreignEmailStatsStart")?.value||"";
-  const end=$("foreignEmailStatsEnd")?.value||"";
-  let rows=getOutreachRows(key).map(r=>{
-   const createdAt=r._createdAt||r.created_at||r.createdAt||"";
-   const date=dateKeyTaipei(createdAt)||String(r[cfg.date]||"").slice(0,10)||"日期未記錄";
-   return {date,recorder:String(r.recorder||"未填寫")};
-  });
-  rows=rows.filter(r=>(!start||r.date>=start)&&(!end||r.date<=end));
-  const counts={};
-  rows.forEach(r=>{const groupKey=r.date+"\\n"+r.recorder;counts[groupKey]=(counts[groupKey]||0)+1});
-  const entries=Object.entries(counts).map(([groupKey,count])=>{const [date,recorder]=groupKey.split("\\n");return {date,recorder,count}}).sort((a,b)=>b.date.localeCompare(a.date)||a.recorder.localeCompare(b.recorder,"zh-Hant"));
-  const range=start||end?(start||"最早日期")+" ～ "+(end||"最新日期"):"全部日期";
-  summary.textContent=range+"｜共 "+rows.length+" 筆紀錄";
-  target.innerHTML=entries.length?'<div class="table-wrap"><table class="data-table"><thead><tr><th>新增日期</th><th>新增者</th><th>新增筆數</th></tr></thead><tbody>'+entries.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.recorder)+'</td><td>'+x.count+' 筆</td></tr>').join("")+'</tbody></table></div>':'<div class="history-empty">所選日期區間沒有新增資料。</div>';
-  return;
- }
- if(!dateEl)return;
+ if(!cfg||!dateEl||!summary||!target)return;
  const d=dateEl.value||today();
- const allRows=getOutreachRows(key).filter(r=>{const createdDay=dateKeyTaipei(r._createdAt||r.created_at||"");return (createdDay||dateKeyTaipei(r.createdAt||"")||String(r[cfg.date]||"").slice(0,10))===d});
- const counts={};allRows.forEach(r=>{const label=String(r.status||r.type||r.method||"已記錄");counts[label]=(counts[label]||0)+1});
- summary.textContent=d+" 共新增 "+allRows.length+" 筆紀錄";
- target.innerHTML=allRows.length?Object.entries(counts).map(([label,count])=>'<article class="card"><div class="top"><strong>'+esc(label)+'</strong><span class="badge">'+count+' 筆</span></div></article>').join(""):'<div class="history-empty">此日期尚無新增資料。</div>'
+ const allRows=getOutreachRows(key).filter(r=>{
+  const createdDay=dateKeyTaipei(r._createdAt||r.created_at||r.createdAt||"");
+  const recordDay=String(r[cfg.date]||"").slice(0,10);
+  return (createdDay||recordDay)===d;
+ });
+ const counts={};
+ allRows.forEach(r=>{
+  const name=String(r.recorder||r.owner||"未指定").trim()||"未指定";
+  counts[name]=(counts[name]||0)+1;
+ });
+ const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"zh-Hant"));
+ summary.textContent=d+" 共新增 "+allRows.length+" 筆｜"+entries.length+" 位人員";
+ target.innerHTML=entries.length?entries.map(([name,count])=>'<article class="card"><div class="top"><div class="company">'+esc(name)+'</div><span class="badge">'+count+' 筆</span></div></article>').join(""):'<div class="history-empty">此日期尚無新增資料。</div>';
 }
-$("foreignEmailStatsApply")?.addEventListener("click",()=>renderOutreachStats("foreignEmail"));
-$("foreignEmailStatsClear")?.addEventListener("click",()=>{$("foreignEmailStatsStart").value="";$("foreignEmailStatsEnd").value="";renderOutreachStats("foreignEmail")});
-$("foreignEmailStatsStart")?.addEventListener("change",()=>renderOutreachStats("foreignEmail"));
-$("foreignEmailStatsEnd")?.addEventListener("change",()=>renderOutreachStats("foreignEmail"));
+["foreignEmail","exhibitions","prospecting"].forEach(key=>{
+ const dateEl=$(key+"StatsDate");
+ if(dateEl)dateEl.addEventListener("change",()=>renderOutreachStats(key));
+});
 function outreachExportRows(key){const cfg=outreachConfig[key];let rows=getOutreachRows(key);if(key==="foreignEmail"){const q=String($("foreignEmailExcelSearch")?.value||"").trim().toLocaleLowerCase();if(q)rows=rows.filter(r=>[r.company,r.country,r.industry,r.recorder,r.website,r.notes,r.email,...(Array.isArray(r.emails)?r.emails.flatMap(x=>[x.email,x.position]):[])].some(v=>String(v??"").toLocaleLowerCase().includes(q)))}return rows.map(r=>Object.fromEntries(cfg.fields.map(([f,label])=>[label,key==="foreignEmail"&&f==="emails"?(Array.isArray(r.emails)?r.emails.map(x=>[x.email,x.position].filter(Boolean).join("（")+(x.email&&x.position?"）":"")).filter(Boolean).join("；"):""):r[f]??""])))}
 function outreachDownloadCsv(key){const rows=outreachExportRows(key),headers=Object.keys(rows[0]||Object.fromEntries(outreachConfig[key].fields.map(([,label])=>[label,""]))),all=[headers,...rows.map(r=>headers.map(h=>r[h]??""))],csvText="\ufeff"+all.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n"),blob=new Blob([csvText],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=outreachConfig[key].title+"_資料.csv";a.click();URL.revokeObjectURL(url)}
 document.querySelectorAll("[data-outreach-export]").forEach(btn=>btn.addEventListener("click",()=>{const key=btn.dataset.outreachExport,rows=outreachExportRows(key);if(!window.XLSX){alert("Excel 元件載入失敗，請重新整理頁面後再試。");return}const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(rows.length?rows:[Object.fromEntries(outreachConfig[key].fields.map(([,label])=>[label,""]))]);XLSX.utils.book_append_sheet(wb,ws,outreachConfig[key].title.slice(0,31));XLSX.writeFile(wb,outreachConfig[key].title+"_資料.xlsx")}));
