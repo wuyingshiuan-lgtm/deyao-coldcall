@@ -303,6 +303,54 @@ table{max-width:100%}
 #foreignEmailStatsSummary,#foreignEmailExcelSummary{color:#2866b6;font-weight:700;padding:10px 0}
 #foreignEmailStatsQuery{min-width:120px}
 @media(max-width:760px){.foreign-email-tool-grid{grid-template-columns:1fr}}
+
+/* FOREIGN-EMAIL-RWD-MOBILE-CARDS: responsive layout limited to the foreign Email customer list */
+@media (max-width: 760px) {
+  #foreignEmailCustomerSection { padding: 14px; min-width: 0; }
+  #foreignEmailCustomerSection > h2 { align-items: flex-start; font-size: 21px; gap: 9px; }
+  #foreignEmailCustomerSection > h2:before { flex-basis: 38px; width: 38px; height: 38px; border-radius: 12px; font-size: 21px; }
+  #foreignEmailCustomerSection .foreign-email-subtitle { margin-bottom: 14px; }
+  #foreignEmailCustomerSection .foreign-email-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin: 12px 0; }
+  #foreignEmailCustomerSection .foreign-email-metric { min-width: 0; padding: 10px 8px; gap: 6px; align-items: flex-start; flex-direction: column; border-radius: 12px; }
+  #foreignEmailCustomerSection .foreign-email-metric-icon { width: 30px; height: 30px; flex-basis: 30px; font-size: 17px; }
+  #foreignEmailCustomerSection .foreign-email-metric-value { font-size: 20px; overflow-wrap: anywhere; }
+  #foreignEmailCustomerSection .grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  #foreignEmailCustomerSection #foreignEmailSearch { min-width: 0; }
+  #foreignEmailCustomerSection #foreignEmailCountryShortcuts { padding: 9px; gap: 6px; }
+  #foreignEmailCustomerSection #foreignEmailCountryShortcuts .btn { padding: 8px 10px; }
+  #foreignEmailCustomerSection .table-wrap { overflow: visible; border: 0; background: transparent; box-shadow: none; }
+  #foreignEmailCustomerSection .data-table { display: block; width: 100%; min-width: 0; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+  #foreignEmailCustomerSection .data-table thead { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  #foreignEmailCustomerSection .data-table tbody { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  #foreignEmailCustomerSection .data-table tbody tr { display: block; min-width: 0; overflow: hidden; border: 1px solid #dce6f2; border-radius: 13px; background: #fff; box-shadow: 0 3px 12px rgba(31,65,111,.06); }
+  #foreignEmailCustomerSection .data-table tbody td { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: start; width: auto !important; min-width: 0 !important; padding: 9px 11px; border-bottom: 1px solid #edf1f6; overflow-wrap: anywhere; white-space: normal; }
+  #foreignEmailCustomerSection .data-table tbody td:before { color: #7486a2; font-size: 11px; font-weight: 800; line-height: 1.6; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(1) { display: block; padding: 8px 11px; text-align: left; background: #f5f8fe; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(1):before { content: "選取客戶"; display: inline-block; margin-right: 10px; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(2):before { content: "編號"; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(3):before { content: "開發信寄出日期"; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(4):before { content: "公司名稱"; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(5):before { content: "國家／地區"; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(6):before { content: "產業"; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(7):before { content: "Mail"; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(8):before { content: "職位／部門"; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(9):before { content: "紀錄者"; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(10):before { content: "公司官網"; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(11):before { content: "備註"; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(12):before { content: "操作"; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(12) { display: flex; flex-wrap: wrap; gap: 7px; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(12):before { flex: 0 0 100%; }
+  #foreignEmailCustomerSection .data-table tbody td:nth-child(12) button { min-height: 40px; }
+  #foreignEmailCustomerSection .data-table a { overflow-wrap: anywhere; word-break: break-word; }
+  #foreignEmailCustomerSection .data-table tbody tr:last-child td { border-bottom: 1px solid #edf1f6; }
+  #foreignEmailCustomerSection .data-table tbody tr td:last-child { border-bottom: 0; }
+}
+@media (min-width: 761px) and (max-width: 1100px) {
+  #foreignEmailCustomerSection .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #foreignEmailCustomerSection .data-table { min-width: 980px; }
+}
+/* END FOREIGN-EMAIL-RWD-MOBILE-CARDS */
+
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
