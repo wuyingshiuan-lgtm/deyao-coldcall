@@ -190,7 +190,7 @@ bindOutreachForm("prospectingForm","prospecting","prospectingRecords");
 for(const key of ["foreignEmail","exhibitions","prospecting"]){const search=$(key+"Search");if(search)search.addEventListener("input",()=>renderOutreachRecords(key,key+"Records"));}
 
 const outreachConfig={
- foreignEmail:{title:"國外 Email",key:"foreignEmail",date:"date",fields:[["date","開發信寄出日期"],["country","國家／地區"],["company","公司名稱"],["emails","Mail／所屬職位"],["email","Mail（彙整）"],,["notes","聯繫內容／備註"]]},
+ foreignEmail:{title:"國外 Email",key:"foreignEmail",date:"date",fields:[["date","開發信寄出日期"],["country","國家／地區"],["company","公司名稱"],["emails","Mail／所屬職位"],["email","Mail（彙整）"],["notes","聯繫內容／備註"]]},
  exhibitions:{title:"國內外展覽",key:"exhibitions",date:"date",fields:[["event","展覽名稱"],["location","國家／地區"],["date","展覽日期"],["type","展覽類型"],["owner","負責人"],["status","進度"],["notes","展覽／客戶開發備註"]]},
  prospecting:{title:"陌生客戶開發拜訪",key:"prospecting",date:"date",fields:[["date","開發日期"],["company","公司名稱"],["industry","產業／地區"],["contact","聯絡人"],["phone","電話"],["email","Email"],["method","開發方式"],["status","開發進度"],["notes","拜訪／追蹤紀錄"]]}
 };
