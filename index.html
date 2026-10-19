@@ -357,10 +357,7 @@ function saveOutreachRows(key,rows){outreachCache[key]=rows}
 function outreachTarget(key){return key==="foreignEmail"?"foreignEmailRecords":key==="exhibitions"?"exhibitionsRecords":"prospectingRecords"}
 async function loadOutreachCloud(){
  if(!currentProfile)return;
- for(const key of outreachKeys){
-  let local=[];try{const parsed=JSON.parse(localStorage.getItem("deyao_outreach_"+key)||"[]");if(Array.isArray(parsed))local=parsed}catch(_){}
-  if(local.length){const payload=local.map(row=>({category:key,data:row,created_by:currentProfile.id}));const {error}=await sb.from("outreach_records").upsert(payload,{onConflict:"category,record_hash",ignoreDuplicates:true});if(error)throw new Error("同步本機「"+key+"」資料失敗："+error.message)}
- }
+ // Local storage is a cache only. Do not upload it on page load: stale browser caches can resurrect deleted cloud records.
  const {data:cloudRows,error}=await sb.from("outreach_records").select("id,category,data,created_at").in("category",outreachKeys).order("created_at",{ascending:true});
  if(error)throw new Error("讀取雲端業務資料失敗："+error.message);
  for(const key of outreachKeys){const rows=(cloudRows||[]).filter(x=>x.category===key).map(x=>({...x.data,_cloudId:x.id,_createdAt:x.created_at}));outreachCache[key]=rows;try{localStorage.setItem("deyao_outreach_"+key,JSON.stringify(rows.map(({_cloudId,...row})=>row)))}catch(_){}}
