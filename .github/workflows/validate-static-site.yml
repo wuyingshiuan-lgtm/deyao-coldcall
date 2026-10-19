@@ -1,0 +1,48 @@
+name: Validate static site
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.in_script = False
+                  self.external = False
+                  self.parts = []
+                  self.current = []
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() == "script":
+                      self.in_script = True
+                      self.external = any(k.lower() == "src" for k, v in attrs)
+                      self.current = []
+              def handle_data(self, data):
+                  if self.in_script and not self.external:
+                      self.current.append(data)
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script" and self.in_script:
+                      code = "".join(self.current).strip()
+                      if code:
+                          self.parts.append(code)
+                      self.in_script = False
+          parser = Scripts()
+          parser.feed(Path("index.html").read_text(encoding="utf-8"))
+          if not parser.parts:
+              raise SystemExit("No inline scripts found")
+          for i, code in enumerate(parser.parts, 1):
+              Path(f"/tmp/inline-{i}.js").write_text(code, encoding="utf-8")
+          print(f"Extracted {len(parser.parts)} inline script(s)")
+          PY
+          for f in /tmp/inline-*.js; do node --check "$f"; done
