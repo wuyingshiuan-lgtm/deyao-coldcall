@@ -494,6 +494,42 @@ header{position:fixed!important;top:0!important;left:0!important;right:0!importa
   header{height:94px!important;min-height:94px!important;max-height:94px!important}
   .side-nav{top:104px!important;left:6px!important;bottom:8px!important;width:184px!important}
 }
+
+/* Responsive sidebar: scale with viewport and never show an inner scrollbar */
+.side-nav{
+  box-sizing:border-box!important;
+  width:clamp(68px,16vw,212px)!important;
+  max-width:calc(100vw - 16px)!important;
+  height:auto!important;
+  overflow:hidden!important;
+  overflow-y:hidden!important;
+  overflow-x:hidden!important;
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+  overscroll-behavior:none!important;
+}
+.side-nav::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+.side-nav>a{
+  box-sizing:border-box!important;
+  min-width:0!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  gap:clamp(4px,1vw,10px)!important;
+  padding:clamp(6px,1vw,12px)!important;
+  font-size:clamp(9px,1vw,14px)!important;
+}
+.side-nav .cute-nav-icon{flex:0 0 auto!important;width:clamp(22px,3vw,40px)!important;height:clamp(22px,3vw,40px)!important}
+.side-nav .cute-nav-icon svg{width:100%!important;height:100%!important}
+@media(max-width:760px){
+  .side-nav{width:clamp(64px,20vw,150px)!important;left:5px!important;top:104px!important;bottom:auto!important}
+  .side-nav>a{font-size:clamp(8px,2.2vw,12px)!important;line-height:1.25!important;padding:5px 4px!important;gap:4px!important}
+  .side-nav .cute-nav-icon{width:clamp(20px,6vw,30px)!important;height:clamp(20px,6vw,30px)!important}
+}
+@media(max-width:420px){
+  .side-nav{width:64px!important}
+  .side-nav>a{flex-direction:column!important;justify-content:center!important;text-align:center!important;font-size:9px!important}
+}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
