@@ -1526,6 +1526,14 @@ table th,table td{min-width:0!important;max-width:100%;white-space:normal!import
 #customerSection .record-table td[data-label="操作"] .record-actions .btn:hover{filter:brightness(.97)}
 @media(max-width:760px){#customerSection .record-table th:last-child,#customerSection .record-table td[data-label="操作"]{width:98px;min-width:98px;padding:6px 4px!important}}
 
+
+/* 展覽列表操作按鈕可點擊性與欄位微調 */
+#exhibitionsCustomerSection .exhibitions-list-table td:last-child{position:relative;z-index:2}
+#exhibitionsCustomerSection .exhibition-row-actions .btn{pointer-events:auto;touch-action:manipulation}
+#exhibitionsCustomerSection .exhibition-row-actions .exhibition-action-history{background:#eaf3ff!important;border-color:#b9d5ff!important;color:#2458a6!important}
+#exhibitionsCustomerSection .exhibition-row-actions .exhibition-action-edit{background:#eaf9ef!important;border-color:#b8e5c7!important;color:#21834b!important}
+#exhibitionsCustomerSection .exhibition-row-actions .exhibition-action-delete{background:#fff0f1!important;border-color:#f4c2c7!important;color:#c52e40!important}
+
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
@@ -1737,6 +1745,28 @@ function renderExhibitionsCompanyHistory(company){
  all.innerHTML=rows.length?rows.map((r,i)=>'<article class="card"><div class="top"><strong>'+esc(r.event||"展覽紀錄")+'</strong><span class="badge">'+esc(r.date||"日期未填")+'</span></div><div class="detail">'+[['公司名稱',r.company],['國家／地區',r.location],['產業類別',r.industry],['聯繫人',r.contact],['職位',r.title],['分機',r.extension],['聯繫電話',r.phone],['傳真電話',r.fax],['Email',r.email],['是否已寄送 Mail',(r.emailSent==="true"||r.emailSent===true)?"已寄送":"未寄送"],['是否適合拜訪',(r.visitSuitable==="true"||r.visitSuitable===true)?"適合拜訪":"不適合拜訪"],['公司官網',r.website],['公司地址',r.address],['紀錄者',r.recorder],['備註',r.notes]].map(([k,v])=>'<div><b>'+esc(k)+'：</b>'+esc(v||"—")+'</div>').join("")+'</div><h4>聯繫歷史</h4><div class="history-list">'+(Array.isArray(r.contactHistory)&&r.contactHistory.length?r.contactHistory.slice().sort((a,b)=>String(b.date||"").localeCompare(String(a.date||""))).map(h=>'<article class="history-item"><div class="history-item-head"><span>#'+esc(h.number||"—")+'｜'+esc(h.date||"日期未填")+'</span><span>'+esc(h.result||"未填結果")+'</span></div><p>'+esc(h.notes||"（無備註）")+'</p><small>紀錄者：'+esc(h.recorder||"—")+'</small></article>').join(""):'<div class="history-empty">尚無額外聯繫紀錄；本筆展覽資料會保留為原始紀錄。</div>')+'</div></article>').join(""):'<div class="history-empty">找不到該公司資料。</div>';
  $("exhibitionsHistoryDate").value=today();$("exhibitionsHistoryResult").value="";$("exhibitionsHistoryNotes").value="";$("exhibitionsHistoryMsg").textContent="";
 }
+/* 展覽名單操作事件優先處理：使用捕獲階段避免被其他通用事件攔截 */
+document.addEventListener("click",async e=>{
+ const button=e.target.closest("#exhibitionsCustomerSection [data-exhibition-action],#exhibitionsCustomerSection [data-outreach-edit],#exhibitionsCustomerSection [data-outreach-delete],#exhibitionsCustomerSection [data-exhibition-company-link]");
+ if(!button)return;
+ e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+ try{
+  if(button.matches("[data-exhibition-action='history']")){
+   renderExhibitionsCompanyHistory(button.dataset.company||"");
+   location.hash="exhibitionsHistory";showPage();return;
+  }
+  if(button.matches("[data-exhibition-company-link]")){
+   renderExhibitionsCompanyHistory(button.dataset.exhibitionCompanyLink||"");
+   location.hash="exhibitionsHistory";showPage();return;
+  }
+  if(button.matches("[data-outreach-edit]")){
+   await editOutreachRecord(button.dataset.outreachEdit,button.dataset.cloudId);return;
+  }
+  if(button.matches("[data-outreach-delete]")){
+   await deleteOutreachRecord(button.dataset.outreachDelete,button.dataset.cloudId);return;
+  }
+ }catch(err){console.error("展覽客戶操作失敗",err);alert("操作失敗："+(err?.message||"請重新整理頁面後再試"))}
+},true);
 document.addEventListener("click",e=>{const action=e.target.closest("[data-exhibition-action='history']");if(action){e.preventDefault();renderExhibitionsCompanyHistory(action.dataset.company||"");location.hash="exhibitionsHistory";showPage();return}const company=e.target.closest("[data-exhibition-company-link]");if(!company)return;renderExhibitionsCompanyHistory(company.dataset.exhibitionCompanyLink||"");location.hash="exhibitionsHistory";showPage()});
 $("backToExhibitionsCustomers")?.addEventListener("click",()=>{location.hash="exhibitionsCustomers";showPage()});
 function cancelExhibitionEdit(){window.currentExhibitionEditId=null;const form=$("exhibitionsForm");form?.reset();if(form){form.querySelector('button[type="submit"]').textContent="＋ 新增展覽客戶紀錄";const recorder=form.querySelector('input[name="recorder"]');if(recorder)recorder.value=currentProfile?.name||""}$("cancelExhibitionEdit")?.classList.add("hidden");$("formTitle")?.replaceChildren(document.createTextNode("新增展覽客戶紀錄"));location.hash="exhibitionsCustomers";showPage()}$("backToExhibitionsFromForm")?.addEventListener("click",cancelExhibitionEdit);$("cancelExhibitionEdit")?.addEventListener("click",cancelExhibitionEdit);
