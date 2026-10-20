@@ -1614,6 +1614,47 @@ table th,table td{min-width:0!important;max-width:100%;white-space:normal!import
 #foreignEmailForm .actions{display:flex;gap:9px;flex-wrap:wrap}
 #foreignEmailForm button.primary{min-width:180px}
 @media(max-width:760px){#foreignEmailForm>.grid,#foreignEmailContacts{grid-template-columns:minmax(0,1fr)}#foreignEmailForm>.grid>div.wide{grid-column:auto}#foreignEmailForm button.primary{width:100%}}
+
+/* 展覽客戶列表：置中、欄寬平衡、操作按鈕統一 */
+#exhibitionsCustomerSection .exhibitions-list-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;border:1px solid #cbdff8;border-radius:12px;overflow:hidden;background:#fff}
+#exhibitionsCustomerSection .exhibitions-list-table th,#exhibitionsCustomerSection .exhibitions-list-table td{text-align:center!important;vertical-align:middle!important;padding:9px 6px!important;overflow-wrap:anywhere;word-break:break-word;line-height:1.45}
+#exhibitionsCustomerSection .exhibitions-list-table th{background:#deedff;color:#244f86;font-weight:800}
+#exhibitionsCustomerSection .exhibitions-list-table tbody tr:nth-child(even){background:#f8fbff}
+#exhibitionsCustomerSection .exhibitions-list-table tbody tr:hover{background:#eef6ff}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(1),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(1){width:4.2%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(2),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(2){width:9%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(3),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(3){width:10%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(4),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(4){width:5.5%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(5),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(5){width:8%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(6),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(6){width:6%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(7),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(7){width:6%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(8),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(8){width:4.5%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(9),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(9){width:7%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(10),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(10){width:6.5%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(11),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(11){width:7%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(12),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(12){width:8%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(13),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(13){width:6.5%!important}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(14),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(14){width:12%!important}
+#exhibitionsCustomerSection .exhibitions-list-table input[type="checkbox"]{width:14px!important;height:14px!important;min-width:14px!important;min-height:14px!important;margin:0 auto!important;vertical-align:middle;accent-color:#2878d7}
+#exhibitionsCustomerSection .exhibitions-company-link,#exhibitionsCustomerSection .history-count-link{display:inline-flex;align-items:center;justify-content:center;max-width:100%;border:0;background:transparent;color:#236ac0;font:inherit;font-weight:750;line-height:1.4;text-align:center;cursor:pointer;padding:3px 2px;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+#exhibitionsCustomerSection .history-count-link{padding:4px 8px;border:1px solid #b8d6ff;border-radius:8px;background:#edf5ff;text-decoration:none;white-space:nowrap}
+#exhibitionsCustomerSection .exhibition-row-actions{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:center!important;gap:4px!important;white-space:normal!important}
+#exhibitionsCustomerSection .exhibition-row-actions .btn{width:100%;min-height:34px;padding:7px 5px!important;border-radius:12px!important;font-size:11px!important;font-weight:750!important;line-height:1.2!important;white-space:nowrap!important;box-shadow:none}
+#exhibitionsCustomerSection .exhibition-row-actions .exhibition-action-history{background:#edf4ff!important;color:#2b5f9c!important;border:1px solid #b7d3ff!important}
+#exhibitionsCustomerSection .exhibition-row-actions .exhibition-action-edit{background:#effaf3!important;color:#24804a!important;border:1px solid #b9e9c9!important}
+#exhibitionsCustomerSection .exhibition-row-actions .exhibition-action-delete{background:#fff1f2!important;color:#d34858!important;border:1px solid #ffc6cc!important}
+#exhibitionsCustomerSection .exhibitions-company-cell{font-weight:750;color:#234b7d}
+#exhibitionsCustomerSection .exhibitions-notes-cell{text-align:left!important;white-space:pre-wrap}
+#exhibitionsHistorySection .history-page-head{padding:8px 4px 18px}
+#exhibitionsHistorySection .history-page-head>h2{margin:12px 0;color:#24558f}
+#exhibitionsHistorySection .exhibitions-company-detail-card{border:1px solid #cfe1fa;border-radius:14px;padding:18px;background:linear-gradient(145deg,#f4f8ff,#eaf3ff);margin-bottom:14px}
+#exhibitionsHistorySection .exhibitions-company-detail-card h3{text-align:center;color:#24558f;margin:0 0 14px}
+#exhibitionsHistorySection .exhibitions-company-detail-item{min-width:0;overflow-wrap:anywhere;text-align:center;background:#fff;border:1px solid #d3e3fa;border-radius:10px;padding:13px 9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}
+#exhibitionsHistorySection .exhibitions-company-detail-item strong{white-space:pre-wrap;overflow-wrap:anywhere}
+#exhibitionsHistorySection .exhibitions-history-entry{border:1px solid #d5e5fa;border-radius:14px;padding:18px;background:#fff}
+#exhibitionsHistorySection .history-item{background:#fff;border:1px solid #d4e4fa;border-left:4px solid #3983ed;border-radius:12px;padding:14px}
+#exhibitionsHistorySection .history-item-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#245b9c;font-weight:800}
+@media(max-width:900px){#exhibitionsCustomerSection .table-wrap{overflow-x:auto!important}#exhibitionsCustomerSection .exhibitions-list-table{min-width:1120px}#exhibitionsCustomerSection .exhibitions-list-table th,#exhibitionsCustomerSection .exhibitions-list-table td{font-size:12px!important}}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
@@ -1832,7 +1873,7 @@ function renderExhibitionsCompanyDetail(company){
  const rows=getOutreachRows("exhibitions").filter(r=>String(r.company||"").trim()===currentExhibitionsHistoryCompany.trim());
  $("exhibitionsHistoryCompanyMeta").textContent="公司："+(currentExhibitionsHistoryCompany||"（未填公司）")+"｜公司詳細資料";
  const all=$("exhibitionsHistoryAllRecords");
- all.innerHTML=rows.length?rows.map(r=>'<article class="exhibitions-company-detail-card"><h3>🏢 '+esc(r.company||"公司詳細資料")+'</h3><div class="exhibitions-company-detail-grid">'+[['公司官網',r.website],['公司地址',r.address],['展覽日期',r.date],['展覽名稱',r.event],['國家／地區',r.location],['產業類別',r.industry],['聯繫人',r.contact],['職位',r.title],['分機',r.extension],['聯繫電話',r.phone],['傳真電話',r.fax],['Email',r.email],['寄送Email',(r.emailSent==="true"||r.emailSent===true)?"已寄送":"未寄送"],['拜訪',(r.visitSuitable==="true"||r.visitSuitable===true)?"適合拜訪":"不適合拜訪"],['紀錄者',r.recorder],['備註',r.notes]].map(([k,v])=>'<div class="exhibitions-company-detail-item"><span>'+esc(k)+'</span><strong>'+esc(v||"—")+'</strong>'+(k==="公司官網"&&v?'<a href="'+esc(v)+'" target="_blank" rel="noopener noreferrer">開啟官網 ↗</a>':'')+'</div>').join("")+'</div></article>').join(""):'<div class="history-empty">找不到該公司資料。</div>';
+ all.innerHTML=rows.length?rows.map(r=>'<article class="exhibitions-company-detail-card"><h3>🏢 '+esc(r.company||"公司詳細資料")+'</h3><div class="exhibitions-company-detail-grid">'+Object.entries(r).filter(([k,v])=>!k.startsWith("_")&&k!=="contactHistory"&&k!=="createdAt"&&k!=="id"&&v!==null&&v!==undefined&&String(v).trim()!=="").map(([k,v])=>{const labels={website:"公司官網",address:"公司地址",date:"展覽日期",event:"展覽名稱",location:"國家／地區",industry:"產業類別",contact:"聯繫人",title:"職位",extension:"分機",phone:"聯繫電話",fax:"傳真電話",email:"Email",emails:"Email／職位",emailSent:"寄送Email",visitSuitable:"拜訪",recorder:"紀錄者",notes:"備註",company:"公司名稱",contactDate:"首次聯繫日期",recordDate:"紀錄日期"};let value=Array.isArray(v)?v.map(x=>typeof x==="object"?Object.entries(x).filter(([a,b])=>b).map(([a,b])=>({email:"Email",position:"職位"}[a]||a)+": "+String(b)).join("／"):String(x)).join("；"):typeof v==="object"?JSON.stringify(v):String(v);if(k==="emailSent")value=(v==="true"||v===true)?"已寄送":"未寄送";if(k==="visitSuitable")value=(v==="true"||v===true)?"適合拜訪":"不適合拜訪";return '<div class="exhibitions-company-detail-item"><span>'+esc(labels[k]||k)+'</span><strong>'+esc(value||"—")+'</strong>'+(k==="website"&&v?'<a href="'+esc(/^https?:\/\//i.test(String(v))?String(v):"https://"+String(v))+'" target="_blank" rel="noopener noreferrer">開啟官網 ↗</a>':'')+'</div>'}).join("")+'</div></article>').join(""):'<div class="history-empty">找不到該公司資料。</div>';
  const form=$("exhibitionsHistoryForm");if(form)form.reset();
  $("exhibitionsHistoryEntry")?.classList.add("hidden");
  $("exhibitionsHistoryPageTitle").textContent="公司詳細資料";
