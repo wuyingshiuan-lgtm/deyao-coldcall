@@ -479,6 +479,26 @@ html:has(#foreignEmailCustomerSection),body:has(#foreignEmailCustomerSection){ma
 #foreignEmailCustomerSection .foreign-email-full-table .foreign-email-company-cell,#foreignEmailCustomerSection .foreign-email-full-table .foreign-email-website-cell,#foreignEmailCustomerSection .foreign-email-full-table .foreign-email-notes-cell,#foreignEmailCustomerSection .foreign-email-full-table .record-actions{min-width:0!important;max-width:100%!important}
 #foreignEmailCustomerSection .foreign-email-full-table .record-actions{display:flex;flex-wrap:wrap;gap:2px}
 
+/* 國外 Email 客戶列表欄寬修正：日期留在格內、Email 加寬、操作按鈕直向排列 */
+#foreignEmailCustomerSection .foreign-email-table-wrap{overflow-x:auto!important;overflow-y:visible!important; -webkit-overflow-scrolling:touch}
+#foreignEmailCustomerSection .foreign-email-full-table{width:1120px!important;min-width:1120px!important;max-width:none!important;table-layout:fixed!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(1),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(1){width:4%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(2),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(2){width:9%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(3),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(3){width:8%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(4),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(4){width:8%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(5),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(5){width:10%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(6),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(6){width:9%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(7),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(7){width:19%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(8),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(8){width:9%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(9),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(9){width:7%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(10),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(10){width:7%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(11),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(11){width:10%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(2),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(2){white-space:nowrap!important;overflow-wrap:normal!important;word-break:keep-all!important}
+#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(7){overflow-wrap:anywhere!important;word-break:normal!important}
+#foreignEmailCustomerSection .foreign-email-full-table .foreign-email-actions,#foreignEmailCustomerSection .foreign-email-full-table .record-actions{display:flex!important;flex-direction:column!important;align-items:stretch!important;flex-wrap:nowrap!important;gap:6px!important;min-width:0!important}
+#foreignEmailCustomerSection .foreign-email-full-table .foreign-email-actions .btn,#foreignEmailCustomerSection .foreign-email-full-table .record-actions .btn{display:block!important;width:100%!important;min-width:0!important;white-space:nowrap!important;text-align:center!important}
+@media(max-width:760px){#foreignEmailCustomerSection .foreign-email-table-wrap{overflow-x:auto!important}#foreignEmailCustomerSection .foreign-email-full-table{width:1120px!important;min-width:1120px!important;font-size:11px!important}#foreignEmailCustomerSection .foreign-email-full-table th,#foreignEmailCustomerSection .foreign-email-full-table td{font-size:11px!important;padding:7px 5px!important}#foreignEmailCustomerSection .foreign-email-full-table .btn.small{font-size:10px!important;padding:6px 5px!important}}
+ 
 /* Keep the top header and left navigation anchored while the page scrolls */
 header{position:sticky!important;top:0!important;z-index:100!important}
 .side-nav{position:fixed!important;left:10px!important;top:133px!important;bottom:14px!important;z-index:99!important;overflow-y:auto!important;overscroll-behavior:contain}
