@@ -1035,6 +1035,31 @@ html,body{max-width:100%;overflow-x:hidden}
 #formSection .return-customers-btn:hover{background:#deedff}
 @media(max-width:760px){#customerSection .company-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#customerSection .company-detail-panel{padding:12px}#customerSection .company-detail-row>td{display:block!important;width:100%}}
 @media(max-width:420px){#customerSection .company-detail-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* 新增電訪紀錄：依指定順序排列並統一欄位視覺 */
+#form .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
+#form .grid>div:has(#visit_date){order:1!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#company_name){order:2!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#website){order:3!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#contact_name){order:4!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#position){order:5!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#extension){order:6!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#phone){order:7!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#fax_phone){order:8!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#email){order:9!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#company_address){order:10!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#area){order:11!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#visit_suitable){order:12!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#mail_sent){order:13!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#recorder){order:14!important;grid-column:auto!important;grid-row:auto!important}
+#form .grid>div:has(#notes){order:15!important;grid-column:1/-1!important;grid-row:auto!important}
+#form .grid>div:has(#contact_name),#form .grid>div:has(#position),#form .grid>div:has(#extension){padding:13px;border:1px solid #d6e5f7;border-radius:13px;background:linear-gradient(145deg,#fff,#f3f8ff);box-shadow:0 3px 12px rgba(35,91,153,.06)}
+#form .grid>div:has(#contact_name) label,#form .grid>div:has(#position) label,#form .grid>div:has(#extension) label{color:#24558d;font-weight:750}
+#form .grid input,#form .grid select,#form .grid textarea{max-width:100%;box-sizing:border-box;border-radius:10px;transition:border-color .18s ease,box-shadow .18s ease}
+#form .grid input:focus,#form .grid select:focus,#form .grid textarea:focus{outline:none;border-color:#75a9eb;box-shadow:0 0 0 3px rgba(70,135,220,.14)}
+#form .grid>div:has(#notes) textarea{min-height:110px;resize:vertical}
+@media(max-width:900px){#form .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}}
+@media(max-width:560px){#form .grid{grid-template-columns:minmax(0,1fr);gap:12px}#form .grid>div:has(#notes){grid-column:1!important}#form .grid>div:has(#contact_name),#form .grid>div:has(#position),#form .grid>div:has(#extension){padding:10px}}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
