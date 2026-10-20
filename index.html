@@ -1350,7 +1350,14 @@ html,body{max-width:100%;overflow-x:hidden}
 #exhibitionsHistorySection .history-item p{white-space:pre-wrap;overflow-wrap:anywhere}
 #exhibitionsForm .actions{justify-content:flex-start}
 @media(max-width:760px){#exhibitionsCustomerSection>.grid{grid-template-columns:minmax(0,1fr)}#exhibitionsHistorySection .history-panel{padding:12px}.exhibitions-company-link{white-space:normal}}
- .exhibitions-back-button{margin:0 0 14px;background:#fff;border-color:#b9d5f9;color:#204b85;font-weight:800} </style></head><body>
+ .exhibitions-back-button{margin:0 0 14px;background:#fff;border-color:#b9d5f9;color:#204b85;font-weight:800} 
+/* 展覽客戶列表：搜尋、日期、國家／地區篩選同列顯示，減少垂直空間 */
+#exhibitionsCustomerSection > .grid{grid-template-columns:minmax(0,2fr) minmax(170px,.72fr) minmax(220px,1fr);align-items:end;gap:12px}
+#exhibitionsCustomerSection > .grid > .wide{grid-column:auto}
+@media(max-width:760px){#exhibitionsCustomerSection > .grid{grid-template-columns:minmax(0,1fr) minmax(150px,.8fr)}#exhibitionsCustomerSection > .grid > .wide{grid-column:1/-1}}
+@media(max-width:480px){#exhibitionsCustomerSection > .grid{grid-template-columns:minmax(0,1fr)}#exhibitionsCustomerSection > .grid > .wide{grid-column:auto}}
+
+</style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
 <div id="recovery" class="login hidden"><form id="recoveryForm" class="loginbox"><h2>設定新密碼</h2><p>請輸入新的系統密碼。</p><label>新密碼</label><input id="newPw" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="newPw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">更新密碼</button><span id="recoveryMsg" class="msg"></span></div></form></div>
