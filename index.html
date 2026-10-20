@@ -1247,6 +1247,59 @@ html,body{max-width:100%;overflow-x:hidden}
   #formSection #form .actions .btn{flex:1 1 100%;width:100%}
 }
 
+
+/* 修正 Mail 狀態選項重疊：隱藏輔助 select，兩個狀態平均分欄 */
+#formSection #form .field-mail{position:relative;min-width:0}
+#formSection #form .field-mail select.state-source{
+  position:absolute!important;
+  left:0!important;top:0!important;
+  width:1px!important;height:1px!important;min-height:1px!important;
+  padding:0!important;margin:0!important;border:0!important;
+  opacity:0!important;pointer-events:none!important;
+  overflow:hidden!important;clip:rect(0,0,0,0)!important;
+}
+#formSection #form .field-mail .mail-buttons{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:stretch;
+  gap:8px!important;
+  width:100%;
+  min-width:0;
+  min-height:44px;
+}
+#formSection #form .field-mail .mail-buttons span{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  width:100%;
+  min-width:0!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:8px 6px!important;
+  border:1px solid #c3d8f7;
+  border-radius:10px!important;
+  background:#fff;
+  color:#174781;
+  font-size:13px;
+  line-height:1.35;
+  text-align:center;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+#formSection #form .field-mail .mail-buttons span.selected{
+  border-color:#91bfff;
+  background:#eaf4ff;
+  color:#1768c5;
+  opacity:1;
+}
+#formSection #form .field-mail .mail-buttons span:not(.selected){opacity:.72}
+#formSection #form .field-mail .field-mail-note{display:block;max-width:100%;overflow-wrap:anywhere}
+@media(max-width:380px){
+  #formSection #form .field-mail .mail-buttons{gap:6px!important}
+  #formSection #form .field-mail .mail-buttons span{font-size:12px;padding:7px 4px!important}
+}
+
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
