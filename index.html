@@ -1850,6 +1850,170 @@ table th,table td{min-width:0!important;max-width:100%;white-space:normal!import
 #exhibitionsCustomerSection .exhibitions-list-table th:nth-child(10),#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(11){white-space:nowrap!important}
 #exhibitionsCustomerSection .exhibitions-list-table td:nth-child(10),#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(11){padding:8px 4px!important;text-align:center!important}
 #exhibitionsCustomerSection .exhibitions-list-table .exhibition-status-pill{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;box-sizing:border-box;max-width:100%;padding:5px 6px!important;font-size:11px!important;line-height:1.35}
+
+/* 全站 RWD：使用右側空間，窄螢幕以有欄名的資料卡顯示完整紀錄。 */
+html,body{width:100%;max-width:100%;overflow-x:visible!important}
+body .wrap{margin-right:0!important;max-width:none!important;min-width:0!important}
+body .encouragement{display:none!important}
+@media(min-width:761px){body .wrap{margin-left:224px!important;width:calc(100% - 224px)!important;padding:14px 18px 58px!important}body .side-nav{width:204px!important;left:8px!important}}
+.wrap :is(section,form,.grid,.tools,.actions,.records,.card,.staff-row){min-width:0;max-width:100%;box-sizing:border-box}
+.wrap :is(h2,h3,p,strong,a,button,small,.meta,.summary){overflow-wrap:anywhere}
+.wrap :is(input,select,textarea){min-width:0!important;max-width:100%!important;box-sizing:border-box}
+.wrap :is(.tools,.actions,.excel-actions,.batch-tools,.bulk-delete-toolbar,.history-page-head,.foreign-email-history-head){flex-wrap:wrap!important;min-width:0}
+.wrap .page-tabs{min-width:0;max-width:100%}
+.wrap .page-tabs a{min-width:0;white-space:normal!important}
+#customerSection .table-wrap,#customerSection .foreign-email-table-wrap,#foreignEmailCustomerSection .table-wrap,#foreignEmailCustomerSection .foreign-email-table-wrap,#exhibitionsCustomerSection .table-wrap,#exhibitionsCustomerSection .foreign-email-table-wrap,#foreignEmailExcelSection .table-wrap,#foreignEmailExcelSection .foreign-email-table-wrap,#exhibitionsExcelSection .table-wrap,#exhibitionsExcelSection .foreign-email-table-wrap,#prospectingCustomerSection .table-wrap,#prospectingCustomerSection .foreign-email-table-wrap,#statsSection .table-wrap,#statsSection .foreign-email-table-wrap,#foreignEmailStatsSection .table-wrap,#foreignEmailStatsSection .foreign-email-table-wrap,#exhibitionsStatsSection .table-wrap,#exhibitionsStatsSection .foreign-email-table-wrap,#prospectingStatsSection .table-wrap,#prospectingStatsSection .foreign-email-table-wrap,#records,#foreignEmailRecords,#exhibitionsRecords,#prospectingRecords{width:100%!important;min-width:0!important;max-width:100%!important;overflow:visible!important}
+#customerSection table,#foreignEmailCustomerSection table,#exhibitionsCustomerSection table,#foreignEmailExcelSection table,#exhibitionsExcelSection table,#prospectingCustomerSection table,#statsSection table,#foreignEmailStatsSection table,#exhibitionsStatsSection table,#prospectingStatsSection table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important}
+#customerSection table th,#customerSection table td,#foreignEmailCustomerSection table th,#foreignEmailCustomerSection table td,#exhibitionsCustomerSection table th,#exhibitionsCustomerSection table td,#foreignEmailExcelSection table th,#foreignEmailExcelSection table td,#exhibitionsExcelSection table th,#exhibitionsExcelSection table td,#prospectingCustomerSection table th,#prospectingCustomerSection table td,#statsSection table th,#statsSection table td,#foreignEmailStatsSection table th,#foreignEmailStatsSection table td,#exhibitionsStatsSection table th,#exhibitionsStatsSection table td,#prospectingStatsSection table th,#prospectingStatsSection table td{min-width:0!important;max-width:none!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;box-sizing:border-box}
+#customerSection .record-table th,#customerSection .record-table td,#exhibitionsCustomerSection .exhibitions-list-table th,#exhibitionsCustomerSection .exhibitions-list-table td{padding:8px 4px!important;font-size:12px!important}
+#exhibitionsCustomerSection .exhibitions-list-table .exhibition-status-pill,#foreignEmailCustomerSection .foreign-email-source-badge{font-size:11px!important;padding:5px 5px!important;max-width:100%;white-space:nowrap!important}
+#exhibitionsCustomerSection .exhibition-row-actions,#foreignEmailCustomerSection .foreign-email-actions{flex-wrap:wrap!important;white-space:normal!important;align-items:center;justify-content:center}
+#exhibitionsCustomerSection .exhibition-row-actions .btn,#foreignEmailCustomerSection .foreign-email-actions .btn{min-width:0!important;max-width:100%;white-space:normal!important}
+#foreignEmailHistorySection .history-page-head h2,#historySection .history-page-head h2{white-space:normal!important}
+#foreignEmailHistorySection .company-detail-grid,.company-detail-grid,.foreign-email-detail-grid,.exhibitions-company-detail-grid{min-width:0}
+@media(max-width:1280px){
+
+#customerSection table{display:block!important;border:0!important;background:transparent!important}
+#customerSection table thead{display:none!important}
+#customerSection table tbody{display:grid!important;width:100%!important;gap:14px}
+#customerSection table tbody tr{display:block!important;width:100%!important;margin:0!important;border:1px solid #cfe1f7!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 12px #245b9110;overflow:visible!important}
+#customerSection table tbody tr>td,#customerSection table tbody tr>td:nth-child(n){display:grid!important;grid-template-columns:minmax(90px,30%) minmax(0,1fr)!important;align-items:center;gap:10px;width:100%!important;min-width:0!important;max-width:none!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid #e1ebf7!important;text-align:left!important;white-space:normal!important;font-size:13px!important}
+#customerSection table td:before{content:attr(data-label)!important;display:block!important;position:static!important;flex:none!important;width:auto!important;font-weight:750;color:#496d99;white-space:normal!important;overflow-wrap:anywhere}
+#customerSection table td>*{min-width:0;max-width:100%}
+#customerSection table tbody tr>td:last-child{border-bottom:0!important}
+#customerSection table tbody tr>td[colspan]{display:block!important;padding:12px!important}
+#customerSection table td[colspan]:before{display:none!important}
+
+#foreignEmailCustomerSection table{display:block!important;border:0!important;background:transparent!important}
+#foreignEmailCustomerSection table thead{display:none!important}
+#foreignEmailCustomerSection table tbody{display:grid!important;width:100%!important;gap:14px}
+#foreignEmailCustomerSection table tbody tr{display:block!important;width:100%!important;margin:0!important;border:1px solid #cfe1f7!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 12px #245b9110;overflow:visible!important}
+#foreignEmailCustomerSection table tbody tr>td,#foreignEmailCustomerSection table tbody tr>td:nth-child(n){display:grid!important;grid-template-columns:minmax(90px,30%) minmax(0,1fr)!important;align-items:center;gap:10px;width:100%!important;min-width:0!important;max-width:none!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid #e1ebf7!important;text-align:left!important;white-space:normal!important;font-size:13px!important}
+#foreignEmailCustomerSection table td:before{content:attr(data-label)!important;display:block!important;position:static!important;flex:none!important;width:auto!important;font-weight:750;color:#496d99;white-space:normal!important;overflow-wrap:anywhere}
+#foreignEmailCustomerSection table td>*{min-width:0;max-width:100%}
+#foreignEmailCustomerSection table tbody tr>td:last-child{border-bottom:0!important}
+#foreignEmailCustomerSection table tbody tr>td[colspan]{display:block!important;padding:12px!important}
+#foreignEmailCustomerSection table td[colspan]:before{display:none!important}
+
+#exhibitionsCustomerSection table{display:block!important;border:0!important;background:transparent!important}
+#exhibitionsCustomerSection table thead{display:none!important}
+#exhibitionsCustomerSection table tbody{display:grid!important;width:100%!important;gap:14px}
+#exhibitionsCustomerSection table tbody tr{display:block!important;width:100%!important;margin:0!important;border:1px solid #cfe1f7!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 12px #245b9110;overflow:visible!important}
+#exhibitionsCustomerSection table tbody tr>td,#exhibitionsCustomerSection table tbody tr>td:nth-child(n){display:grid!important;grid-template-columns:minmax(90px,30%) minmax(0,1fr)!important;align-items:center;gap:10px;width:100%!important;min-width:0!important;max-width:none!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid #e1ebf7!important;text-align:left!important;white-space:normal!important;font-size:13px!important}
+#exhibitionsCustomerSection table td:before{content:attr(data-label)!important;display:block!important;position:static!important;flex:none!important;width:auto!important;font-weight:750;color:#496d99;white-space:normal!important;overflow-wrap:anywhere}
+#exhibitionsCustomerSection table td>*{min-width:0;max-width:100%}
+#exhibitionsCustomerSection table tbody tr>td:last-child{border-bottom:0!important}
+#exhibitionsCustomerSection table tbody tr>td[colspan]{display:block!important;padding:12px!important}
+#exhibitionsCustomerSection table td[colspan]:before{display:none!important}
+
+#foreignEmailExcelSection table{display:block!important;border:0!important;background:transparent!important}
+#foreignEmailExcelSection table thead{display:none!important}
+#foreignEmailExcelSection table tbody{display:grid!important;width:100%!important;gap:14px}
+#foreignEmailExcelSection table tbody tr{display:block!important;width:100%!important;margin:0!important;border:1px solid #cfe1f7!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 12px #245b9110;overflow:visible!important}
+#foreignEmailExcelSection table tbody tr>td,#foreignEmailExcelSection table tbody tr>td:nth-child(n){display:grid!important;grid-template-columns:minmax(90px,30%) minmax(0,1fr)!important;align-items:center;gap:10px;width:100%!important;min-width:0!important;max-width:none!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid #e1ebf7!important;text-align:left!important;white-space:normal!important;font-size:13px!important}
+#foreignEmailExcelSection table td:before{content:attr(data-label)!important;display:block!important;position:static!important;flex:none!important;width:auto!important;font-weight:750;color:#496d99;white-space:normal!important;overflow-wrap:anywhere}
+#foreignEmailExcelSection table td>*{min-width:0;max-width:100%}
+#foreignEmailExcelSection table tbody tr>td:last-child{border-bottom:0!important}
+#foreignEmailExcelSection table tbody tr>td[colspan]{display:block!important;padding:12px!important}
+#foreignEmailExcelSection table td[colspan]:before{display:none!important}
+
+#exhibitionsExcelSection table{display:block!important;border:0!important;background:transparent!important}
+#exhibitionsExcelSection table thead{display:none!important}
+#exhibitionsExcelSection table tbody{display:grid!important;width:100%!important;gap:14px}
+#exhibitionsExcelSection table tbody tr{display:block!important;width:100%!important;margin:0!important;border:1px solid #cfe1f7!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 12px #245b9110;overflow:visible!important}
+#exhibitionsExcelSection table tbody tr>td,#exhibitionsExcelSection table tbody tr>td:nth-child(n){display:grid!important;grid-template-columns:minmax(90px,30%) minmax(0,1fr)!important;align-items:center;gap:10px;width:100%!important;min-width:0!important;max-width:none!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid #e1ebf7!important;text-align:left!important;white-space:normal!important;font-size:13px!important}
+#exhibitionsExcelSection table td:before{content:attr(data-label)!important;display:block!important;position:static!important;flex:none!important;width:auto!important;font-weight:750;color:#496d99;white-space:normal!important;overflow-wrap:anywhere}
+#exhibitionsExcelSection table td>*{min-width:0;max-width:100%}
+#exhibitionsExcelSection table tbody tr>td:last-child{border-bottom:0!important}
+#exhibitionsExcelSection table tbody tr>td[colspan]{display:block!important;padding:12px!important}
+#exhibitionsExcelSection table td[colspan]:before{display:none!important}
+
+#prospectingCustomerSection table{display:block!important;border:0!important;background:transparent!important}
+#prospectingCustomerSection table thead{display:none!important}
+#prospectingCustomerSection table tbody{display:grid!important;width:100%!important;gap:14px}
+#prospectingCustomerSection table tbody tr{display:block!important;width:100%!important;margin:0!important;border:1px solid #cfe1f7!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 12px #245b9110;overflow:visible!important}
+#prospectingCustomerSection table tbody tr>td,#prospectingCustomerSection table tbody tr>td:nth-child(n){display:grid!important;grid-template-columns:minmax(90px,30%) minmax(0,1fr)!important;align-items:center;gap:10px;width:100%!important;min-width:0!important;max-width:none!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid #e1ebf7!important;text-align:left!important;white-space:normal!important;font-size:13px!important}
+#prospectingCustomerSection table td:before{content:attr(data-label)!important;display:block!important;position:static!important;flex:none!important;width:auto!important;font-weight:750;color:#496d99;white-space:normal!important;overflow-wrap:anywhere}
+#prospectingCustomerSection table td>*{min-width:0;max-width:100%}
+#prospectingCustomerSection table tbody tr>td:last-child{border-bottom:0!important}
+#prospectingCustomerSection table tbody tr>td[colspan]{display:block!important;padding:12px!important}
+#prospectingCustomerSection table td[colspan]:before{display:none!important}
+
+#statsSection table{display:block!important;border:0!important;background:transparent!important}
+#statsSection table thead{display:none!important}
+#statsSection table tbody{display:grid!important;width:100%!important;gap:14px}
+#statsSection table tbody tr{display:block!important;width:100%!important;margin:0!important;border:1px solid #cfe1f7!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 12px #245b9110;overflow:visible!important}
+#statsSection table tbody tr>td,#statsSection table tbody tr>td:nth-child(n){display:grid!important;grid-template-columns:minmax(90px,30%) minmax(0,1fr)!important;align-items:center;gap:10px;width:100%!important;min-width:0!important;max-width:none!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid #e1ebf7!important;text-align:left!important;white-space:normal!important;font-size:13px!important}
+#statsSection table td:before{content:attr(data-label)!important;display:block!important;position:static!important;flex:none!important;width:auto!important;font-weight:750;color:#496d99;white-space:normal!important;overflow-wrap:anywhere}
+#statsSection table td>*{min-width:0;max-width:100%}
+#statsSection table tbody tr>td:last-child{border-bottom:0!important}
+#statsSection table tbody tr>td[colspan]{display:block!important;padding:12px!important}
+#statsSection table td[colspan]:before{display:none!important}
+
+#foreignEmailStatsSection table{display:block!important;border:0!important;background:transparent!important}
+#foreignEmailStatsSection table thead{display:none!important}
+#foreignEmailStatsSection table tbody{display:grid!important;width:100%!important;gap:14px}
+#foreignEmailStatsSection table tbody tr{display:block!important;width:100%!important;margin:0!important;border:1px solid #cfe1f7!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 12px #245b9110;overflow:visible!important}
+#foreignEmailStatsSection table tbody tr>td,#foreignEmailStatsSection table tbody tr>td:nth-child(n){display:grid!important;grid-template-columns:minmax(90px,30%) minmax(0,1fr)!important;align-items:center;gap:10px;width:100%!important;min-width:0!important;max-width:none!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid #e1ebf7!important;text-align:left!important;white-space:normal!important;font-size:13px!important}
+#foreignEmailStatsSection table td:before{content:attr(data-label)!important;display:block!important;position:static!important;flex:none!important;width:auto!important;font-weight:750;color:#496d99;white-space:normal!important;overflow-wrap:anywhere}
+#foreignEmailStatsSection table td>*{min-width:0;max-width:100%}
+#foreignEmailStatsSection table tbody tr>td:last-child{border-bottom:0!important}
+#foreignEmailStatsSection table tbody tr>td[colspan]{display:block!important;padding:12px!important}
+#foreignEmailStatsSection table td[colspan]:before{display:none!important}
+
+#exhibitionsStatsSection table{display:block!important;border:0!important;background:transparent!important}
+#exhibitionsStatsSection table thead{display:none!important}
+#exhibitionsStatsSection table tbody{display:grid!important;width:100%!important;gap:14px}
+#exhibitionsStatsSection table tbody tr{display:block!important;width:100%!important;margin:0!important;border:1px solid #cfe1f7!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 12px #245b9110;overflow:visible!important}
+#exhibitionsStatsSection table tbody tr>td,#exhibitionsStatsSection table tbody tr>td:nth-child(n){display:grid!important;grid-template-columns:minmax(90px,30%) minmax(0,1fr)!important;align-items:center;gap:10px;width:100%!important;min-width:0!important;max-width:none!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid #e1ebf7!important;text-align:left!important;white-space:normal!important;font-size:13px!important}
+#exhibitionsStatsSection table td:before{content:attr(data-label)!important;display:block!important;position:static!important;flex:none!important;width:auto!important;font-weight:750;color:#496d99;white-space:normal!important;overflow-wrap:anywhere}
+#exhibitionsStatsSection table td>*{min-width:0;max-width:100%}
+#exhibitionsStatsSection table tbody tr>td:last-child{border-bottom:0!important}
+#exhibitionsStatsSection table tbody tr>td[colspan]{display:block!important;padding:12px!important}
+#exhibitionsStatsSection table td[colspan]:before{display:none!important}
+
+#prospectingStatsSection table{display:block!important;border:0!important;background:transparent!important}
+#prospectingStatsSection table thead{display:none!important}
+#prospectingStatsSection table tbody{display:grid!important;width:100%!important;gap:14px}
+#prospectingStatsSection table tbody tr{display:block!important;width:100%!important;margin:0!important;border:1px solid #cfe1f7!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 12px #245b9110;overflow:visible!important}
+#prospectingStatsSection table tbody tr>td,#prospectingStatsSection table tbody tr>td:nth-child(n){display:grid!important;grid-template-columns:minmax(90px,30%) minmax(0,1fr)!important;align-items:center;gap:10px;width:100%!important;min-width:0!important;max-width:none!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid #e1ebf7!important;text-align:left!important;white-space:normal!important;font-size:13px!important}
+#prospectingStatsSection table td:before{content:attr(data-label)!important;display:block!important;position:static!important;flex:none!important;width:auto!important;font-weight:750;color:#496d99;white-space:normal!important;overflow-wrap:anywhere}
+#prospectingStatsSection table td>*{min-width:0;max-width:100%}
+#prospectingStatsSection table tbody tr>td:last-child{border-bottom:0!important}
+#prospectingStatsSection table tbody tr>td[colspan]{display:block!important;padding:12px!important}
+#prospectingStatsSection table td[colspan]:before{display:none!important}
+
+#foreignEmailCustomerSection .foreign-email-company-detail-row>td,#customerSection .company-detail-row>td{display:block!important}
+#foreignEmailCustomerSection .company-detail-grid,#customerSection .company-detail-grid,.foreign-email-detail-grid,.exhibitions-company-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#foreignEmailCustomerSection .foreign-email-source-badge,#exhibitionsCustomerSection .exhibition-status-pill{justify-self:start}
+}
+@media(max-width:760px){
+body .wrap{width:100%!important;margin:0!important;padding:10px 10px 64px!important}
+body .side-nav{position:static!important;display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;width:auto!important;max-width:calc(100% - 20px)!important;margin:10px!important;overflow:visible!important}
+body .side-nav a{flex:1 1 115px;white-space:normal!important;min-width:0!important}
+body .side-note,body .side-mascot{display:none!important}
+body>header{height:auto!important;min-height:0!important;padding:14px 12px!important;display:flex!important;flex-direction:column!important;gap:8px!important}
+body>header .brand-logo{width:min(330px,90%)!important;max-width:100%!important}
+body>header p{font-size:16px!important;max-width:100%!important;transform:none!important;margin:0!important;text-align:center}
+body>header:after{display:none!important}
+body>.status-dock{position:static!important;transform:none!important;max-width:100%!important;width:100%!important;flex-wrap:wrap!important;justify-content:center!important;padding:8px!important}
+body>.status-dock .account-actions{flex-wrap:wrap!important;max-width:100%!important;white-space:normal!important;justify-content:center!important}
+.wrap .box{padding:14px!important}
+.wrap .grid,#form .grid,#customerSection .customer-filter-row,#foreignEmailCustomerSection .foreign-email-filter-row,#exhibitionsCustomerSection>.grid,#foreignEmailForm .grid,#exhibitionsForm .grid{grid-template-columns:minmax(0,1fr)!important;width:100%!important;min-width:0!important}
+.wrap .grid>div,#form .grid>div,#foreignEmailForm .grid>div,#exhibitionsForm .grid>div{grid-column:auto!important;grid-row:auto!important;min-width:0!important}
+#foreignEmailContacts{grid-template-columns:minmax(0,1fr)!important}
+#foreignEmailSection .foreign-email-submit-row{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px;min-width:0}
+#foreignEmailSection .foreign-email-recorder-field{width:100%!important;min-width:0!important}
+.wrap .form-heading{padding:8px 0!important;min-height:0!important}
+.wrap .form-heading .form-intro{margin:8px 0!important;letter-spacing:0!important}
+.wrap .form-heading .sticky-note{display:none!important}
+.wrap .footer-phrase{font-size:13px;line-height:1.8;letter-spacing:0}
+.wrap .staff-row{flex-wrap:wrap!important}
+#foreignEmailCustomerSection .company-detail-grid,#customerSection .company-detail-grid,.foreign-email-detail-grid,.exhibitions-company-detail-grid{grid-template-columns:minmax(0,1fr)!important}
+.wrap .history-page-head{flex-direction:column;align-items:flex-start!important;gap:8px!important}
+.wrap .history-page-head h2{margin:0!important}
+.maker-credit{position:static!important;text-align:right;margin:10px;font-size:10px}
+}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
