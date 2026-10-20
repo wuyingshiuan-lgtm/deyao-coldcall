@@ -1536,7 +1536,27 @@ function bindOutreachForm(formId,key,targetId){
 }
 bindOutreachForm("foreignEmailForm","foreignEmail","foreignEmailRecords");
 const addForeignEmailContact=$("addForeignEmailContact");if(addForeignEmailContact)addForeignEmailContact.addEventListener("click",()=>{const contacts=$("foreignEmailContacts");if(contacts)contacts.insertAdjacentHTML("beforeend",'<div class="email-contact-row"><label>Mail</label><input type="email" name="emailAddress" placeholder="name@company.com"></div><div class="email-contact-row"><label>所屬職位／部門</label><input name="emailPosition" placeholder="例如：採購經理、業務部"></div>')});
-bindOutreachForm("exhibitionsForm","exhibitions","exhibitionsRecords");bindOutreachForm("prospectingForm","prospecting","prospectingRecords");
+bindOutreachForm("exhibitionsForm","exhibitions","exhibitionsRecords");
+/* 展覽客戶表單狀態控制：Email 自動判斷、拜訪狀態可手動切換 */
+(function(){
+ const form=$("exhibitionsForm");if(!form)return;
+ const email=form.querySelector('[name="email"]'),mailSelect=form.querySelector('[name="emailSent"]'),visitSelect=form.querySelector('[name="visitSuitable"]');
+ function syncButtons(groupSelector,attr,select){
+  form.querySelectorAll(groupSelector+" button").forEach(btn=>{
+   const selected=btn.getAttribute(attr)===String(select.value);
+   btn.classList.toggle("selected",selected);btn.setAttribute("aria-pressed",String(selected));
+  });
+ }
+ function syncMail(){if(email&&mailSelect){mailSelect.value=email.value.trim()?"true":"false";syncButtons(".exhibition-mail-buttons","data-exhibition-mail",mailSelect)}}
+ function syncVisit(){if(visitSelect)syncButtons(".exhibition-visit-buttons","data-exhibition-visit",visitSelect)}
+ email?.addEventListener("input",syncMail);
+ form.querySelectorAll("[data-exhibition-mail]").forEach(btn=>btn.addEventListener("click",()=>{mailSelect.value=btn.dataset.exhibitionMail;syncButtons(".exhibition-mail-buttons","data-exhibition-mail",mailSelect)}));
+ form.querySelectorAll("[data-exhibition-visit]").forEach(btn=>btn.addEventListener("click",()=>{visitSelect.value=btn.dataset.exhibitionVisit;syncVisit()}));
+ mailSelect?.addEventListener("change",syncMail);visitSelect?.addEventListener("change",syncVisit);
+ form.addEventListener("reset",()=>setTimeout(()=>{if(mailSelect)mailSelect.value=email?.value.trim()?"true":"false";if(visitSelect)visitSelect.value="false";syncMail();syncVisit()},0));
+ syncMail();syncVisit();
+})();
+bindOutreachForm("prospectingForm","prospecting","prospectingRecords");
 for(const key of outreachKeys){const search=$(key+"Search");if(search)search.addEventListener("input",()=>renderOutreachRecords(key,outreachTarget(key)))}const exhibitionsDateFilter=$("exhibitionsDateFilter"),exhibitionsLocationFilter=$("exhibitionsLocationFilter"),exhibitionsClearDate=$("exhibitionsClearDate"),exhibitionsClearFilters=$("exhibitionsClearFilters"),exhibitionsShortcuts=$("exhibitionsLocationShortcuts"),exhibitionsSearch=$("exhibitionsSearch");
 if(exhibitionsDateFilter)exhibitionsDateFilter.addEventListener("change",()=>renderOutreachRecords("exhibitions",outreachTarget("exhibitions")));
 if(exhibitionsLocationFilter)exhibitionsLocationFilter.addEventListener("change",()=>{if(exhibitionsShortcuts)exhibitionsShortcuts.dataset.selectedLocation=exhibitionsLocationFilter.value;renderOutreachRecords("exhibitions",outreachTarget("exhibitions"))});
