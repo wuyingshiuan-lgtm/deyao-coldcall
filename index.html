@@ -692,6 +692,9 @@ header{position:fixed!important;top:0!important;left:0!important;right:0!importa
 }
 <style>
 /* 未登入時完全隱藏所有登入後的應用畫面，避免登出後仍看見內頁 */
+/* 最外層保險：未登入時 body 只允許顯示帳號密碼登入框，其餘直接子元素一律隱藏 */
+body:not(.authenticated) > :not(#login) { display:none !important; }
+body:not(.authenticated) > #login ~ * { display:none !important; }
 body:not(.authenticated) header,
 body:not(.authenticated) .side-nav,
 body:not(.authenticated) .encouragement,
