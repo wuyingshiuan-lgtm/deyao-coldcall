@@ -1075,6 +1075,178 @@ html,body{max-width:100%;overflow-x:hidden}
 #formSection #form .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 @media(max-width:760px){#formSection .form-heading{padding:16px;margin-bottom:12px}#formSection .form-heading h2{font-size:22px}#formSection #form{padding:14px;border-radius:13px}#formSection .form-heading .sticky-note{max-width:100%}}
 @media(max-width:480px){#formSection .form-heading{padding:14px}#formSection .form-heading .form-intro{font-size:13px}#formSection #form{padding:11px}#formSection #form .actions .btn{flex:1 1 100%;width:100%}}
+
+/* 修正：國內電訪新增頁面比照「新增國外 Email 紀錄」整體白底卡片，不再把標題與表單拆成兩張卡 */
+#formSection{
+  display:block;
+  box-sizing:border-box;
+  min-width:0;
+  padding:clamp(16px,2.4vw,30px)!important;
+  margin:0 0 18px!important;
+  background:linear-gradient(145deg,#fff 0%,#f8fbff 72%,#f1f6ff 100%)!important;
+  border:1px solid #dce8f8!important;
+  border-radius:20px!important;
+  box-shadow:0 14px 38px rgba(35,76,139,.10)!important;
+  overflow:hidden;
+}
+#formSection:hover{box-shadow:0 14px 38px rgba(35,76,139,.10)!important}
+#formSection .form-heading{
+  position:relative;
+  min-width:0;
+  min-height:0;
+  margin:0 0 20px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+#formSection .form-heading:before{content:none!important}
+#formSection .form-heading h2{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 9px!important;
+  color:#183b68!important;
+  font-size:clamp(22px,2.2vw,30px)!important;
+  line-height:1.4;
+  letter-spacing:.2px;
+}
+#formSection .form-heading h2:before{
+  content:"☎"!important;
+  display:inline-grid;
+  place-items:center;
+  flex:0 0 42px;
+  width:42px;
+  height:42px;
+  border-radius:13px;
+  background:linear-gradient(135deg,#e8f2ff,#d8e8ff);
+  color:#2872d8;
+  font-size:21px;
+}
+#formSection .form-heading .form-intro{
+  margin:0 0 0 52px!important;
+  padding:0!important;
+  color:#60738d!important;
+  font-size:14px!important;
+  line-height:1.7;
+  letter-spacing:.2px!important;
+}
+#formSection .form-heading .sticky-note{
+  position:static!important;
+  display:inline-block;
+  max-width:100%;
+  margin:12px 0 0 52px!important;
+  padding:7px 11px!important;
+  border:1px solid #f1dfb9!important;
+  border-radius:9px!important;
+  background:#fff8e9!important;
+  color:#7b6130!important;
+  box-shadow:none!important;
+  transform:none!important;
+  font-size:12px;
+  line-height:1.6;
+}
+#formSection #form{
+  display:block;
+  width:100%;
+  min-width:0;
+  margin:0;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#formSection #form .grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-items:start;
+  gap:16px!important;
+  width:100%;
+  min-width:0;
+}
+#formSection #form .grid>div{
+  order:initial!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  min-width:0;
+  margin:0!important;
+}
+#formSection #form .grid>div:has(#notes){grid-column:1/-1!important}
+#formSection #form .grid>div:has(#contact_name),
+#formSection #form .grid>div:has(#position),
+#formSection #form .grid>div:has(#extension){
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#formSection #form label{
+  display:block;
+  margin:0 0 7px!important;
+  color:#60738d!important;
+  font-size:13px!important;
+  font-weight:750;
+  line-height:1.5;
+}
+#formSection #form input,
+#formSection #form select,
+#formSection #form textarea{
+  display:block;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:44px;
+  box-sizing:border-box!important;
+  padding:11px 13px!important;
+  border:1px solid #d5e1f0!important;
+  border-radius:11px!important;
+  background:#fff!important;
+  color:#203f68;
+  box-shadow:0 2px 8px rgba(35,76,139,.035);
+}
+#formSection #form textarea{min-height:112px!important;resize:vertical}
+#formSection #form input:focus,
+#formSection #form select:focus,
+#formSection #form textarea:focus{
+  outline:none!important;
+  border-color:#77a9f4!important;
+  box-shadow:0 0 0 4px rgba(52,126,230,.12)!important;
+}
+#formSection #form .state-buttons{width:100%;gap:8px}
+#formSection #form .state-buttons button,
+#formSection #form .state-buttons span{min-width:0;min-height:44px;border-radius:10px}
+#formSection #form .field-mail-note{display:block;margin-top:7px;line-height:1.6}
+#formSection #form .actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:10px;
+  margin:22px 0 0!important;
+  padding-top:18px;
+  border-top:1px solid #e8eef7;
+}
+#formSection #form .actions .btn{min-height:44px;padding:10px 20px;border-radius:11px}
+@media(max-width:900px){
+  #formSection #form .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+  #formSection #form .grid>div:has(#notes){grid-column:1/-1!important}
+}
+@media(max-width:560px){
+  #formSection{padding:15px!important;border-radius:15px!important}
+  #formSection .form-heading{margin-bottom:17px!important}
+  #formSection .form-heading h2{font-size:22px!important;gap:8px}
+  #formSection .form-heading h2:before{flex-basis:36px;width:36px;height:36px;font-size:18px}
+  #formSection .form-heading .form-intro,
+  #formSection .form-heading .sticky-note{margin-left:44px!important}
+  #formSection #form .grid{grid-template-columns:minmax(0,1fr)!important;gap:13px!important}
+  #formSection #form .grid>div:has(#notes){grid-column:1!important}
+  #formSection #form .actions{justify-content:stretch}
+  #formSection #form .actions .btn{flex:1 1 100%;width:100%}
+}
+
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
