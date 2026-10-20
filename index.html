@@ -804,6 +804,98 @@ body:has(#login:not(.hidden)) { background:#16212b !important; }
   #exhibitionsForm .grid>div.wide{padding:14px}
   #exhibitionsForm .wide textarea[name="notes"]{min-height:150px;padding:12px}
 }
+
+/* 全站 RWD 最終修正：任何解析度都不顯示水平捲軸 */
+html,body{width:100%;max-width:100%;overflow-x:hidden!important}
+body{min-width:0!important}
+.wrap,.box,main,section,#records,.table-wrap,.foreign-email-table-wrap{min-width:0!important;max-width:100%;box-sizing:border-box}
+.side-nav{max-width:calc(100vw - 20px)}
+@media(max-width:760px){
+  .side-nav{display:flex;flex-wrap:wrap;overflow:visible!important;white-space:normal}
+  .side-nav a{flex:1 1 105px;min-width:0;overflow-wrap:anywhere}
+}
+/* 桌面版表格自動縮放，不再以固定最小寬度撐開頁面 */
+#customerSection .record-table,#foreignEmailCustomerSection .data-table,
+#foreignEmailCustomerSection .foreign-email-full-table,
+#exhibitionsCustomerSection .data-table,
+body .record-table,body .data-table{
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  table-layout:fixed!important;box-sizing:border-box
+}
+#records,.table-wrap,.foreign-email-table-wrap{
+  width:100%!important;max-width:100%!important;overflow-x:hidden!important;
+  overflow-y:visible!important
+}
+body .record-table th,body .record-table td,
+body .data-table th,body .data-table td{
+  min-width:0!important;max-width:100%;white-space:normal!important;
+  overflow-wrap:anywhere;word-break:break-word
+}
+#foreignEmailCustomerSection .foreign-email-full-table th,
+#foreignEmailCustomerSection .foreign-email-full-table td{
+  min-width:0!important;white-space:normal!important;overflow-wrap:anywhere;word-break:break-word
+}
+#foreignEmailCustomerSection .data-table tbody td:nth-child(n),
+#exhibitionsCustomerSection .data-table tbody td:nth-child(n){min-width:0!important}
+/* 平板與手機將資料表改為逐筆資訊卡，每個值保留欄位名稱 */
+@media(max-width:1000px){
+  #records,.table-wrap,.foreign-email-table-wrap{overflow:visible!important}
+  body .record-table,body .data-table,
+  #customerSection .record-table,#foreignEmailCustomerSection .data-table,
+  #foreignEmailCustomerSection .foreign-email-full-table,
+  #exhibitionsCustomerSection .data-table{
+    display:block!important;width:100%!important;min-width:0!important;
+    border:0!important;border-collapse:separate!important;border-spacing:0!important;
+    background:transparent!important
+  }
+  body .record-table thead,body .data-table thead,
+  #foreignEmailCustomerSection .foreign-email-full-table thead{
+    position:absolute!important;width:1px!important;height:1px!important;
+    padding:0!important;margin:-1px!important;overflow:hidden!important;
+    clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important
+  }
+  body .record-table tbody,body .data-table tbody,
+  #foreignEmailCustomerSection .foreign-email-full-table tbody{display:block!important;width:100%!important}
+  body .record-table tr,body .data-table tr,
+  #foreignEmailCustomerSection .foreign-email-full-table tr{
+    display:block!important;width:100%!important;min-width:0!important;
+    margin:0 0 14px!important;padding:8px 14px!important;
+    border:1px solid #d5e5f8!important;border-radius:15px!important;
+    background:linear-gradient(145deg,#fff,#f7fbff)!important;
+    box-shadow:0 5px 16px rgba(37,78,135,.07)!important;overflow:hidden
+  }
+  body .record-table td,body .data-table td,
+  #foreignEmailCustomerSection .foreign-email-full-table td{
+    display:flex!important;align-items:flex-start;justify-content:space-between;
+    gap:12px;width:100%!important;min-width:0!important;max-width:100%!important;
+    padding:10px 0!important;border:0!important;border-bottom:1px solid #e7effa!important;
+    background:transparent!important;text-align:right!important;
+    white-space:normal!important;overflow-wrap:anywhere;word-break:break-word;
+    font-size:13px!important;line-height:1.55
+  }
+  body .record-table td:last-child,body .data-table td:last-child,
+  #foreignEmailCustomerSection .foreign-email-full-table td:last-child{border-bottom:0!important}
+  body .record-table td::before,body .data-table td::before,
+  #foreignEmailCustomerSection .foreign-email-full-table td::before{
+    content:attr(data-label);display:block;flex:0 0 36%;max-width:36%;
+    color:#526e91;font-weight:800;text-align:left;overflow-wrap:anywhere
+  }
+  body .record-table td[colspan],body .data-table td[colspan]{
+    display:block!important;text-align:center!important
+  }
+  body .record-table td[colspan]::before,body .data-table td[colspan]::before{display:none!important}
+  body .record-table td:has(.btn),body .data-table td:has(.btn){align-items:center}
+  body .record-table .btn,body .data-table .btn{max-width:100%;white-space:normal!important}
+}
+@media(max-width:420px){
+  .wrap{padding:10px 9px 76px!important}
+  .box,#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection{padding:12px!important}
+  body .record-table tr,body .data-table tr{padding:7px 10px!important}
+  body .record-table td,body .data-table td{font-size:12px!important;gap:8px}
+  body .record-table td::before,body .data-table td::before{flex-basis:39%;max-width:39%}
+  input,select,textarea,button{max-width:100%}
+}
+
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
@@ -1142,4 +1234,29 @@ $("logout").onclick=async()=>{try{await stopPresence();const {error}=await sb.au
 sb.auth.onAuthStateChange((event)=>{if(event==="SIGNED_OUT"){document.body.classList.remove("authenticated");currentProfile=null;$("login").classList.remove("hidden");$("changePassword").classList.add("hidden")}if(event==="PASSWORD_RECOVERY"){document.body.classList.remove("authenticated");$("login").classList.add("hidden");$("recovery").classList.remove("hidden")}});
 $("recoveryForm").onsubmit=async e=>{e.preventDefault();let p1=$("newPw").value,p2=$("newPw2").value;if(p1!==p2){$("recoveryMsg").textContent="兩次密碼不一致";return}$("recoveryMsg").textContent="更新中…";let {error}=await sb.auth.updateUser({password:p1});if(error){$("recoveryMsg").textContent="更新失敗："+error.message;return}$("recoveryMsg").textContent="密碼更新成功";$("recovery").classList.add("hidden");history.replaceState(null,"",location.pathname);await sb.auth.signOut();$("login").classList.remove("hidden");$("loginMsg").textContent="新密碼設定完成，請重新登入"};
 (async()=>{reset();let {data:{session}}=await sb.auth.getSession();if(session)await applyRole()})();
+</script><script>
+/* 將表格欄位名稱寫入資料格，讓平板／手機資訊卡仍清楚顯示欄位名稱 */
+(function(){
+  function applyResponsiveTableLabels(){
+    document.querySelectorAll("table").forEach(function(table){
+      var headers=Array.from(table.querySelectorAll("thead th")).map(function(th){return (th.innerText||th.textContent||"").trim().replace(/\\s+/g," ");});
+      if(!headers.length)return;
+      table.querySelectorAll("tbody tr").forEach(function(row){
+        var cells=Array.from(row.children).filter(function(cell){return cell.tagName==="TD";});
+        if(cells.length===1 && cells[0].hasAttribute("colspan"))return;
+        var col=0;
+        cells.forEach(function(cell){
+          var span=Math.max(1,Number(cell.getAttribute("colspan")||1));
+          if(!cell.hasAttribute("data-label") && headers[col])cell.setAttribute("data-label",headers[col]);
+          col+=span;
+        });
+      });
+    });
+  }
+  applyResponsiveTableLabels();
+  if(window.MutationObserver){
+    var observer=new MutationObserver(function(){applyResponsiveTableLabels();});
+    observer.observe(document.body,{childList:true,subtree:true});
+  }
+})();
 </script><aside class="mascot" aria-label="德曜精密吉祥物"><img src="assets/deyao-mascot-reference.webp" alt="德曜精密藍色機器人吉祥物"><span class="mascot-bubble">加油！今天也一起完成好成績 ♡</span></aside><div class="maker-credit">製作人：蔡喜禎 20260918版</div></body></html>
