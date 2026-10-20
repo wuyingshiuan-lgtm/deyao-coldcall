@@ -766,6 +766,44 @@ body:has(#login:not(.hidden)) { background:#16212b !important; }
 #exhibitionsForm .exhibitions-form-intro{border-left:4px solid #4389dc}
 @media(max-width:900px){#exhibitionsForm .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){#exhibitionsForm .grid{grid-template-columns:minmax(0,1fr)}#exhibitionsForm .wide{grid-column:auto}}
+
+/* 展覽備註欄位加寬與表單版面優化 */
+#exhibitionsForm .grid>div.wide{
+  grid-column:1 / -1;
+  padding:18px 20px;
+  border:1px solid #d4e5f8;
+  border-radius:14px;
+  background:linear-gradient(135deg,#f5faff 0%,#ffffff 72%);
+  box-shadow:0 4px 14px rgba(36,91,156,.06);
+}
+#exhibitionsForm .wide label{
+  display:block;
+  margin-bottom:10px;
+  font-size:15px;
+  font-weight:800;
+  color:#204b85;
+}
+#exhibitionsForm .wide textarea[name="notes"]{
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  min-height:180px;
+  padding:14px 16px;
+  line-height:1.8;
+  border:1px solid #c6dbf2;
+  border-radius:10px;
+  background:#fff;
+  font-size:15px;
+  resize:vertical;
+}
+#exhibitionsForm .wide textarea[name="notes"]:focus{
+  border-color:#4389dc;
+  box-shadow:0 0 0 4px rgba(67,137,220,.12);
+}
+@media(max-width:600px){
+  #exhibitionsForm .grid>div.wide{padding:14px}
+  #exhibitionsForm .wide textarea[name="notes"]{min-height:150px;padding:12px}
+}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
