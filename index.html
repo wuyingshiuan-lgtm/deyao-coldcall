@@ -1608,11 +1608,16 @@ table th,table td{min-width:0!important;max-width:100%;white-space:normal!import
 #foreignEmailForm .foreign-email-source-field{align-self:start;min-width:0}#foreignEmailForm .foreign-email-source-options{display:flex;gap:10px;flex-wrap:wrap}
 #foreignEmailForm .foreign-email-source-option{display:inline-flex;align-items:center;gap:0;margin:0;cursor:pointer}
 #foreignEmailForm .foreign-email-source-option input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
-#foreignEmailForm .foreign-email-source-option span{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 18px;border:1px solid #cbdcf1;border-radius:11px;background:#fff;color:#426184;font-weight:750;transition:all .16s ease}
-#foreignEmailForm .foreign-email-source-option input:checked+span{background:linear-gradient(135deg,#2878ed,#4a98ff);border-color:#2878ed;color:#fff;box-shadow:0 4px 12px rgba(40,120,237,.2)}
+#foreignEmailForm .foreign-email-source-option span{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 18px;border:1px solid #cbdcf1;border-radius:11px;background:#fff;color:#426184;font-weight:750;transition:all .16s ease}
+#foreignEmailForm .foreign-email-source-option:nth-child(1) span{background:#eaf5ff;border-color:#b8dcff;color:#245b91}
+#foreignEmailForm .foreign-email-source-option:nth-child(2) span{background:#f1edff;border-color:#d4c8ff;color:#6047a2}
+#foreignEmailForm .foreign-email-source-option:nth-child(3) span{background:#fff1e6;border-color:#ffd1ae;color:#9a5728}
+#foreignEmailForm .foreign-email-source-option:nth-child(1) input:checked+span{background:linear-gradient(135deg,#398fe5,#66b5ff);border-color:#398fe5;color:#fff;box-shadow:0 4px 12px rgba(57,143,229,.22)}
+#foreignEmailForm .foreign-email-source-option:nth-child(2) input:checked+span{background:linear-gradient(135deg,#8265d9,#a28af0);border-color:#8265d9;color:#fff;box-shadow:0 4px 12px rgba(130,101,217,.22)}
+#foreignEmailForm .foreign-email-source-option:nth-child(3) input:checked+span{background:linear-gradient(135deg,#ee9a58,#ffc17e);border-color:#ee9a58;color:#fff;box-shadow:0 4px 12px rgba(238,154,88,.22)}
 #foreignEmailForm .foreign-email-source-option input:focus-visible+span{outline:3px solid #9fc5ff;outline-offset:2px}
-#foreignEmailForm .foreign-email-source-option span:hover{border-color:#8ab5f2;background:#f3f8ff}
-#foreignEmailForm .foreign-email-source-option input:checked+span:hover{background:linear-gradient(135deg,#2878ed,#4a98ff)}
+#foreignEmailForm .foreign-email-source-option span:hover{filter:saturate(1.12);transform:translateY(-1px)}
+#foreignEmailForm .foreign-email-source-option input:checked+span:hover{filter:brightness(1.03)}
 #foreignEmailForm>.grid>div.wide{grid-column:1/-1}
 #foreignEmailContacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;margin:0}
 #foreignEmailContacts .email-contact-row{min-width:0;padding:13px;border:1px solid #dce8f8;border-radius:12px;background:linear-gradient(145deg,#fff,#f6faff)}
