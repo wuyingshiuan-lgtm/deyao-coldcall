@@ -1822,6 +1822,12 @@ table th,table td{min-width:0!important;max-width:100%;white-space:normal!import
 #foreignEmailCustomerSection .foreign-email-source-badge.platform{background:#fff0f7;border-color:#f8cadd;color:#bf5a87}
 #foreignEmailCustomerSection .foreign-email-source-badge.self{background:#edf9f0;border-color:#c6e9d0;color:#44875c}
 #foreignEmailCustomerSection .foreign-email-source-badge.exhibition{background:#fff5e8;border-color:#f5dbb8;color:#b57b39}
+
+/* 為開發來源標籤保留實際內距，避免超出儲存格。 */
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(5),#foreignEmailCustomerSection .foreign-email-full-table tr:not(.foreign-email-company-detail-row)>td:nth-child(5){width:14%!important}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(9),#foreignEmailCustomerSection .foreign-email-full-table tr:not(.foreign-email-company-detail-row)>td:nth-child(9){width:9%!important}
+#foreignEmailCustomerSection .foreign-email-full-table tr:not(.foreign-email-company-detail-row)>td:nth-child(9){padding:8px 4px!important;text-align:center!important}
+#foreignEmailCustomerSection .foreign-email-source-badge{box-sizing:border-box;max-width:100%;padding:5px 6px;box-shadow:none}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
