@@ -436,22 +436,35 @@ aside.mascot,.mascot,.mascot-bubble{display:none!important;visibility:hidden!imp
 }
 
 /* Foreign Email records use a full-width spreadsheet-style table with every field visible */
-#foreignEmailCustomerSection .foreign-email-table-wrap{display:block;width:100%;max-width:100%;overflow-x:auto!important;overflow-y:visible;-webkit-overflow-scrolling:touch;border:1px solid #c9ddf4;border-radius:8px;background:#fff}
-#foreignEmailCustomerSection .foreign-email-full-table{display:table!important;width:max-content!important;min-width:1600px!important;table-layout:auto!important;border-collapse:collapse;background:#fff;font-size:12px}
+#foreignEmailCustomerSection .foreign-email-table-wrap{display:block;width:100%;max-width:100%;overflow-x:hidden!important;overflow-y:visible;border:1px solid #c9ddf4;border-radius:8px;background:#fff}
+#foreignEmailCustomerSection .foreign-email-full-table{display:table!important;width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse;background:#fff;font-size:11px}
 #foreignEmailCustomerSection .foreign-email-full-table thead{display:table-header-group!important;position:static!important}
 #foreignEmailCustomerSection .foreign-email-full-table tbody{display:table-row-group!important}
 #foreignEmailCustomerSection .foreign-email-full-table tr{display:table-row!important}
 #foreignEmailCustomerSection .foreign-email-full-table th{background:#dceeff;color:#24518a;font-weight:700;white-space:nowrap;padding:10px 8px;border:1px solid #c7def8;text-align:left}
-#foreignEmailCustomerSection .foreign-email-full-table td{display:table-cell!important;vertical-align:top;padding:9px 8px;border:1px solid #d7e5f5;white-space:normal;overflow-wrap:anywhere;word-break:break-word;line-height:1.5;max-width:260px}
+#foreignEmailCustomerSection .foreign-email-full-table td{display:table-cell!important;vertical-align:top;padding:7px 4px;border:1px solid #d7e5f5;white-space:normal;overflow-wrap:anywhere;word-break:break-word;line-height:1.4;min-width:0;max-width:none}
+#foreignEmailCustomerSection .foreign-email-full-table th{padding:7px 4px;white-space:normal;overflow-wrap:anywhere;font-size:10px}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(1),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(1){width:3%}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(2),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(2){width:3%}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(3),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(3){width:8%}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(4),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(4){width:7%}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(5),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(5){width:7%}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(6),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(6){width:10%}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(7),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(7){width:11%}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(8),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(8){width:8%}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(9),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(9){width:7%}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(10),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(10){width:10%}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(11),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(11){width:16%}
+#foreignEmailCustomerSection .foreign-email-full-table th:nth-child(12),#foreignEmailCustomerSection .foreign-email-full-table td:nth-child(12){width:10%}
 #foreignEmailCustomerSection .foreign-email-full-table tbody tr:nth-child(even){background:#f8fbff}
 #foreignEmailCustomerSection .foreign-email-full-table tbody tr:hover{background:#edf6ff}
 #foreignEmailCustomerSection .foreign-email-full-table .foreign-email-company-cell{min-width:160px;max-width:220px;font-weight:650}
-#foreignEmailCustomerSection .foreign-email-full-table .foreign-email-website-cell{min-width:180px;max-width:240px}
-#foreignEmailCustomerSection .foreign-email-full-table .foreign-email-notes-cell{min-width:220px;max-width:340px;white-space:pre-wrap}
+#foreignEmailCustomerSection .foreign-email-full-table .foreign-email-website-cell{min-width:0;max-width:none;overflow-wrap:anywhere;word-break:break-all}
+#foreignEmailCustomerSection .foreign-email-full-table .foreign-email-notes-cell{min-width:0;max-width:none;white-space:pre-wrap}
 #foreignEmailCustomerSection .foreign-email-full-table a{color:#2168b5;text-decoration:underline;overflow-wrap:anywhere}
 #foreignEmailCustomerSection .foreign-email-full-table .record-actions{display:flex;gap:4px;flex-wrap:wrap;min-width:105px}
 #foreignEmailCustomerSection .foreign-email-full-table .btn.small{padding:4px 7px;font-size:11px;white-space:nowrap}
-@media(max-width:760px){#foreignEmailCustomerSection .foreign-email-full-table{min-width:1500px!important}#foreignEmailCustomerSection .foreign-email-full-table th,#foreignEmailCustomerSection .foreign-email-full-table td{padding:7px 6px}}
+@media(max-width:760px){#foreignEmailCustomerSection .foreign-email-full-table{width:100%!important;min-width:0!important;table-layout:fixed!important;font-size:9px}#foreignEmailCustomerSection .foreign-email-full-table th,#foreignEmailCustomerSection .foreign-email-full-table td{padding:5px 2px;font-size:9px}#foreignEmailCustomerSection .foreign-email-full-table .record-actions{min-width:0;display:block}#foreignEmailCustomerSection .foreign-email-full-table .btn.small{white-space:normal;padding:3px 2px;font-size:9px}}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
