@@ -1388,6 +1388,25 @@ html,body{max-width:100%;overflow-x:hidden}
 .customer-status-pill.unsuitable,#exhibitionsCustomerSection .exhibition-status-pill.unsuitable{background:#fff6e8;border-color:#ffe0ae;color:#a66a18}
 #records .customer-status-pill{font-size:12px;padding:5px 9px}
 
+
+/* 展覽客戶名單欄位防擠壓：保留狀態標籤與操作按鈕完整寬度 */
+#exhibitionsCustomerSection .foreign-email-table-wrap{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+#exhibitionsCustomerSection .exhibitions-list-table{width:max-content;min-width:1800px;table-layout:auto}
+#exhibitionsCustomerSection .exhibitions-list-table th,
+#exhibitionsCustomerSection .exhibitions-list-table td{padding:12px 14px;vertical-align:middle;white-space:nowrap}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(12),
+#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(12){min-width:125px}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(13),
+#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(13){min-width:130px}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(14),
+#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(14){min-width:100px}
+#exhibitionsCustomerSection .exhibitions-list-table th:nth-child(15),
+#exhibitionsCustomerSection .exhibitions-list-table td:nth-child(15){min-width:190px}
+#exhibitionsCustomerSection .exhibitions-list-table .exhibition-status-pill{padding:6px 10px;font-size:12px}
+#exhibitionsCustomerSection .exhibition-row-actions{display:flex;align-items:center;gap:7px;flex-wrap:nowrap;white-space:nowrap}
+#exhibitionsCustomerSection .exhibition-row-actions .btn{flex:0 0 auto;min-width:48px;padding:7px 10px;font-size:12px;line-height:1.4}
+@media(max-width:760px){#exhibitionsCustomerSection .exhibitions-list-table{min-width:1700px}}
+
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
