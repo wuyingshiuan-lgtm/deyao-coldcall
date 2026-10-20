@@ -705,6 +705,18 @@ body:not(.authenticated) .role-pill { display:none !important; }
 body:not(.authenticated) { background:#16212b !important; }
 body:not(.authenticated) #login { display:flex !important; }
 body.authenticated #login { display:none !important; }
+/* 登入視窗可見時，以實際畫面狀態為準，不依賴登入旗標 */
+body:has(#login:not(.hidden)) header,
+body:has(#login:not(.hidden)) .side-nav,
+body:has(#login:not(.hidden)) .wrap,
+body:has(#login:not(.hidden)) .status-dock,
+body:has(#login:not(.hidden)) .encouragement,
+body:has(#login:not(.hidden)) .mascot,
+body:has(#login:not(.hidden)) .maker-credit,
+body:has(#login:not(.hidden)) .account-actions,
+body:has(#login:not(.hidden)) .online-count,
+body:has(#login:not(.hidden)) .role-pill { display:none !important; }
+body:has(#login:not(.hidden)) { background:#16212b !important; }
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2>德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2>修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
