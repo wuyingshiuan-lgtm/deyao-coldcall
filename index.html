@@ -2198,6 +2198,19 @@ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomer
  html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) .record-actions{display:flex!important;flex-direction:column!important;gap:6px!important}
 }
 @media(max-width:600px){#exhibitionsSection #exhibitionsForm>.actions{flex-wrap:wrap!important}#exhibitionsSection #exhibitionsForm>.actions>.btn{max-width:100%}}
+</style><style>
+/* Centre table headings and values; keep notes readable on the left. */
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) table[data-field-alignment="center"] th{ text-align:center!important;vertical-align:middle!important }
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) table[data-field-alignment="center"] td:not([colspan]){text-align:center!important;vertical-align:middle!important;align-items:center!important;justify-items:center!important}
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) table[data-field-alignment="center"] td:not([colspan])::before{text-align:center!important}
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) table[data-field-alignment="center"] td:not([colspan]) :is(button,a,.customer-company-button){text-align:center!important;justify-content:center!important}
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) table[data-field-alignment="center"] td:not([colspan]) .record-actions{align-items:center!important;justify-content:center!important}
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) table[data-field-alignment="center"] td:not([colspan]) input[type="checkbox"]{margin-left:auto!important;margin-right:auto!important;justify-self:center!important}
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) table[data-field-alignment="center"] td[data-is-notes="true"]:not([colspan]){text-align:left!important;white-space:pre-wrap!important;justify-items:stretch!important}
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) table[data-field-alignment="center"] td[data-is-notes="true"]:not([colspan]) :is(p,span,strong){text-align:left!important}
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) :is(.company-detail-item,.foreign-email-detail-item,.exhibitions-company-detail-item){text-align:center!important}
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) :is(.company-detail-item,.foreign-email-detail-item,.exhibitions-company-detail-item)>:is(span,label,strong,a){text-align:center!important}
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) :is(.company-detail-item,.foreign-email-detail-item,.exhibitions-company-detail-item)[data-is-notes="true"]>strong{text-align:left!important;display:block;white-space:pre-wrap}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2 data-title-icon="🏠">德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2 data-title-icon="🔐">修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
@@ -2888,6 +2901,7 @@ $("foreignEmailHistoryForm")?.addEventListener("submit",async e=>{e.preventDefau
 (function(){
   function applyResponsiveTableLabels(){
     document.querySelectorAll("table").forEach(function(table){
+      table.setAttribute("data-field-alignment","center");
       var headers=Array.from(table.querySelectorAll("thead th")).map(function(th){return (th.innerText||th.textContent||"").trim().replace(/\\s+/g," ");});
       if(!headers.length)return;
       table.querySelectorAll("tbody tr").forEach(function(row){
@@ -2897,9 +2911,14 @@ $("foreignEmailHistoryForm")?.addEventListener("submit",async e=>{e.preventDefau
         cells.forEach(function(cell){
           var span=Math.max(1,Number(cell.getAttribute("colspan")||1));
           if(!cell.hasAttribute("data-label") && headers[col])cell.setAttribute("data-label",headers[col]);
+          cell.setAttribute("data-is-notes",String(/備註/.test(headers[col]||cell.getAttribute("data-label")||"")));
           col+=span;
         });
       });
+    });
+    document.querySelectorAll(".company-detail-item,.foreign-email-detail-item,.exhibitions-company-detail-item").forEach(function(item){
+      var label=item.querySelector("span,label");
+      item.setAttribute("data-is-notes",String(/備註/.test(label?label.textContent:"")));
     });
   }
   applyResponsiveTableLabels();
