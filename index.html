@@ -2356,6 +2356,12 @@ html body :is(#cancelForeignEmailEdit,#cancelExhibitionEdit){display:inline-flex
 .industry-current:empty{display:none}
 .industry-clear{border:0;background:transparent;padding:6px 0;color:#70839e;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .industry-clear[hidden]{display:none}
+
+/* Uniform industry button dimensions */
+.industry-options .industry-option{box-sizing:border-box;flex:0 0 140px;width:140px;min-width:140px;max-width:140px;height:44px;min-height:44px;padding:8px 10px}
+.industry-options .industry-option>span:first-child{display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;width:20px}
+.industry-options .industry-check{flex:0 0 12px}
+@media(max-width:600px){.industry-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.industry-options .industry-option{width:100%;min-width:0;max-width:none;height:44px;min-height:44px;padding:8px 5px;gap:4px;font-size:12px}}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2 data-title-icon="🏠">德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2 data-title-icon="🔐">修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
