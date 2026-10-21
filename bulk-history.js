@@ -130,7 +130,7 @@ $b("bulkConfirm").onclick=async()=>{
  try{const result=await saveOne(c);if(result==="saved")saved++;else skipped++;}
  catch(err){failed.push("Excel 第 "+(c.index+2)+" 列："+err.message);}
  }
- try{cloudGroups=await allCloudRows();await Promise.all([loadOutreachCloud(),Promise.resolve()]);}catch(err){failed.push("重新讀取雲端失敗："+err.message);}
+ try{cloudGroups=await allCloudRows();data=cloudGroups.domestic.map(x=>x.row);historyData=cloudGroups.domestic.flatMap(x=>x.histories);render();await loadOutreachCloud();}catch(err){failed.push("重新讀取雲端失敗："+err.message);}
  busy=false;
  const done=new Set(selected.filter(c=>!failed.some(x=>x.startsWith("Excel 第 "+(c.index+2)+" 列："))).map(c=>c.index));
  candidates=candidates.filter(c=>!done.has(c.index));
