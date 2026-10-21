@@ -16,7 +16,7 @@ function customerImportStage(wb){
  }
  return entries;
 }
-function validateCustomerImport(entries,cloudNames){
+function validateCustomerImport(entries,cloudNames,key){
  const groups=new Map();
  for(const entry of entries){
   if(entry.saved)continue;
@@ -29,7 +29,21 @@ function validateCustomerImport(entries,cloudNames){
   else if(cloudNames.has(name))entry.issue=[entry.issue,'公司名稱已存在雲端資料內，不可重複新增'].filter(Boolean).join('；');
   if(entry.selected&&name){if(!groups.has(name))groups.set(name,[]);groups.get(name).push(entry)}
  }
- for(const group of groups.values())if(group.length>1)for(const entry of group)entry.issue=[entry.issue,'檔案內公司重複：請修正或取消勾選重複列'].filter(Boolean).join('；');
+ for(const group of groups.values())if(group.length>1){
+  if(key!=='foreignEmail'){for(const entry of group)entry.issue=[entry.issue,'檔案內公司重複：請修正或取消勾選重複列'].filter(Boolean).join('；');continue}
+  const ids=new Set(group.map(e=>String(e.values['ID']??'').trim()).filter(Boolean));
+  const domains=new Set(group.map(e=>String(e.values['Domain']??'').toLowerCase().trim()).filter(Boolean));
+  if(ids.size>1||domains.size>1)for(const entry of group)entry.issue=[entry.issue,'同公司 ID 或 Domain 不一致，請先確認資料'].filter(Boolean).join('；');
+ }
+ if(key==='foreignEmail'){
+  const ids=new Map();
+  for(const entry of entries.filter(e=>e.selected&&!e.saved)){
+   const id=String(entry.values['ID']??'').trim(),name=CustomerImport.companyKey(entry.values['公司名稱']);
+   if(!id||!name)continue;
+   if(ids.has(id)&&ids.get(id)!==name)entry.issue=[entry.issue,'同一 ID 對應不同公司名稱，請人工確認'].filter(Boolean).join('；');
+   else ids.set(id,name);
+  }
+ }
  return entries.filter(e=>e.selected&&!e.saved&&!e.issue&&!e.error);
 }
 async function openCustomerImport(wb,key){
@@ -44,7 +58,7 @@ async function openCustomerImport(wb,key){
  document.body.appendChild(dialog);dialog.showModal();
  const q=selector=>dialog.querySelector(selector),msg=q('[data-import-message]');
  function render(){
-  const ready=validateCustomerImport(entries,cloudNames),saved=entries.filter(e=>e.saved).length;
+  const ready=validateCustomerImport(entries,cloudNames,key),saved=entries.filter(e=>e.saved).length;
   q('[data-import-summary]').textContent='總共 '+entries.length+' 筆｜已匯入 '+saved+' 筆｜已勾選可匯入 '+ready.length+' 筆｜未匯入 '+(entries.length-saved)+' 筆｜問題資料 '+entries.filter(e=>!e.saved&&(e.issue||e.error)).length+' 筆';
   const visible=entries.filter(e=>filter==='all'||(filter==='issues'&&!e.saved&&!!(e.issue||e.error))||(filter==='saved'?e.saved:filter==='ready'?!e.saved&&e.selected&&!e.issue&&!e.error:filter==='pending'&&!e.saved));
   page=Math.max(0,Math.min(page,Math.ceil(visible.length/30)-1));
@@ -74,14 +88,42 @@ async function openCustomerImport(wb,key){
   if(busy||editingEntry)return;busy=true;render();
   try{
    await check(true);if(!cloudReady)return;
-   const selected=validateCustomerImport(entries,cloudNames);if(!selected.length){msg.textContent='沒有通過檢查且已勾選的資料，請修正或取消勾選重複列。';return}
-   const raw=selected.map(e=>e.values),mapped=key==='domestic'?mapDomesticImport(raw):mapOutreachImport(raw,key);
-   if(mapped.length!==selected.length)throw Error('資料筆數不一致，已停止寫入。');
+   const selected=validateCustomerImport(entries,cloudNames,key);if(!selected.length){msg.textContent='沒有通過檢查且已勾選的資料，請修正或取消勾選重複列。';return}
+   let raw=selected.map(e=>e.values);
+   if(key==='foreignEmail'){
+    const byCompany=new Map();
+    for(const entry of selected){
+     const v=entry.values,companyKey=CustomerImport.companyKey(v['公司名稱']);
+     if(!byCompany.has(companyKey))byCompany.set(companyKey,[]);
+     byCompany.get(companyKey).push(v);
+    }
+    raw=[...byCompany.values()].map(group=>{
+     const merged={...group[0]},contacts=[],seen=new Set(),names=[];
+     for(const item of group){
+      const mails=String(item['Email']||'').split(/[;,；\n]+/).map(x=>x.trim()).filter(Boolean);
+      for(const mail of mails){
+       const position=String(item['職位']||'').trim(),person=String(item['聯絡人']||'').trim();
+       const ident=mail.toLowerCase();
+       if(!seen.has(ident)){seen.add(ident);contacts.push({email:mail,position});}
+       else {const prior=contacts.find(c=>c.email.toLowerCase()===ident);if(prior&&position&&prior.position&&prior.position!==position)throw Error('同一 Email 的職位資料衝突：'+mail+'，請先修正。');if(prior&&!prior.position)prior.position=position;}
+       if(person)names.push(person+'｜'+mail+'｜'+(position||'未提供職位'));
+      }
+     }
+     if(!contacts.length)throw Error('公司「'+merged['公司名稱']+'」沒有有效 Email，請先修正。');
+     if(contacts.some(c=>!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email))))throw Error('公司「'+merged['公司名稱']+'」存在格式錯誤的 Email，請先修正。');
+     merged['Mail／所屬職位']=contacts;
+     merged['Email']=contacts.map(x=>x.email).join(', ');
+     if(names.length)merged['備註']=[String(merged['備註']||'').trim(),'聯絡人配對資料：\n'+names.join('\n')].filter(Boolean).join('\n');
+     return merged;
+    });
+   }
+   const mapped=key==='domestic'?mapDomesticImport(raw):mapOutreachImport(raw,key);
+   if(mapped.length!==raw.length)throw Error('資料筆數不一致，已停止寫入。');
    // Only atomic bulk insert errors are retried; completed rows are never resubmitted.
    await customerWrite(mapped,null,async()=>{const payload=key==='domestic'?mapped:mapped.map(row=>({category:key,data:row,created_by:currentProfile.id}));const {error}=await sb.from(key==='domestic'?'cold_call_records':'outreach_records').insert(payload);if(error)throw error});
    selected.forEach(e=>{e.saved=true;e.selected=false;e.error=''});render();
-   filter='pending';page=0;q('[data-import-filter]').value=filter;render();appNotice('本次成功匯入 '+selected.length+' 筆，已儲存至雲端。\n尚有 '+entries.filter(e=>!e.saved).length+' 筆未匯入，可在預覽中查看原因並繼續修正。',{title:'資料匯入完成',type:'success'});
-   msg.textContent='✓ 已成功匯入 '+selected.length+' 筆。其餘 '+entries.filter(e=>!e.saved).length+' 筆仍保留，可繼續修正。';
+   filter='pending';page=0;q('[data-import-filter]').value=filter;render();appNotice('本次成功匯入 '+mapped.length+' 家公司（共 '+selected.length+' 筆來源資料），已儲存至雲端。\n尚有 '+entries.filter(e=>!e.saved).length+' 筆未匯入，可在預覽中查看原因並繼續修正。',{title:'資料匯入完成',type:'success'});
+   msg.textContent='✓ 已成功匯入 '+mapped.length+' 家公司（'+selected.length+' 筆來源資料）。其餘 '+entries.filter(e=>!e.saved).length+' 筆仍保留，可繼續修正。';
    try{if(key==='domestic')await load();else await loadOutreachCloud()}catch(err){msg.textContent+='\n寫入成功，但列表重新讀取未完成：'+err.message}
   }catch(err){cloudReady=false;entries.filter(e=>e.selected&&!e.saved&&!e.issue).forEach(e=>e.error='未確認匯入：'+err.message);filter='pending';q('[data-import-filter]').value=filter;msg.textContent='匯入未完成：'+err.message+'\n資料保留。請重新檢查雲端，確認是否已存在後再試。';appNotice('本次匯入未能確認完成。\n'+err.message+'\n未匯入資料與修正內容已保留，可重新檢查後再匯入。',{title:'資料匯入未完成',type:'danger'})}finally{busy=false;render()}
  };
