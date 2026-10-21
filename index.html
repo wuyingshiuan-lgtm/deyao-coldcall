@@ -2248,7 +2248,7 @@ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomer
  html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="cards"] td[colspan]{display:block!important}
  html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="cards"] td[colspan]::before{display:none!important}
 }
-</style></head><body>
+</style><style>@media(min-width:1101px){html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="table"] :is(th,td){min-width:0!important;max-width:none!important;box-sizing:border-box}}</style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2 data-title-icon="🏠">德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2 data-title-icon="🔐">修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
 <div id="recovery" class="login hidden"><form id="recoveryForm" class="loginbox"><h2 data-title-icon="🔐">設定新密碼</h2><p>請輸入新的系統密碼。</p><label>新密碼</label><input id="newPw" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="newPw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">更新密碼</button><span id="recoveryMsg" class="msg"></span></div></form></div>
@@ -3048,7 +3048,7 @@ $("foreignEmailHistoryForm")?.addEventListener("submit",async e=>{e.preventDefau
  return {width:Math.ceil(width+2),label,index};
  });
  const compact=columns.reduce((sum,c)=>sum+(c.width||0),0),flex=columns.filter(c=>c.weight),minFlex=flex.reduce((sum,c)=>sum+c.min,0);
- if(available<compact+minFlex){table.dataset.fitMode="cards";return}
+ if(available<compact+minFlex){table.dataset.fitMode="cards";heads.concat(...cells).forEach(cell=>{if(cell.dataset.dynamicWidth){cell.style.removeProperty("width");delete cell.dataset.dynamicWidth}});return}
  table.dataset.fitMode="table";table.style.setProperty("table-layout","fixed","important");
  const extra=available-compact-minFlex,weight=flex.reduce((sum,c)=>sum+c.weight,0);
  columns.forEach(column=>{
