@@ -46,3 +46,8 @@ jobs:
           print(f"Extracted {len(parser.parts)} inline script(s)")
           PY
           for f in /tmp/inline-*.js; do node --check "$f"; done
+
+      - name: Check customer import and global duplicate guard
+        run: |
+          node --check customer-import.js
+          node tests/customer-import.test.cjs
