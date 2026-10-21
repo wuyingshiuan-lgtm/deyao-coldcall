@@ -14,7 +14,7 @@
  }
  function showNext(){
   if(active||!queue.length)return;
-  const item=queue.shift(),info=describeNotice(item.message,item.confirming),previous=document.activeElement===document.body?lastFocused:document.activeElement;
+  const item=queue.shift(),info={...describeNotice(item.message,item.confirming),...item.options},previous=document.activeElement===document.body?lastFocused:document.activeElement;
   const dialog=document.createElement('dialog');active=dialog;dialog.id='deyaoNotice';dialog.dataset.tone=info.type;
   dialog.setAttribute('aria-labelledby','deyaoNoticeTitle');dialog.setAttribute('aria-describedby','deyaoNoticeMessage');
   dialog.innerHTML='<div class="notice-brand">DEYAO PRECISION <span>業務管理系統</span></div><div class="notice-content"><div class="notice-symbol" aria-hidden="true"></div><div class="notice-copy"><p class="notice-kicker">'+(item.confirming?'操作確認':'處理結果')+'</p><h2 id="deyaoNoticeTitle"></h2><p id="deyaoNoticeMessage"></p></div></div><div class="notice-footer"><span class="notice-footnote"></span><div class="notice-actions"></div></div>';
@@ -28,8 +28,8 @@
   dialog.addEventListener('close',()=>{dialog.remove();active=null;item.resolve(result);if(previous?.isConnected&&!previous.disabled)previous.focus();showNext()},{once:true});
   document.body.appendChild(dialog);dialog.showModal();(item.confirming?actions.firstElementChild:ok).focus();
  }
- function enqueue(message,confirming){return new Promise(resolve=>{queue.push({message,confirming,resolve});showNext()})}
- root.appNotice=message=>enqueue(message,false);root.appConfirm=message=>enqueue(message,true);root.describeNotice=describeNotice;
+ function enqueue(message,confirming,options={}){return new Promise(resolve=>{queue.push({message,confirming,options,resolve});showNext()})}
+ root.appNotice=(message,options={})=>enqueue(message,false,options);root.appConfirm=message=>enqueue(message,true);root.describeNotice=describeNotice;
  const style=document.createElement('style');style.textContent=`
  #deyaoNotice{box-sizing:border-box;width:min(540px,calc(100vw - 32px));max-height:85vh;padding:0;border:1px solid #d7dee8;border-radius:16px;background:#fff;color:#26364a;box-shadow:0 24px 80px #11243b40;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;text-align:left;overflow:auto}
  #deyaoNotice::backdrop{background:#172b4280;backdrop-filter:blur(3px)}

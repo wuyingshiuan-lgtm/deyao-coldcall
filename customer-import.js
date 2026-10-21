@@ -11,7 +11,7 @@
  '公司官網':['官網','網站','網址','website'],
  '產業類別':['產業','產業分類','industry'],
  '分機':['extension','ext'],
- '地區':['區域','縣市','公司地區','region','area'],
+ '地區':['區域','縣市','縣市區域','公司地區','region','area'],
  '是否適合拜訪':['適合拜訪','拜訪公司','visitSuitable'],
  '是否已寄送Mail':['是否寄送Email','emailSent'],
  '電訪日期':['visit_date'],
@@ -35,5 +35,6 @@
  }
  function valueFor(row,label,field){const k=canonical(label);return row[k]??row[field]??(field==='date'?(row['電訪日期']??row['開發日期']??row['開發信寄出日期']):undefined)??(field==='location'?row['國家／地區']:undefined)??''}
  function preserveExtra(row,labels,notes){const supported=new Set(labels.map(canonical));const extra=Object.entries(row).filter(([k,v])=>!supported.has(k)&&String(v??'').trim()).map(([k,v])=>k+'：'+v);return [String(notes??'').trim(),...extra].filter(Boolean).join('\n')}
- root.CustomerImport={companyKey,canonical,mapRows,valueFor,preserveExtra};
+ function booleanValue(value){const text=String(value??'').normalize('NFKC').trim().toLowerCase();return ['是','true','1','yes','y','v','✓','✔','適合','適合拜訪','已寄送'].includes(text)?'true':'false'}
+ root.CustomerImport={companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
 })(typeof window!=='undefined'?window:globalThis);
