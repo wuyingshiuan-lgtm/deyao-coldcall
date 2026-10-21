@@ -2223,6 +2223,9 @@ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomer
  color:#b94d83!important;background:linear-gradient(135deg,#ffedf5,#f0ebff)!important;
  border:1px solid #efd8eb;border-radius:8px;white-space:nowrap;
 }
+</style><style>
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) .customer-company-button .company-name-cute-icon{width:17px!important;height:17px!important;min-width:17px!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;vertical-align:-2px;line-height:1!important}
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) .customer-company-button .company-name-cute-icon svg{display:block;width:17px;height:17px;overflow:visible}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2 data-title-icon="🏠">德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2 data-title-icon="🔐">修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
@@ -2958,7 +2961,7 @@ $("foreignEmailHistoryForm")?.addEventListener("submit",async e=>{e.preventDefau
  button.querySelectorAll("span").forEach(span=>{if(/^[▾▴▼▲]$/.test(span.textContent.trim()))span.remove()});
  Array.from(button.childNodes).forEach(node=>{if(node.nodeType===3){const clean=node.textContent.replace(/\s*[▾▴▼▲]\s*$/,"");if(clean!==node.textContent)node.textContent=clean}});
  if(!button.querySelector(".company-name-cute-icon")){
- const icon=document.createElement("span");icon.className="company-name-cute-icon";icon.setAttribute("aria-hidden","true");icon.textContent="🌷";button.appendChild(icon);
+ const icon=document.createElement("span");icon.className="company-name-cute-icon";icon.setAttribute("aria-hidden","true");icon.innerHTML="<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\"><polygon points=\"12.00,4.10 13.95,2.19 15.83,2.76 16.39,5.43 17.59,6.41 20.31,6.44 21.24,8.17 19.75,10.46 19.90,12.00 21.81,13.95 21.24,15.83 18.57,16.39 17.59,17.59 17.56,20.31 15.83,21.24 13.54,19.75 12.00,19.90 10.05,21.81 8.17,21.24 7.61,18.57 6.41,17.59 3.69,17.56 2.76,15.83 4.25,13.54 4.10,12.00 2.19,10.05 2.76,8.17 5.43,7.61 6.41,6.41 6.44,3.69 8.17,2.76 10.46,4.25\" fill=\"#dce6f1\" stroke=\"#54718f\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><circle cx=\"12\" cy=\"12\" r=\"5.7\" stroke=\"#92a9bf\" stroke-width=\"1\"/><circle cx=\"12\" cy=\"12\" r=\"3.1\" fill=\"white\" stroke=\"#54718f\" stroke-width=\"1.2\"/><path d=\"M9.5 7.7a5 5 0 0 1 4.6-.2\" stroke=\"white\" stroke-width=\"1\" stroke-linecap=\"round\"/></svg>";button.appendChild(icon);
  }
 });
  section.querySelectorAll(".history-count-link,[data-foreign-email-history]").forEach(button=>{
