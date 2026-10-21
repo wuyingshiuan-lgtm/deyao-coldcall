@@ -1,12 +1,12 @@
 /* Shared, exact header aliases. Ambiguous columns never silently overwrite data. */
 (function(root){
  const groups={
- '公司名稱':['公司','公司名','廠商','廠商名稱','company','company name','company_name'],
- '聯絡人':['聯繫人','聯絡姓名','採購','contact','contact_name'],
- '職位':['職稱','職位／部門','所屬職位／部門','position','title'],
+ '公司名稱':['名稱','公司','公司名','廠商','廠商名稱','company','company name','company_name'],
+ '聯絡人':['Name','聯繫人','聯絡姓名','採購','contact','contact_name'],
+ '職位':['Position/Type','職稱','職位／部門','所屬職位／部門','position','title'],
  '電話':['聯繫電話','聯絡電話','公司電話','phone','tel'],
  '傳真電話':['傳真','fax','fax_phone'],
- 'Email':['電子郵件','電郵','mail','email','e-mail','Mail（彙整）'],
+ 'Email':['Emails','電子郵件','電郵','mail','email','e-mail','Mail（彙整）'],
  '公司地址':['地址','address','company_address'],
  '公司官網':['官網','網站','網址','website'],
  '產業類別':['產業','產業分類','industry'],
@@ -18,7 +18,7 @@
  '開發日期':['開發時間'],
  '備註':['備註說明','notes','remark'],
  '紀錄者':['recorder'],
- '國家／地區':['國家','country'],
+ '國家／地區':['國家/城市','國家','country'],
  '展覽名稱':['event'],
  '開發信寄出日期':['寄出日期'],
  '開發來源':['source']
