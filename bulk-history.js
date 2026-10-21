@@ -6,13 +6,40 @@ const $b=id=>document.getElementById(id), norm=s=>String(s||"").normalize("NFKC"
 const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let candidates=[],busy=false;
 const style=document.createElement("style");style.textContent='.bulk-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:20px 0}.bulk-choice{background:#f8fbff;border:1px solid #d9e5f4;border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;min-width:0;color:#172c4c}.bulk-choice:hover,.bulk-choice:focus-visible{border-color:#4383d8;background:#edf5ff}.bulk-choice svg{display:block;margin:auto auto 12px;width:28px;height:28px}.bulk-choice strong{display:block;font-size:19px}.bulk-choice small{display:block;color:#68798b;margin-top:8px}.bulk-table-wrap{max-width:100%;overflow-x:auto}.bulk-table{width:100%;border-collapse:collapse;font-size:13px}.bulk-table td,.bulk-table th{padding:9px;border-bottom:1px solid #e0e7ef;text-align:left}.bulk-table select{min-width:180px}.bulk-note{color:#5c7089;font-size:13px}.bulk-pill{display:inline-block;border-radius:7px;padding:3px 7px;background:#e8f5e9;color:#1c722d}.bulk-warn{background:#fff2d8;color:#8a5310}.bulk-error{background:#ffeded;color:#a42828}@media(max-width:620px){.bulk-choices{grid-template-columns:1fr}}';document.head.appendChild(style);
+const responsiveStyle=document.createElement("style");
+responsiveStyle.textContent=`
+#bulkHistorySection{max-width:100%;min-width:0}
+#bulkHistorySection .history-page-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+#bulkHistorySection h2{margin:0;font-size:clamp(21px,2.2vw,28px)}
+.bulk-choice{min-height:190px;border-radius:20px;box-shadow:0 8px 24px #3153a410;transition:background .2s,box-shadow .2s}
+.bulk-choice:first-child{background:linear-gradient(135deg,#eff9f6,#fff);color:#187559;border-color:#bee1d4}
+.bulk-choice:last-child{background:linear-gradient(135deg,#edf5ff,#fff);color:#2566af}
+.bulk-choice:hover{box-shadow:0 10px 28px #3153a425}
+.bulk-choice:disabled{opacity:.6;cursor:wait}
+.bulk-table-wrap{overflow:visible;min-width:0}
+.bulk-table{table-layout:fixed}
+.bulk-table td,.bulk-table th{overflow-wrap:anywhere;white-space:normal;vertical-align:top}
+.bulk-table select{min-width:0;max-width:100%;font-size:13px}
+#bulkStatus{white-space:pre-wrap;padding:12px 0;overflow-wrap:anywhere}
+@media(max-width:1100px){
+ .bulk-table,.bulk-table tbody{display:block;width:100%}
+ .bulk-table thead{display:none}
+ .bulk-table tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;border:1px solid #d9e5f4;border-radius:14px;margin:12px 0;padding:14px;background:#f8fbff}
+ .bulk-table td{display:block;border:0;padding:0;min-width:0}
+ .bulk-table td:before{content:attr(data-label);display:block;font-size:12px;font-weight:700;color:#657c9b;margin-bottom:4px}
+ .bulk-table td:last-child{grid-column:1/-1}
+}
+@media(max-width:620px){.bulk-choice{min-height:160px}.bulk-table tr{grid-template-columns:1fr}}
+`;
+document.head.appendChild(responsiveStyle);
 const home=document.querySelector("#homeSection .home-links");
 if(home){const a=document.createElement("a");a.href="#bulkHistory";a.className="home-feature home-feature-4 admin-excel";a.innerHTML='<span class="home-feature-top"><span class="home-feature-icon" aria-hidden="true">▦</span><span class="home-feature-category">聯繫管理</span></span><strong>Excel 批次匯入聯繫紀錄</strong><span class="home-feature-description">一次新增多位客戶的後續聯繫歷史</span><span class="home-feature-action">批次匯入 ↗</span>';home.appendChild(a);}
 const main=document.querySelector("main.wrap");
-const section=document.createElement("section");section.id="bulkHistorySection";section.className="box hidden";section.innerHTML='<div class="history-page-head"><button class="btn" type="button" id="bulkBack">← 返回首頁</button><h2>Excel 批次匯入聯繫紀錄</h2></div><p class="bulk-note">下載五欄 Excel 範本後填寫，依「分頁屬性＋公司名」自動對應既有客戶。匯入只會新增聯繫歷史，不會更改客戶資料。</p><div class="bulk-choices"><button type="button" class="bulk-choice" id="bulkTemplate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg><strong>下載 Excel 範本</strong><small>含分頁及聯繫結果下拉選單</small></button><button type="button" class="bulk-choice" id="bulkUpload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m-5 5 5-5 5 5M4 7V4h16v3"/></svg><strong>匯入 Excel 資料</strong><small>自動分配至對應公司</small></button></div><input id="bulkFile" class="hidden" type="file" accept=".xlsx,.xls"><div id="bulkStatus" role="status" aria-live="polite" class="bulk-note"></div><div id="bulkPreview" class="hidden"><h3>匯入前確認</h3><p id="bulkSummary"></p><div class="bulk-table-wrap"><table class="bulk-table"><thead><tr><th>列</th><th>分頁</th><th>日期</th><th>公司</th><th>結果</th><th>檢查結果／處理</th></tr></thead><tbody id="bulkRows"></tbody></table></div><div class="actions"><button type="button" class="btn primary" id="bulkConfirm">確認新增可匯入資料</button><button type="button" class="btn" id="bulkReset">清除預覽</button></div></div>';
+const section=document.createElement("section");section.id="bulkHistorySection";section.className="box hidden";section.innerHTML='<div class="history-page-head"><button class="btn" type="button" id="bulkBack">← 返回首頁</button><h2>Excel 批次匯入聯繫紀錄</h2></div><p class="bulk-note">下載五欄 Excel 範本後填寫，依「分頁屬性＋公司名」自動對應既有客戶。匯入只會新增聯繫歷史，不會更改客戶資料。</p><div class="bulk-choices"><button type="button" class="bulk-choice" id="bulkTemplate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg><strong>下載 Excel 範本</strong><small>含分頁及聯繫結果下拉選單</small></button><button type="button" class="bulk-choice" id="bulkUpload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m-5 5 5-5 5 5M4 7V4h16v3"/></svg><strong>匯入 Excel 資料</strong><small>自動分配至對應公司</small></button></div><input id="bulkFile" class="hidden" type="file" accept=".xlsx,.xls"><div id="bulkStatus" role="status" aria-live="polite" class="bulk-note"></div><div id="bulkPreview" class="hidden"><h3>匯入前確認</h3><p id="bulkSummary"></p><div class="bulk-table-wrap"><table class="bulk-table"><thead><tr><th>列</th><th>分頁</th><th>日期</th><th>公司</th><th>備註</th><th>結果</th><th>檢查結果／處理</th></tr></thead><tbody id="bulkRows"></tbody></table></div><div class="actions"><button type="button" class="btn primary" id="bulkConfirm">確認新增可匯入資料</button><button type="button" class="btn" id="bulkReset">清除預覽</button></div></div>';
 const before=document.getElementById("rangeReportSection");main.insertBefore(section,before||main.firstChild);
 pages.bulkHistory="bulkHistorySection";
-const oldRestricted=["rangeStats","rangeExcel","stats","excel","accounts","exhibitionsStats","exhibitionsExcel","prospectingStats","prospectingExcel"];
+// Register before the first signed-in navigation, including direct links.
+showPage();
 window.addEventListener("hashchange",()=>{if(location.hash==="#bulkHistory"&&currentProfile?.role!=="admin"){location.hash="home";showPage();}});
 $b("bulkBack").onclick=()=>{location.hash="home";showPage();};
 const status=msg=>{$b("bulkStatus").textContent=msg;};
@@ -34,7 +61,7 @@ $b("bulkTemplate").onclick=async()=>{
  const a=document.createElement("a");a.href=url;a.download="德曜_批次聯繫紀錄範本.xlsx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);status("已產生 Excel 範本（五欄、含下拉選單）。");
  }catch(e){status("無法下載："+e.message);}
 };
-$b("bulkUpload").onclick=()=>$b("bulkFile").click();
+$b("bulkUpload").onclick=()=>{if(!busy)$b("bulkFile").click();};
 function formatDate(v){
  if(v instanceof Date && !isNaN(v))return [v.getFullYear(),String(v.getMonth()+1).padStart(2,"0"),String(v.getDate()).padStart(2,"0")].join("-");
  if(typeof v==="number"){const o=XLSX.SSF.parse_date_code(v);if(o)return [o.y,String(o.m).padStart(2,"0"),String(o.d).padStart(2,"0")].join("-");}
@@ -52,7 +79,9 @@ function signatures(target,key){
 }
 const signature=(d,r,n)=>[formatDate(d),norm(r),norm(n)].join("|");
 function checkOne(c,groups){
- if(!c.key||!c.date||!c.company||!c.result){c.issue="欄位缺漏或日期／分頁不正確";c.target=null;return;}
+ c.duplicate=false;c.matches=[];c.target=null;
+ if(!c.key||!c.date||!c.company||!c.result){c.issue="欄位缺漏或日期／分頁不正確";return;}
+ if(!RESULTS.includes(c.result)){c.issue="聯繫結果不在範本選項內";return;}
  const matches=groups[c.key].filter(x=>norm(x.row.company_name||x.row.company)===norm(c.company));c.matches=matches;
  if(matches.length===0){c.issue="找不到公司（不會建立新客戶）";c.target=null;return;}
  if(matches.length>1&&!c.chosen){c.issue="同名公司：請選擇正確客戶";c.target=null;return;}
@@ -65,15 +94,14 @@ function checkOne(c,groups){
 let cloudGroups=null;
 function renderPreview(){
  candidates.forEach(c=>checkOne(c,cloudGroups));
- const valid=candidates.filter(c=>c.target&&(!c.duplicate||c.allowDuplicate)),bad=candidates.length-valid.length;
+ const valid=candidates.filter(c=>c.target&&!c.issue),bad=candidates.length-valid.length;
  $b("bulkSummary").textContent="共 "+candidates.length+" 筆｜可新增 "+valid.length+" 筆｜需處理或略過 "+bad+" 筆。";
  $b("bulkRows").innerHTML=candidates.map(c=>{
  let msg=c.issue||"可新增為後續聯繫紀錄",cls=c.issue?"bulk-warn":"bulk-pill";
  if(!c.matches?.length)cls="bulk-error";
  let controls="";
  if(c.matches?.length>1){controls='<select data-pick="'+c.index+'"><option value="">請選擇同名公司</option>'+c.matches.map(m=>'<option value="'+escapeHtml(m.id)+'" '+(String(c.chosen)===String(m.id)?"selected":"")+'>'+escapeHtml(m.row.company_name||m.row.company)+'｜'+escapeHtml(m.row.contact_name||m.row.contactName||m.row.address||m.row.company_address||m.id)+'</option>').join("")+"</select>";}
- if(c.duplicate)controls+=' <label style="white-space:nowrap"><input type="checkbox" data-allow="'+c.index+'" '+(c.allowDuplicate?"checked":"")+' style="width:auto">仍要新增</label>';
- return '<tr><td>'+(c.index+2)+'</td><td>'+escapeHtml(CATS[c.key]||c.rawCategory)+'</td><td>'+escapeHtml(c.date)+'</td><td>'+escapeHtml(c.company)+'</td><td>'+escapeHtml(c.result)+'</td><td><span class="'+cls+'">'+escapeHtml(msg)+'</span> '+controls+'</td></tr>';
+ return '<tr><td data-label="Excel 列">'+(c.index+2)+'</td><td data-label="分頁屬性">'+escapeHtml(CATS[c.key]||c.rawCategory)+'</td><td data-label="聯繫日期">'+escapeHtml(c.date)+'</td><td data-label="公司名">'+escapeHtml(c.company)+'</td><td data-label="備註">'+escapeHtml(c.notes||"—")+'</td><td data-label="聯繫結果">'+escapeHtml(c.result)+'</td><td data-label="檢查結果／處理"><span class="'+cls+'">'+escapeHtml(msg)+'</span> '+controls+'</td></tr>';
  }).join("");
  $b("bulkPreview").classList.remove("hidden");
  $b("bulkConfirm").disabled=busy||valid.length===0;
@@ -98,32 +126,40 @@ $b("bulkFile").onchange=async e=>{
  cloudGroups=await allCloudRows();renderPreview();status("已完成雲端比對；請確認檢查結果，再按新增。");
  }catch(err){status("匯入檢查失敗："+err.message);}finally{e.target.value="";}
 };
-$b("bulkReset").onclick=()=>{candidates=[];$b("bulkPreview").classList.add("hidden");status("");};
+$b("bulkReset").onclick=()=>{if(busy)return;candidates=[];$b("bulkPreview").classList.add("hidden");status("");};
 async function saveOne(c){
  const id=c.target.id;
  if(c.key==="domestic"){
  const {data:parent,error:pe}=await sb.from("cold_call_records").select("id,visit_date").eq("id",id).single();if(pe)throw pe;
  const {data:hist,error:he}=await sb.from("cold_call_history").select("contact_number,contact_date,contact_result,notes").eq("record_id",id);if(he)throw he;
- if(!c.allowDuplicate&&(hist||[]).some(h=>signature(h.contact_date,h.contact_result,h.notes)===signature(c.date,c.result,c.notes)))return "skip";
+ if((hist||[]).some(h=>signature(h.contact_date,h.contact_result,h.notes)===signature(c.date,c.result,c.notes)))return "skip";
  const num=Math.max(parent.visit_date?1:0,...(hist||[]).map(h=>Number(h.contact_number)||0))+1;
  const {error}=await sb.from("cold_call_history").insert({record_id:id,contact_date:c.date,contact_number:num,contact_result:c.result,notes:c.notes,created_by:currentProfile.id});
- if(error)throw error;return "saved";
+ if(error)throw error;
+ const {data:verified,error:ve}=await sb.from("cold_call_history").select("contact_date,contact_result,notes").eq("record_id",id).eq("contact_number",num);
+ if(ve)throw ve;
+ if(!(verified||[]).some(h=>signature(h.contact_date,h.contact_result,h.notes)===signature(c.date,c.result,c.notes)))throw Error("雲端寫入後驗證未完成，請重新檢查；重試時會再次比對重複資料。");
+ return "saved";
  }
  const {data:current,error:readErr}=await sb.from("outreach_records").select("id,data").eq("id",id).eq("category",c.key).single();if(readErr)throw readErr;
  const row=current.data||{},history=Array.isArray(row.contactHistory)?row.contactHistory.slice():[];
  const prev=c.key==="foreignEmail"?getForeignEmailHistoryParts(row).followups:history;
- if(!c.allowDuplicate&&prev.some(h=>signature(h.date,h.result,h.notes)===signature(c.date,c.result,c.notes)))return "skip";
+ if(prev.some(h=>signature(h.date,h.result,h.notes)===signature(c.date,c.result,c.notes)))return "skip";
  history.push({id:crypto.randomUUID(),date:c.date,result:c.result,notes:c.notes,number:(row.date||row.contactDate?1:0)+prev.length+1,recorder:currentProfile.name||"",createdAt:new Date().toISOString()});
  const {data:saved,error}=await sb.from("outreach_records").update({data:{...row,contactHistory:history}}).eq("id",id).eq("category",c.key).eq("data",JSON.stringify(row)).select("id").maybeSingle();
  if(error)throw error;if(!saved)throw Error("資料已被其他人更新，請重新匯入該筆。");
+ const entryId=history[history.length-1].id;
+ const {data:verified,error:ve}=await sb.from("outreach_records").select("data").eq("id",id).eq("category",c.key).single();
+ if(ve)throw ve;
+ if(!verified?.data?.contactHistory?.some(h=>h.id===entryId&&signature(h.date,h.result,h.notes)===signature(c.date,c.result,c.notes)))throw Error("雲端寫入後驗證未完成，請重新檢查；重試時會再次比對重複資料。");
  return "saved";
 }
 $b("bulkConfirm").onclick=async()=>{
  if(busy||currentProfile?.role!=="admin")return;
- const selected=candidates.filter(c=>c.target&&(!c.duplicate||c.allowDuplicate));
+ const selected=candidates.filter(c=>c.target&&!c.issue);
  if(!selected.length)return;
  if(!confirm("確定新增 "+selected.length+" 筆聯繫紀錄至雲端？此操作不會覆蓋原有資料。"))return;
- busy=true;$b("bulkConfirm").disabled=true;
+ busy=true;["bulkConfirm","bulkReset","bulkUpload"].forEach(id=>$b(id).disabled=true);
  let saved=0,skipped=0,failed=[];
  for(const c of selected){
  status("正在寫入雲端 "+(saved+skipped+failed.length+1)+" / "+selected.length+"…");
@@ -131,7 +167,7 @@ $b("bulkConfirm").onclick=async()=>{
  catch(err){failed.push("Excel 第 "+(c.index+2)+" 列："+err.message);}
  }
  try{cloudGroups=await allCloudRows();data=cloudGroups.domestic.map(x=>x.row);historyData=cloudGroups.domestic.flatMap(x=>x.histories);render();await loadOutreachCloud();}catch(err){failed.push("重新讀取雲端失敗："+err.message);}
- busy=false;
+ busy=false;["bulkReset","bulkUpload"].forEach(id=>$b(id).disabled=false);
  const done=new Set(selected.filter(c=>!failed.some(x=>x.startsWith("Excel 第 "+(c.index+2)+" 列："))).map(c=>c.index));
  candidates=candidates.filter(c=>!done.has(c.index));
  if(candidates.length)renderPreview();else $b("bulkPreview").classList.add("hidden");
