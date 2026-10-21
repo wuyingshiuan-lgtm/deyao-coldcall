@@ -2211,6 +2211,18 @@ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomer
 html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) :is(.company-detail-item,.foreign-email-detail-item,.exhibitions-company-detail-item){text-align:center!important}
 html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) :is(.company-detail-item,.foreign-email-detail-item,.exhibitions-company-detail-item)>:is(span,label,strong,a){text-align:center!important}
 html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection,.wrap) :is(.company-detail-item,.foreign-email-detail-item,.exhibitions-company-detail-item)[data-is-notes="true"]>strong{text-align:left!important;display:block;white-space:pre-wrap}
+</style><style>
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) .customer-company-button{
+ font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif!important;font-size:15px!important;
+ font-weight:800!important;line-height:1.5!important;display:inline-block!important;text-align:center!important;
+ max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important;
+}
+html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) .customer-company-button .company-name-cute-icon{
+ display:inline-grid!important;place-items:center!important;width:21px;height:21px;min-width:21px;
+ margin:0 0 0 5px!important;vertical-align:middle;font-size:13px!important;line-height:1!important;
+ color:#b94d83!important;background:linear-gradient(135deg,#ffedf5,#f0ebff)!important;
+ border:1px solid #efd8eb;border-radius:8px;white-space:nowrap;
+}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2 data-title-icon="🏠">德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2 data-title-icon="🔐">修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
@@ -2941,7 +2953,14 @@ $("foreignEmailHistoryForm")?.addEventListener("submit",async e=>{e.preventDefau
  ];
  function styleCustomerDirectories(){
  document.querySelectorAll(sections).forEach(section=>{
- section.querySelectorAll(".company-detail-toggle,.foreign-email-company-link,.exhibitions-company-link").forEach(button=>button.classList.add("customer-company-button"));
+ section.querySelectorAll(".company-detail-toggle,.foreign-email-company-link,.exhibitions-company-link").forEach(button=>{
+ button.classList.add("customer-company-button");
+ button.querySelectorAll("span").forEach(span=>{if(/^[▾▴▼▲]$/.test(span.textContent.trim()))span.remove()});
+ Array.from(button.childNodes).forEach(node=>{if(node.nodeType===3){const clean=node.textContent.replace(/\s*[▾▴▼▲]\s*$/,"");if(clean!==node.textContent)node.textContent=clean}});
+ if(!button.querySelector(".company-name-cute-icon")){
+ const icon=document.createElement("span");icon.className="company-name-cute-icon";icon.setAttribute("aria-hidden","true");icon.textContent="🌷";button.appendChild(icon);
+ }
+});
  section.querySelectorAll(".history-count-link,[data-foreign-email-history]").forEach(button=>{
  const n=Number((button.textContent||"").match(/\d+/)?.[0]||0);button.classList.add("contact-count-badge");button.dataset.contactCount=String(n);
  const hue=Math.round((n*137.508)%360);
