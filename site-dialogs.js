@@ -1,6 +1,7 @@
 /* Accessible in-page notices and confirmations, shared by all business pages. */
 (function(root){
- let queue=[],active=null;
+ let queue=[],active=null,lastFocused=null;
+ document.addEventListener("focusin",event=>{if(!event.target.closest("#deyaoNotice"))lastFocused=event.target});
  function describeNotice(value,confirming=false){
   const message=String(value??'').replace(/^[\s✓✔✅⚠️!]+/u,'').trim().replace(/！/g,'。').replace(/請截圖錯誤訊息：/g,'請確認以下原因後重試：');
   let type='info',title='系統通知',label='確認';
@@ -13,7 +14,7 @@
  }
  function showNext(){
   if(active||!queue.length)return;
-  const item=queue.shift(),info=describeNotice(item.message,item.confirming),previous=document.activeElement;
+  const item=queue.shift(),info=describeNotice(item.message,item.confirming),previous=document.activeElement===document.body?lastFocused:document.activeElement;
   const dialog=document.createElement('dialog');active=dialog;dialog.id='deyaoNotice';dialog.dataset.tone=info.type;
   dialog.setAttribute('aria-labelledby','deyaoNoticeTitle');dialog.setAttribute('aria-describedby','deyaoNoticeMessage');
   dialog.innerHTML='<div class="notice-brand">DEYAO PRECISION <span>業務管理系統</span></div><div class="notice-content"><div class="notice-symbol" aria-hidden="true"></div><div class="notice-copy"><p class="notice-kicker">'+(item.confirming?'操作確認':'處理結果')+'</p><h2 id="deyaoNoticeTitle"></h2><p id="deyaoNoticeMessage"></p></div></div><div class="notice-footer"><span class="notice-footnote"></span><div class="notice-actions"></div></div>';
