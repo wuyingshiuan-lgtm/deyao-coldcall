@@ -84,7 +84,7 @@ function checkOne(c,groups){
  if(!RESULTS.includes(c.result)){c.issue="聯繫結果不在範本選項內";return;}
  const matches=groups[c.key].filter(x=>norm(x.row.company_name||x.row.company)===norm(c.company));c.matches=matches;
  if(matches.length===0){c.issue="找不到公司（不會建立新客戶）";c.target=null;return;}
- if(matches.length>1&&!c.chosen){c.issue="同名公司：請選擇正確客戶";c.target=null;return;}
+ if(matches.length>1&&!matches.some(x=>String(x.id)===String(c.chosen))){c.issue="同名公司：請選擇正確客戶";c.target=null;return;}
  c.target=matches.find(x=>String(x.id)===String(c.chosen))||matches[0];
  const sig=signature(c.date,c.result,c.notes);
  const existing=signatures(c.target,c.key).includes(sig);
@@ -108,8 +108,7 @@ function renderPreview(){
 }
 $b("bulkRows").addEventListener("change",e=>{
  const pick=e.target.dataset.pick,allow=e.target.dataset.allow;
- if(pick!==undefined)candidates[Number(pick)].chosen=e.target.value;
- if(allow!==undefined)candidates[Number(allow)].allowDuplicate=e.target.checked;
+ if(pick!==undefined){const candidate=candidates.find(c=>c.index===Number(pick));if(candidate)candidate.chosen=e.target.value;}
  renderPreview();
 });
 $b("bulkFile").onchange=async e=>{
