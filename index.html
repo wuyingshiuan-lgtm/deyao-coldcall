@@ -2264,7 +2264,7 @@ html body #sharedContactHistorySection .actions{justify-content:flex-end;align-i
 html body #sharedContactHistorySection #sharedHistoryMsg{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px;color:#3153a4}
 html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) .contact-count-badge{box-sizing:border-box!important;min-width:44px!important;max-width:100%!important;flex:none!important;padding:5px 8px!important}
 @media(max-width:650px){html body #sharedContactHistorySection .history-page-head{flex-direction:column!important;align-items:flex-start!important}html body #sharedContactHistorySection #sharedHistoryForm .grid{grid-template-columns:minmax(0,1fr)!important}html body #sharedContactHistorySection .actions{flex-direction:column;align-items:stretch}}
-</style></head><body>
+</style><style>#sharedContactHistorySection .shared-delete-confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;padding:12px;border:1px solid #f0bdc7;border-radius:10px;background:#fff3f5;color:#a93249;font-size:13px}#sharedContactHistorySection .shared-delete-confirm span{flex:1;min-width:180px}</style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2 data-title-icon="🏠">德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2 data-title-icon="🔐">修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
 <div id="recovery" class="login hidden"><form id="recoveryForm" class="loginbox"><h2 data-title-icon="🔐">設定新密碼</h2><p>請輸入新的系統密碼。</p><label>新密碼</label><input id="newPw" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="newPw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">更新密碼</button><span id="recoveryMsg" class="msg"></span></div></form></div>
@@ -2351,6 +2351,7 @@ function showPage(){let page=location.hash.slice(1);if(!Object.hasOwn(pages,page
 
 let sharedHistoryContext=null,sharedHistoryEntries=[],sharedHistoryEditing=null,sharedHistoryBusy=false;
 const sharedHistoryAddResults=new Map();
+let pendingSharedHistoryDelete=null;
 try{sharedHistoryContext=JSON.parse(sessionStorage.getItem("deyao_shared_history")||"null")}catch(_){}
 const sharedHistoryRoutes={domestic:"customers",foreignEmail:"foreignEmailCustomers",exhibitions:"exhibitionsCustomers",prospecting:"prospectingCustomers"};
 function sharedHistoryParent(){
@@ -2439,15 +2440,25 @@ async function mutateSharedHistory(action,entry,values){
 }
 $("sharedHistoryList").addEventListener("click",async e=>{
  if(sharedHistoryBusy||currentProfile?.role!=="admin")return;
- const edit=e.target.closest("[data-shared-history-edit]"),del=e.target.closest("[data-shared-history-delete]");if(!edit&&!del)return;
- const entry=sharedHistoryEntries[Number(edit?.dataset.sharedHistoryEdit??del.dataset.sharedHistoryDelete)];if(!entry)return;
+ const cancelDelete=e.target.closest("[data-shared-history-cancel-delete]");
+ if(cancelDelete){pendingSharedHistoryDelete=null;renderSharedHistory();return}
+ const confirmDelete=e.target.closest("[data-shared-history-confirm-delete]");
+ const edit=e.target.closest("[data-shared-history-edit]"),del=e.target.closest("[data-shared-history-delete]");if(!edit&&!del&&!confirmDelete)return;
+ const entry=confirmDelete?pendingSharedHistoryDelete:sharedHistoryEntries[Number(edit?.dataset.sharedHistoryEdit??del.dataset.sharedHistoryDelete)];if(!entry)return;
+ if(del){
+ pendingSharedHistoryDelete=entry;
+ $("sharedHistoryList").querySelectorAll(".shared-delete-confirm").forEach(e=>e.remove());
+ const panel=document.createElement("div");panel.className="shared-delete-confirm";panel.setAttribute("role","alert");
+ panel.innerHTML='<span>確定刪除第 '+esc(entry.number)+' 次聯繫紀錄？刪除後無法復原。</span><button type="button" class="btn danger" data-shared-history-confirm-delete>確認刪除</button><button type="button" class="btn" data-shared-history-cancel-delete>取消</button>';
+ del.closest(".history-item").appendChild(panel);return;
+ }
  if(edit){
  sharedHistoryEditing=entry;$("sharedHistoryDate").value=entry.date||today();$("sharedHistoryNotes").value=entry.notes||"";
  if(entry.first){$("sharedHistoryResult").value="其他";$("sharedHistoryResult").disabled=true}
  else{const select=$("sharedHistoryResult");select.disabled=false;if(entry.result&&!Array.from(select.options).some(o=>o.value===entry.result))select.add(new Option(entry.result,entry.result));select.value=entry.result||"其他"}
  $("sharedHistoryFormTitle").textContent=entry.first?"修改首次聯繫紀錄":"修改第 "+entry.number+" 次聯繫紀錄";$("sharedHistorySave").textContent="儲存修改";$("sharedHistoryCancel").classList.remove("hidden");$("sharedHistoryMsg").textContent="正在修改第 "+entry.number+" 次聯繫紀錄。";$("sharedHistoryForm").scrollIntoView({behavior:"smooth",block:"center"});
  }else{
- if(!confirm("確定刪除第 "+entry.number+" 次聯繫紀錄？此操作無法復原。"))return;
+ pendingSharedHistoryDelete=null;
  sharedHistoryBusy=true;renderSharedHistory();$("sharedHistoryMsg").textContent="正在刪除雲端紀錄…";
  try{await mutateSharedHistory("delete",entry,null);await refreshSharedHistory();resetSharedHistoryForm();$("sharedHistoryMsg").textContent="已刪除聯繫紀錄並同步雲端。"}catch(err){$("sharedHistoryMsg").textContent="刪除未完成："+err.message}
  finally{sharedHistoryBusy=false;renderSharedHistory()}
