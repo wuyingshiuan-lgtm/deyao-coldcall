@@ -2146,6 +2146,22 @@ html body h2[data-title-icon]::before{
  #prospectingHistorySection .actions{align-items:stretch;flex-direction:column}
  #prospectingCustomerSection .prospecting-detail-row .company-detail-grid{grid-template-columns:minmax(0,1fr)}
 }
+</style><style>
+@media(min-width:1101px){#prospectingCustomerSection table.record-table th:nth-child(1),#prospectingCustomerSection table.record-table td:nth-child(1){width:3%!important}
+#prospectingCustomerSection table.record-table th:nth-child(2),#prospectingCustomerSection table.record-table td:nth-child(2){width:7%!important}
+#prospectingCustomerSection table.record-table th:nth-child(3),#prospectingCustomerSection table.record-table td:nth-child(3){width:16%!important}
+#prospectingCustomerSection table.record-table th:nth-child(4),#prospectingCustomerSection table.record-table td:nth-child(4){width:6%!important}
+#prospectingCustomerSection table.record-table th:nth-child(5),#prospectingCustomerSection table.record-table td:nth-child(5){width:7%!important}
+#prospectingCustomerSection table.record-table th:nth-child(6),#prospectingCustomerSection table.record-table td:nth-child(6){width:6%!important}
+#prospectingCustomerSection table.record-table th:nth-child(7),#prospectingCustomerSection table.record-table td:nth-child(7){width:5%!important}
+#prospectingCustomerSection table.record-table th:nth-child(8),#prospectingCustomerSection table.record-table td:nth-child(8){width:6%!important}
+#prospectingCustomerSection table.record-table th:nth-child(9),#prospectingCustomerSection table.record-table td:nth-child(9){width:8%!important}
+#prospectingCustomerSection table.record-table th:nth-child(10),#prospectingCustomerSection table.record-table td:nth-child(10){width:8%!important}
+#prospectingCustomerSection table.record-table th:nth-child(11),#prospectingCustomerSection table.record-table td:nth-child(11){width:20%!important}
+#prospectingCustomerSection table.record-table th:nth-child(12),#prospectingCustomerSection table.record-table td:nth-child(12){width:8%!important}}
+#prospectingRecords td[data-label="操作"] .record-actions{display:flex;flex-direction:column;gap:6px}
+#prospectingRecords td[data-label="操作"] .btn{width:100%;margin:0;white-space:normal}
+#prospectingRecords td[data-label="備註"]{white-space:pre-wrap!important;overflow-wrap:anywhere}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2 data-title-icon="🏠">德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2 data-title-icon="🔐">修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
@@ -2276,7 +2292,7 @@ function renderProspectingCustomers(target){
  const rows=filterProspectingRows(all,$("prospectingSearch").value,date,region,count),admin=currentProfile?.role==="admin";
  $("prospectingListSummary").textContent=(date?date+" 當日開發共 ":"搜尋結果共 ")+rows.length+" 筆｜雲端總資料 "+all.length+" 筆";
  document.querySelectorAll("#prospectingRegionShortcuts [data-region]").forEach(b=>b.classList.toggle("active",b.dataset.region===region));
- const headers=["選取","開發日期","公司名稱","聯繫次數","聯絡人","職稱","分機","區域","開發方式","開發進度","備註"];
+ const headers=["選取","開發日期","公司名稱","聯繫次數","聯絡人","職稱","分機","區域","開發方式","開發進度","備註","操作"];
  const td=(label,value)=>'<td data-label="'+esc(label)+'">'+value+'</td>';
  const toolbar=admin?'<div class="batch-tools"><label><input type="checkbox" data-outreach-select-all="prospecting"> 全選目前搜尋結果</label><span data-outreach-selected-count="prospecting">已選 0 筆</span><button type="button" class="btn" data-outreach-export-selected="prospecting">匯出所選 Excel</button><button type="button" class="btn danger" data-outreach-bulk-delete="prospecting">刪除所選</button></div>':"";
  target.innerHTML=toolbar+(rows.length?'<table class="record-table prospecting-customer-table"><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join("")+'</tr></thead><tbody>'+rows.map(r=>{
@@ -2286,7 +2302,7 @@ function renderProspectingCustomers(target){
  +td("公司名稱",'<button type="button" class="company-detail-toggle" data-prospecting-detail="'+id+'" aria-expanded="false">'+esc(r.company||"未命名公司")+' ▾</button>')
  +td("聯繫次數",'<button type="button" class="history-count-link" data-prospecting-history="'+id+'" aria-expanded="false">'+prospectingContactCount(r)+' 次</button>')
  +[["聯絡人",r.contact],["職稱",r.title],["分機",r.extension],["區域",r.region||detectCity(r.address)||"未分類"],["開發方式",r.method],["開發進度",r.status],["備註",r.notes]].map(([label,v])=>td(label,esc(v||"—"))).join("")
- +'</tr>';
+ +td("操作",admin?'<div class="record-actions"><button type="button" class="btn" data-outreach-edit="prospecting" data-cloud-id="'+id+'">✎ 修改</button><button type="button" class="btn danger" data-outreach-delete="prospecting" data-cloud-id="'+id+'">♲ 刪除</button></div>':'<span class="meta">僅供檢視</span>')+'</tr>';
  }).join("")+'</tbody></table>':'<p class="history-empty">目前沒有符合條件的資料。</p>');
 }
 function toggleProspectingPanel(button,history){
