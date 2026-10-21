@@ -2518,11 +2518,11 @@ function filterRangeRows(rows,key,criteria){
 }
 async function fetchAllReportRows(table,columns,categories){
  let result=[];
- for(let from=0;;from+=1000){
- let query=sb.from(table).select(columns).order("id",{ascending:true}).range(from,from+999);
+ for(let from=0;;from+=500){
+ let query=sb.from(table).select(columns).order("id",{ascending:true}).range(from,from+499);
  if(categories)query=query.in("category",categories);
  const {data:rows,error}=await query;if(error)throw new Error("讀取 "+table+" 失敗："+error.message);
- result.push(...(rows||[]));if((rows||[]).length<1000)return result;
+ result.push(...(rows||[]));if((rows||[]).length<500)return result;
  }
 }
 function reportContacts(row,key,snapshot=rangeSnapshot){
@@ -2704,8 +2704,7 @@ document.addEventListener("click",e=>{
 },true);
 async function refreshSharedHistory(){
  if(sharedHistoryContext.key==="domestic"){
- const [parents,histories]=await Promise.all([sb.from("cold_call_records").select("*").order("visit_date",{ascending:false}),sb.from("cold_call_history").select("*").order("contact_date",{ascending:false})]);
- if(parents.error)throw parents.error;if(histories.error)throw histories.error;data=parents.data||[];historyData=histories.data||[];render();
+ await load();
  }else await loadOutreachCloud();
  renderSharedHistory();
 }
@@ -2801,8 +2800,8 @@ function outreachTarget(key){return key==="foreignEmail"?"foreignEmailRecords":k
 async function loadOutreachCloud(){
  if(!currentProfile)return;
  // Local storage is a cache only. Do not upload it on page load: stale browser caches can resurrect deleted cloud records.
- const {data:cloudRows,error}=await sb.from("outreach_records").select("id,category,data,created_at").in("category",outreachKeys).order("created_at",{ascending:true});
- if(error)throw new Error("讀取雲端業務資料失敗："+error.message);
+ const cloudRows=await fetchAllReportRows("outreach_records","id,category,data,created_at",outreachKeys);
+ cloudRows.sort((a,b)=>String(a.created_at||"").localeCompare(String(b.created_at||"")));
  for(const key of outreachKeys){const rows=(cloudRows||[]).filter(x=>x.category===key).map(x=>({...x.data,_cloudId:x.id,_createdAt:x.created_at}));outreachCache[key]=rows;try{localStorage.setItem("deyao_outreach_"+key,JSON.stringify(rows.map(({_cloudId,...row})=>row)))}catch(_){}}
  outreachCloudReady=true;
  for(const key of outreachKeys){renderOutreachRecords(key,outreachTarget(key));renderOutreachStats(key);const sum=$(key+"ExcelSummary");if(sum)sum.textContent="雲端共有 "+getOutreachRows(key).length+" 筆分類資料。"}renderForeignEmailExcelPreview();if(location.hash==="#prospectingHistory")renderProspectingHistory();if(location.hash==="#contactHistory")renderSharedHistory();
@@ -3313,7 +3312,15 @@ function syncMailStatus(){$("mail_sent").value=$("email").value.trim()?"true":"f
 function syncVisitStatus(){document.querySelectorAll("[data-visit]").forEach(el=>{const selected=el.dataset.visit===$("visit_suitable").value;el.classList.toggle("selected",selected);el.setAttribute("aria-pressed",String(selected))})}
 function reset(){$("form").querySelector('button[type="submit"]').textContent="新增客戶";editing=null;$("form").reset();$("visit_date").value=today();syncMailStatus();syncVisitStatus();if(currentProfile){$("recorder").value=currentProfile.name;$("recorder").readOnly=true}$("formTitle").textContent=currentProfile?.role==="editor"?"新增國內電訪紀錄（僅可上傳）":"新增國內電訪紀錄";$("msg").textContent=""}
 function payload(){let o={};fields.forEach(k=>o[k]=$(k).value.trim());const existing=editing?data.find(r=>String(r.id)===String(editing)):null;o.recorder=editing?(existing?.recorder||o.recorder):(currentProfile?.name||"");o.mail_sent=!!o.email;o.visit_suitable=$("visit_suitable").value==="true";return o}
-async function load(){if(!currentProfile)return;let {data:d,error}=await sb.from("cold_call_records").select("*").order("visit_date",{ascending:false}).order("created_at",{ascending:false});if(error){$("summary").textContent="讀取失敗："+error.message;return}data=d||[];let hr=await sb.from("cold_call_history").select("*").order("contact_date",{ascending:false}).order("created_at",{ascending:false});if(hr.error){$("summary").textContent="客戶資料已載入，但聯繫歷史讀取失敗："+hr.error.message;historyData=[]}else historyData=hr.data||[];$("excelSummary").textContent="目前雲端共有 "+data.length+" 筆資料。";render();if(location.hash==="#contactHistory")renderSharedHistory()}
+async function load(){
+ if(!currentProfile)return;
+ try{
+ const [customers,histories]=await Promise.all([fetchAllReportRows("cold_call_records","*"),fetchAllReportRows("cold_call_history","*")]);
+ customers.sort((a,b)=>String(b.visit_date||"").localeCompare(String(a.visit_date||""))||String(b.created_at||"").localeCompare(String(a.created_at||"")));
+ histories.sort((a,b)=>String(b.contact_date||"").localeCompare(String(a.contact_date||""))||String(b.created_at||"").localeCompare(String(a.created_at||"")));
+ data=customers;historyData=histories;$("excelSummary").textContent="目前雲端共有 "+data.length+" 筆資料。";render();if(location.hash==="#contactHistory")renderSharedHistory();
+ }catch(error){$("summary").textContent="雲端資料尚未完整載入，請重新整理："+error.message;throw error}
+}
 function contactCount(id){let extra=historyData.filter(h=>String(h.record_id)===String(id)).length;let first=data.some(r=>String(r.id)===String(id)&&Boolean(r.visit_date))?1:0;return first+extra} function shown(){let q=$("search").value.toLowerCase().replace(/\s/g,""),dt=$("dateFilter").value,af=$("areaFilter").value,cf=$("contactCountFilter")?.value||"";return data.filter(r=>{let n=contactCount(r.id);return (!dt||r.visit_date===dt)&&(!af||(af==="未分類"?!r.area:r.area===af))&&(!cf||(cf==="4+"?n>=4:n===Number(cf)))&&(!q||Object.values(r).join(" ").toLowerCase().replace(/\s/g,"").includes(q))})}
 function renderStats(){if(!currentProfile||currentProfile.role!=="admin")return;let d=$("statsDate").value||today(),rows=data.filter(r=>{let vd=String(r.visit_date||"").slice(0,10),cd=String(r.created_at||"").slice(0,10);return vd===d||(!vd&&cd===d)}),counts={};rows.forEach(r=>{let n=(r.recorder||"未指定").trim()||"未指定";counts[n]=(counts[n]||0)+1});let arr=Object.entries(counts).sort((a,b)=>b[1]-a[1]);$("statsSummary").textContent=d+" 共新增 "+rows.length+" 筆｜"+arr.length+" 位人員";$("statsRecords").innerHTML=arr.length?arr.map(([n,v])=>'<article class="card"><div class="top"><div class="company">'+esc(n)+'</div><span class="badge">'+v+' 筆</span></div></article>').join(""):"<p>此日期尚無新增資料。</p>"}
 function updateSelection(){let visible=shown().map(r=>String(r.id)),allowed=new Set(visible);for(const id of selectedIds)if(!allowed.has(id))selectedIds.delete(id);$("selectedCount").textContent="已選 "+selectedIds.size+" 筆";$("exportSelected").disabled=$("deleteSelected").disabled=!selectedIds.size;let all=$("selectAllRecords");if(all){all.checked=visible.length>0&&visible.every(id=>selectedIds.has(id));all.indeterminate=selectedIds.size>0&&!all.checked}}
@@ -3330,7 +3337,7 @@ $("form").onsubmit=async e=>{e.preventDefault();const form=e.currentTarget;if(fo
 async function manageHistory(record){if(currentProfile?.role!=="admin")return;currentHistoryRecordId=record.id;renderHistoryPage(record);location.hash="history";showPage()}
 function renderHistoryPage(record){if(!record)return;currentHistoryRecordId=record.id;$("historyTitle").textContent="聯繫歷史紀錄";$("historyCompanyMeta").textContent="公司："+(record.company_name||"未命名公司")+"｜首次電訪日期："+(displayShortDate(record.visit_date)||"未填")+"｜目前聯繫次數："+contactCount(record.id)+" 次";let old=historyData.filter(h=>String(h.record_id)===String(record.id)).map(h=>({...h,source:"history"}));let firstContact=record.visit_date?[{contact_number:1,contact_date:record.visit_date,contact_result:"首次電訪（原始電訪紀錄）",notes:record.notes||"（無備註）",source:"first"}]:[];let entries=[...old,...firstContact].sort((a,b)=>String(b.contact_date||"").localeCompare(String(a.contact_date||""))||Number(b.contact_number||0)-Number(a.contact_number||0));$("historyList").innerHTML=entries.length?entries.map((h,i)=>'<article class="history-item"><div class="history-item-head"><span>#'+esc(h.contact_number||"—")+'｜'+esc(displayShortDate(h.contact_date||"日期未填"))+'</span><span>'+esc(h.contact_result||"未填結果")+'</span></div><p>'+esc(h.notes||"（無備註）")+'</p></article>').join(""):'<div class="history-empty">目前尚無聯繫歷史紀錄。</div>';$("historyDate").value=today();$("historyResult").value="";$("historyNotes").value="";$("historyMsg").textContent=""}
 $("backToCustomers").addEventListener("click",()=>{location.hash="customers";showPage()});
-$("historyForm").addEventListener("submit",async e=>{e.preventDefault();if(currentProfile?.role!=="admin"||!currentHistoryRecordId)return;let record=data.find(r=>String(r.id)===String(currentHistoryRecordId));if(!record){$("historyMsg").textContent="找不到此客戶資料，請返回列表重新選擇。";return}let date=$("historyDate").value,result=$("historyResult").value,notes=$("historyNotes").value.trim();if(!date||!result){$("historyMsg").textContent="請填寫聯繫日期與聯繫結果。";return}const btn=$("saveHistory");btn.disabled=true;$("historyMsg").textContent="儲存中…";try{let n=contactCount(record.id)+1;let {data:authData}=await sb.auth.getUser();let {error}=await sb.from("cold_call_history").insert({record_id:record.id,contact_date:date,contact_number:n,contact_result:result,notes,created_by:authData?.user?.id||null});if(error)throw error;let hr=await sb.from("cold_call_history").select("*").order("contact_date",{ascending:false}).order("created_at",{ascending:false});if(hr.error)throw hr.error;historyData=hr.data||[];render();renderHistoryPage(record);$("historyMsg").textContent="已成功新增第 "+n+" 次聯繫紀錄。"}catch(err){$("historyMsg").textContent="新增失敗："+(err.message||"請稍後重試")}finally{btn.disabled=false}});
+$("historyForm").addEventListener("submit",async e=>{e.preventDefault();if(currentProfile?.role!=="admin"||!currentHistoryRecordId)return;let record=data.find(r=>String(r.id)===String(currentHistoryRecordId));if(!record){$("historyMsg").textContent="找不到此客戶資料，請返回列表重新選擇。";return}let date=$("historyDate").value,result=$("historyResult").value,notes=$("historyNotes").value.trim();if(!date||!result){$("historyMsg").textContent="請填寫聯繫日期與聯繫結果。";return}const btn=$("saveHistory");btn.disabled=true;$("historyMsg").textContent="儲存中…";try{let n=contactCount(record.id)+1;let {data:authData}=await sb.auth.getUser();let {error}=await sb.from("cold_call_history").insert({record_id:record.id,contact_date:date,contact_number:n,contact_result:result,notes,created_by:authData?.user?.id||null});if(error)throw error;historyData=await fetchAllReportRows("cold_call_history","*");historyData.sort((a,b)=>String(b.contact_date||"").localeCompare(String(a.contact_date||""))||String(b.created_at||"").localeCompare(String(a.created_at||"")));render();renderHistoryPage(record);$("historyMsg").textContent="已成功新增第 "+n+" 次聯繫紀錄。"}catch(err){$("historyMsg").textContent="新增失敗："+(err.message||"請稍後重試")}finally{btn.disabled=false}});
 $("regionShortcuts")?.addEventListener("click",e=>{let b=e.target.closest("button[data-region]");if(!b)return;$("areaFilter").value=b.dataset.region;document.querySelectorAll("#regionShortcuts [data-region]").forEach(x=>x.classList.toggle("active",x===b));render()});
 $("contactCountFilter")?.addEventListener("change",render);
 $("email").addEventListener("input",syncMailStatus);$("email").addEventListener("change",syncMailStatus);$("company_address").addEventListener("input",syncCityFromAddress);$("company_address").addEventListener("change",syncCityFromAddress);document.querySelectorAll("[data-visit]").forEach(btn=>btn.addEventListener("click",()=>{$("visit_suitable").value=btn.dataset.visit;syncVisitStatus()}));$("cancel").onclick=reset;$("search").oninput=render;$("dateFilter").onchange=render;$("areaFilter").onchange=render;$("clearDate").onclick=()=>{$("dateFilter").value="";render()};$("statsDate").value=today();$("statsDate").oninput=renderStats;$("statsDate").onchange=renderStats;

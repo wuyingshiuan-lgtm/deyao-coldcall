@@ -54,3 +54,4 @@ jobs:
           node --check customer-import-preview.js
           node tests/customer-import-preview.test.cjs
           node tests/save-feedback.test.cjs
+          node tests/cloud-pagination.test.cjs
