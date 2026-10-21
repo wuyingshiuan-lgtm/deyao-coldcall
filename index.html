@@ -2407,7 +2407,7 @@ async function mutateSharedHistory(action,entry,values){
  if(error)throw error;if(!saved?.length)throw new Error("雲端未確認修改成功。");
  }else if(action==="add"){
  if(sharedHistoryAddResults.has(values.id))return sharedHistoryAddResults.get(values.id);
- const row=sharedHistoryParent(),number=sharedEntryList(row,key).length+1;
+ const row=sharedHistoryParent(),number=Math.max(row.visit_date?1:0,...historyData.filter(h=>String(h.record_id)===String(id)).map(h=>Number(h.contact_number)||0))+1;
  const {data:saved,error}=await sb.from("cold_call_history").insert({record_id:id,contact_date:values.date,contact_number:number,contact_result:values.result,notes:values.notes,created_by:currentProfile.id}).select("id").single();
  if(error)throw error;sharedHistoryAddResults.set(values.id,saved.id);return saved.id;
  }else{
