@@ -2097,6 +2097,19 @@ html body h2[data-title-icon]::before{
 #prospectingCustomerSection table.record-table th:nth-child(15){width:5%!important;min-width:0!important}
 #prospectingCustomerSection table.record-table th:nth-child(16){width:7.000000000000001%!important;min-width:0!important}
 }
+</style><style>
+#prospectingForm .prospecting-grid>div.prospecting-notes{grid-column:1/-1!important;width:100%;min-width:0}
+#prospectingForm .prospecting-notes textarea{display:block;width:100%;min-height:120px}
+#prospectingCustomerSection .customer-filter-row{display:grid;grid-template-columns:2fr repeat(3,minmax(0,1fr));gap:12px;align-items:end}
+#prospectingCustomerSection .customer-filter-row>div{min-width:0}
+#prospectingRecords input[type="checkbox"]{width:18px;height:18px;min-height:18px;accent-color:#2877d5}
+#prospectingRecords .batch-tools label{display:inline-flex;align-items:center;gap:7px;margin:0}
+#prospectingRecords .record-actions{display:flex;flex-wrap:wrap;gap:6px}
+#prospectingCustomerSection .company-detail-item strong{white-space:pre-wrap;overflow-wrap:anywhere}
+#prospectingRecords .history-item{margin-bottom:10px}
+@media(max-width:1000px){#prospectingCustomerSection .customer-filter-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#prospectingCustomerSection .customer-filter-row{grid-template-columns:minmax(0,1fr)}}
+
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2 data-title-icon="🏠">德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2 data-title-icon="🔐">修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
