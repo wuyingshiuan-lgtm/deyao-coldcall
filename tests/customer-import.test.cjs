@@ -13,7 +13,7 @@ assert.equal(C.mapRows([{'產業':'醫療','網址':'https://x'}]).hasCompany,fa
 const html=fs.readFileSync('index.html','utf8');
 const guard=html.slice(html.indexOf('async function readAllCompanyRows'),html.indexOf('async function insertOutreachRows'));
 let tables={cold_call_records:[],outreach_records:[]},readError=null,alerts=[],writes=0;
-const context={CustomerImport:C,alert:x=>alerts.push(x),sb:{from(table){return {select(){return this},order(){return this},async range(start,end){return{data:tables[table].slice(start,end+1),error:readError}}}}}};
+const context={CustomerImport:C,appNotice:x=>alerts.push(x),sb:{from(table){return {select(){return this},order(){return this},async range(start,end){return{data:tables[table].slice(start,end+1),error:readError}}}}}};
 vm.createContext(context);vm.runInContext(guard+';this.write=customerWrite',context);
 (async()=>{
  tables.cold_call_records=Array.from({length:1101},(_,i)=>({id:i,company_name:'公司'+i}));

@@ -157,7 +157,7 @@ $b("bulkConfirm").onclick=async()=>{
  if(busy||currentProfile?.role!=="admin")return;
  const selected=candidates.filter(c=>c.target&&!c.issue);
  if(!selected.length)return;
- if(!confirm("確定新增 "+selected.length+" 筆聯繫紀錄至雲端？此操作不會覆蓋原有資料。"))return;
+ if(!await appConfirm("確定新增 "+selected.length+" 筆聯繫紀錄至雲端？此操作不會覆蓋原有資料。"))return;
  busy=true;["bulkConfirm","bulkReset","bulkUpload"].forEach(id=>$b(id).disabled=true);
  let saved=0,skipped=0,failed=[];
  for(const c of selected){
@@ -171,6 +171,6 @@ $b("bulkConfirm").onclick=async()=>{
  candidates=candidates.filter(c=>!done.has(c.index));
  if(candidates.length)renderPreview();else $b("bulkPreview").classList.add("hidden");
  status("匯入完成：成功 "+saved+" 筆、重複略過 "+skipped+" 筆、失敗 "+failed.length+" 筆。"+(failed.length?"\n"+failed.join("\n"):"")+" 原有客戶及首次聯繫紀錄未修改。");
- if(saved>0)alert("✓ 聯繫紀錄匯入成功 "+saved+" 筆；重複略過 "+skipped+" 筆、失敗 "+failed.length+" 筆。");
+ if(saved>0)appNotice("✓ 聯繫紀錄匯入成功 "+saved+" 筆；重複略過 "+skipped+" 筆、失敗 "+failed.length+" 筆。");
 };
 })();

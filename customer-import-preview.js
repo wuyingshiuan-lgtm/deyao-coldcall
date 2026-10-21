@@ -32,7 +32,7 @@ function validateCustomerImport(entries,cloudNames){
  return entries.filter(e=>e.selected&&!e.saved&&!e.issue&&!e.error);
 }
 async function openCustomerImport(wb,key){
- if(document.getElementById('customerImportPreview')){alert('請先完成或關閉目前的匯入預覽。');return}
+ if(document.getElementById('customerImportPreview')){appNotice('請先完成或關閉目前的匯入預覽。');return}
  const entries=customerImportStage(wb);if(!entries.length)throw Error('檔案內沒有資料');
  let cloudNames=new Set(),cloudReady=false,busy=false,page=0,filter='all',editingEntry=null;
  const dialog=document.createElement('dialog');dialog.id='customerImportPreview';dialog.setAttribute('aria-labelledby','customerImportTitle');
@@ -77,7 +77,7 @@ async function openCustomerImport(wb,key){
    // Only atomic bulk insert errors are retried; completed rows are never resubmitted.
    await customerWrite(mapped,null,async()=>{const payload=key==='domestic'?mapped:mapped.map(row=>({category:key,data:row,created_by:currentProfile.id}));const {error}=await sb.from(key==='domestic'?'cold_call_records':'outreach_records').insert(payload);if(error)throw error});
    selected.forEach(e=>{e.saved=true;e.selected=false;e.error=''});render();
-   alert('✓ 匯入成功 '+selected.length+' 筆，已儲存至雲端。尚有 '+entries.filter(e=>!e.saved).length+' 筆未匯入，可在預覽中繼續修正。');
+   appNotice('✓ 匯入成功 '+selected.length+' 筆，已儲存至雲端。尚有 '+entries.filter(e=>!e.saved).length+' 筆未匯入，可在預覽中繼續修正。');
    msg.textContent='✓ 已成功匯入 '+selected.length+' 筆。其餘 '+entries.filter(e=>!e.saved).length+' 筆仍保留，可繼續修正。';
    try{if(key==='domestic')await load();else await loadOutreachCloud()}catch(err){msg.textContent+='\n寫入成功，但列表重新讀取未完成：'+err.message}
   }catch(err){cloudReady=false;entries.filter(e=>e.selected&&!e.saved&&!e.issue).forEach(e=>e.error='未確認匯入：'+err.message);msg.textContent='匯入未完成：'+err.message+'\n資料保留。請重新檢查雲端，確認是否已存在後再試。'}finally{busy=false;render()}
