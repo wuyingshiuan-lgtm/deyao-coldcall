@@ -67,8 +67,8 @@ async function openCustomerImport(wb,key){
   if(editingEntry){msg.textContent='請先儲存或取消目前的修改。';return}
   editingEntry=entries[Number(button.dataset.importEdit)];
   q('[data-import-editor]').innerHTML='<section class="box"><h3>修改 '+esc(editingEntry.sheet)+' 第 '+editingEntry.row+' 列</h3><p>原始表頭 → 對應欄位；遇到衝突時可清空錯誤的欄位，或修正成一致值。</p><div class="grid">'+editingEntry.fields.map((f,i)=>'<label>'+esc(f.header)+' → '+esc(CustomerImport.canonical(f.header))+'<textarea data-import-field="'+i+'">'+esc(f.value)+'</textarea></label>').join('')+'</div><button class="btn primary" type="button" data-import-apply>儲存修正並檢查</button> <button class="btn" type="button" data-import-cancel-edit>取消修改</button></section>';
-  q('[data-import-apply]').onclick=()=>{dialog.querySelectorAll('[data-import-field]').forEach(el=>editingEntry.fields[Number(el.dataset.importField)].value=el.value);editingEntry.error='';editingEntry=null;q('[data-import-editor]').innerHTML='';render()};
-  q('[data-import-cancel-edit]').onclick=()=>{editingEntry=null;q('[data-import-editor]').innerHTML='';render()};render();q('[data-import-editor]').scrollIntoView({block:'nearest'});
+  q('[data-import-apply]').onclick=()=>{dialog.querySelectorAll('[data-import-field]').forEach(el=>editingEntry.fields[Number(el.dataset.importField)].value=el.value);editingEntry.error='';editingEntry=null;q('[data-import-editor]').innerHTML='';render();dialog.scrollTop=0};
+  q('[data-import-cancel-edit]').onclick=()=>{editingEntry=null;q('[data-import-editor]').innerHTML='';render();dialog.scrollTop=0};render();q('[data-import-editor]').scrollIntoView({block:'nearest'});
  };
  q('[data-import-save]').onclick=async()=>{
   if(busy||editingEntry)return;busy=true;render();

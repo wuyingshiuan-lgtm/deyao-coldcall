@@ -57,3 +57,4 @@ jobs:
           node tests/cloud-pagination.test.cjs
           node --check address-region-tools.js
           node tests/address-regions.test.cjs
+          node tests/import-outcome.test.cjs
