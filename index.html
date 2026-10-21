@@ -2226,6 +2226,28 @@ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomer
 </style><style>
 html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) .customer-company-button .company-name-cute-icon{width:17px!important;height:17px!important;min-width:17px!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;vertical-align:-2px;line-height:1!important}
 html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) .customer-company-button .company-name-cute-icon svg{display:block;width:17px;height:17px;overflow:visible}
+</style><style>
+.prospecting-method-badge{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:5px 8px;border:1px solid;border-radius:999px;font-size:11px;font-weight:800;line-height:1.3;white-space:nowrap;vertical-align:middle}
+.prospecting-method-badge.method-phone{background:#eaf3ff;border-color:#c4dcfa;color:#245e9d}
+.prospecting-method-badge.method-email{background:#ffedf3;border-color:#f3c8d7;color:#a33f68}
+.prospecting-method-badge.method-visit{background:#eaf8ef;border-color:#bfe3ca;color:#277347}
+.prospecting-method-badge.method-exhibition{background:#f3edff;border-color:#d9caf5;color:#7350a5}
+.prospecting-method-badge.method-other{background:#fff5df;border-color:#efdaab;color:#8b651e}
+@media(min-width:1101px){
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="table"] :is(th,td)[data-compact-column="true"]{white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important;padding-left:5px!important;padding-right:5px!important}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="table"] td[data-compact-column="true"] :is(button,span){white-space:nowrap!important}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="table"] td[data-compact-column="false"]{overflow-wrap:anywhere!important;white-space:normal!important}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="table"] td[data-is-notes="true"]{white-space:pre-wrap!important}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="cards"]{display:block!important;table-layout:auto!important}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="cards"] thead{display:none!important}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="cards"] tbody{display:grid!important;gap:14px;width:100%}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="cards"] tbody tr{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid #cfe1f7;border-radius:12px;overflow:visible!important}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="cards"] tbody tr>td{display:grid!important;grid-template-columns:100px minmax(0,1fr);gap:8px;width:auto!important;max-width:none!important;min-width:0!important;white-space:normal!important;padding:10px!important}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="cards"] tbody tr>td::before{display:block!important;content:attr(data-label)!important;color:#496d99;font-weight:700}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="cards"] td:is([data-label="公司名稱"],[data-label="展覽名稱"],[data-is-notes="true"],[colspan]){grid-column:1/-1}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="cards"] td[colspan]{display:block!important}
+ html body :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table[data-fit-mode="cards"] td[colspan]::before{display:none!important}
+}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2 data-title-icon="🏠">德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2 data-title-icon="🔐">修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
@@ -2351,6 +2373,14 @@ function filterProspectingRows(rows,query,date,region,count){
  return (!date||String(row.date||"").slice(0,10)===date)&&(!region||(region==="未分類"?!city:city===region))&&(!count||(count==="4+"?n>=4:n===Number(count)))&&(!q||Object.entries(row).filter(([k])=>!k.startsWith("_")).map(([,v])=>typeof v==="object"?JSON.stringify(v):String(v??"")).join(" ").toLowerCase().replace(/\s/g,"").includes(q));
  }).slice().sort((a,b)=>String(b.date||"").localeCompare(String(a.date||""))||String(b._createdAt||"").localeCompare(String(a._createdAt||"")));
 }
+
+function prospectingMethodBadge(value){
+ const text=String(value||"").trim();
+ const styles={"電話開發":["phone","☎"],"Email":["email","💌"],"現場拜訪":["visit","🚗"],"展覽取得":["exhibition","🎪"],"其他":["other","✨"]};
+ const [kind,icon]=styles[text]||["other","✨"];
+ return '<span class="prospecting-method-badge method-'+kind+'" title="開發方式：'+esc(text||"未填")+'"><span aria-hidden="true">'+icon+'</span> '+esc(text||"未填")+'</span>';
+}
+
 function renderProspectingCustomers(target){
  const all=getOutreachRows("prospecting"),date=$("prospectingDateFilter").value,region=$("prospectingAreaFilter").value,count=$("prospectingContactCountFilter").value;
  const rows=filterProspectingRows(all,$("prospectingSearch").value,date,region,count),admin=currentProfile?.role==="admin";
@@ -2365,7 +2395,7 @@ function renderProspectingCustomers(target){
  +td("開發日期",esc(displayShortDate(r.date||"")))
  +td("公司名稱",'<button type="button" class="company-detail-toggle" data-prospecting-detail="'+id+'" aria-expanded="false">'+esc(r.company||"未命名公司")+' ▾</button>')
  +td("聯繫次數",'<button type="button" class="history-count-link" data-prospecting-history="'+id+'" aria-expanded="false">'+prospectingContactCount(r)+' 次</button>')
- +[["聯絡人",r.contact],["職稱",r.title],["分機",r.extension],["區域",r.region||detectCity(r.address)||"未分類"],["開發方式",r.method],["開發進度",r.status],["備註",r.notes]].map(([label,v])=>td(label,esc(v||"—"))).join("")
+ +[["聯絡人",r.contact],["職稱",r.title],["分機",r.extension],["區域",r.region||detectCity(r.address)||"未分類"],["開發方式",r.method],["開發進度",r.status],["備註",r.notes]].map(([label,v])=>td(label,label==="開發方式"?prospectingMethodBadge(v):esc(v||"—"))).join("")
  +td("操作",admin?'<div class="record-actions"><button type="button" class="btn" data-outreach-edit="prospecting" data-cloud-id="'+id+'">✎ 修改</button><button type="button" class="btn danger" data-outreach-delete="prospecting" data-cloud-id="'+id+'">♲ 刪除</button></div>':'<span class="meta">僅供檢視</span>')+'</tr>';
  }).join("")+'</tbody></table>':'<p class="history-empty">目前沒有符合條件的資料。</p>');
 }
@@ -2973,5 +3003,67 @@ $("foreignEmailHistoryForm")?.addEventListener("submit",async e=>{e.preventDefau
  }
  styleCustomerDirectories();
  new MutationObserver(styleCustomerDirectories).observe(document.body,{childList:true,subtree:true});
+})();
+</script><script>
+(function(){
+ const selector="#customerSection table.record-table,#foreignEmailCustomerSection table.data-table,#exhibitionsCustomerSection table.data-table,#prospectingCustomerSection table.record-table";
+ const canvas=document.createElement("canvas"),context=canvas.getContext("2d");
+ let scheduled=false;
+ function measure(text,element){const css=getComputedStyle(element);context.font=css.fontWeight+" "+css.fontSize+" "+css.fontFamily;return context.measureText(String(text||"").trim()).width}
+ function classify(label){
+ if(/公司名稱/.test(label))return {weight:3,min:145};
+ if(/展覽名稱/.test(label))return {weight:2,min:120};
+ if(/備註/.test(label))return {weight:4,min:165};
+ if(/^(Email|Mail)$/i.test(label))return {weight:2,min:125};
+ if(/產業/.test(label))return {weight:1,min:75};
+ return null;
+ }
+ function sizeTable(table){
+ const heads=Array.from(table.querySelectorAll("thead th"));if(!heads.length)return;
+ const rows=Array.from(table.querySelectorAll("tbody tr")).filter(row=>!row.querySelector("td[colspan]"));
+ const labels=heads.map(h=>h.textContent.trim()),cells=rows.map(row=>Array.from(row.children));
+ if(innerWidth<=1100){
+ table.removeAttribute("data-fit-mode");
+ table.style.removeProperty("table-layout");
+ heads.concat(...cells).forEach(cell=>{if(cell.dataset.dynamicWidth){cell.style.removeProperty("width");delete cell.dataset.dynamicWidth}});
+ return;
+ }
+ const parent=table.parentElement,css=getComputedStyle(parent);
+ const available=Math.floor(parent.clientWidth-parseFloat(css.paddingLeft||0)-parseFloat(css.paddingRight||0));
+ if(available<1)return;
+ const columns=labels.map((label,index)=>{
+ const flexible=classify(label);
+ const items=cells.map(row=>row[index]).filter(Boolean);
+ let width=Math.max(32,measure(label,heads[index])+14);
+ items.forEach(cell=>{
+ const buttons=Array.from(cell.querySelectorAll("button"));
+ let content=buttons.length?Math.max(...buttons.map(b=>measure(b.textContent,b)+(/聯繫|聯络/.test(label)?24:18))):measure(cell.textContent,cell)+14;
+ if(label==="選取")content=32;
+ if(cell.querySelector(".prospecting-method-badge"))content=measure(cell.textContent,cell)+24;
+ if(cell.querySelector(".customer-status-pill,.exhibition-status-pill"))content=measure(cell.textContent,cell)+20;
+ width=Math.max(width,content);
+ });
+ if(flexible)return {...flexible,label,index};
+ if(width>165)return {weight:1,min:100,label,index};
+ return {width:Math.ceil(width+2),label,index};
+ });
+ const compact=columns.reduce((sum,c)=>sum+(c.width||0),0),flex=columns.filter(c=>c.weight),minFlex=flex.reduce((sum,c)=>sum+c.min,0);
+ if(available<compact+minFlex){table.dataset.fitMode="cards";return}
+ table.dataset.fitMode="table";table.style.setProperty("table-layout","fixed","important");
+ const extra=available-compact-minFlex,weight=flex.reduce((sum,c)=>sum+c.weight,0);
+ columns.forEach(column=>{
+ const width=column.width||(column.min+extra*column.weight/weight);
+ [heads[column.index],...cells.map(row=>row[column.index])].filter(Boolean).forEach(cell=>{
+ cell.dataset.compactColumn=String(!!column.width);cell.dataset.dynamicWidth="true";
+ const target=width.toFixed(2)+"px";if(cell.style.width!==target)cell.style.setProperty("width",target,"important");
+ });
+ });
+ }
+ function layout(){scheduled=false;document.querySelectorAll(selector).forEach(sizeTable)}
+ function schedule(){if(!scheduled){scheduled=true;requestAnimationFrame(layout)}}
+ new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
+ window.addEventListener("resize",schedule);
+ if(window.ResizeObserver){const observer=new ResizeObserver(schedule);document.querySelectorAll("#records,#foreignEmailRecords,#exhibitionsRecords,#prospectingRecords").forEach(e=>observer.observe(e))}
+ schedule();
 })();
 </script></body></html>
