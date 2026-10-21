@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');require('../customer-import.js');
+const context={CustomerImport, XLSX:{utils:{sheet_to_json:s=>s}}};vm.createContext(context);vm.runInContext(fs.readFileSync('customer-import-preview.js','utf8'),context);
+const entries=context.customerImportStage({SheetNames:['客戶','資料來源'],Sheets:{客戶:[['公司','公司名稱','電話'],['甲','乙','123'],['','','789'],['丙','',''],['丙','',''],['雲端公司','','']],資料來源:[['產業','網址'],['醫療','https://example.com']]}});
+assert.equal(entries.length,6);assert.equal(entries[5].selected,false);assert.equal(entries[1].row,3);
+let ready=context.validateCustomerImport(entries,new Set(['雲端公司']));assert.equal(ready.length,0);
+assert.match(entries[0].issue,/衝突/);assert.match(entries[1].issue,/缺少公司/);assert.match(entries[2].issue,/檔案內公司重複/);assert.match(entries[4].issue,/已存在雲端/);
+entries[0].fields[1].value='';entries[1].fields[0].value='丁';entries[3].selected=false;
+ready=context.validateCustomerImport(entries,new Set(['雲端公司']));assert.equal(ready.length,3);
+ready[0].saved=true;ready[0].selected=false;ready=context.validateCustomerImport(entries,new Set(['雲端公司','甲']));assert.equal(ready.length,2);
+assert.equal(entries[0].saved,true);assert.equal(entries[1].values['電話'],'789');
+console.log('PASS: all source rows retained, original row numbers, conflicts, missing names, duplicate groups, cloud duplicates, edit/revalidate, unselect duplicate, completed rows excluded');

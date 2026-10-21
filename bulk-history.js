@@ -171,5 +171,6 @@ $b("bulkConfirm").onclick=async()=>{
  candidates=candidates.filter(c=>!done.has(c.index));
  if(candidates.length)renderPreview();else $b("bulkPreview").classList.add("hidden");
  status("匯入完成：成功 "+saved+" 筆、重複略過 "+skipped+" 筆、失敗 "+failed.length+" 筆。"+(failed.length?"\n"+failed.join("\n"):"")+" 原有客戶及首次聯繫紀錄未修改。");
+ if(saved>0)alert("✓ 聯繫紀錄匯入成功 "+saved+" 筆；重複略過 "+skipped+" 筆、失敗 "+failed.length+" 筆。");
 };
 })();
