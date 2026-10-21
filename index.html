@@ -2080,6 +2080,31 @@ html body h2[data-title-icon]::before{
 #prospectingRecords .history-item{margin-bottom:10px}
 @media(max-width:1000px){#prospectingCustomerSection .customer-filter-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){#prospectingCustomerSection .customer-filter-row{grid-template-columns:minmax(0,1fr)}}
+</style><style>
+#prospectingRecords .batch-tools{gap:10px;align-items:center}
+#prospectingRecords .batch-tools>label{display:inline-flex!important;align-items:center;gap:8px;margin:0}
+#prospectingRecords input[type="checkbox"]{display:inline-block!important;width:18px!important;height:18px!important;min-height:18px!important;padding:0!important;flex:none!important}
+@media(min-width:1101px){
+ #prospectingCustomerSection table.record-table{table-layout:fixed!important}
+ #prospectingCustomerSection table.record-table th{font-size:11px!important;padding:10px 5px!important;word-break:normal}
+ #prospectingCustomerSection table.record-table td{padding:10px 5px!important;font-size:12px!important}
+ #prospectingCustomerSection table.record-table th:nth-child(1){width:3%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(2){width:6%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(3){width:13%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(4){width:4%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(5){width:6%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(6){width:5%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(7){width:4%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(8){width:7.000000000000001%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(9){width:5%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(10){width:6%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(11){width:9%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(12){width:5%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(13){width:5%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(14){width:10%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(15){width:5%!important;min-width:0!important}
+#prospectingCustomerSection table.record-table th:nth-child(16){width:7.000000000000001%!important;min-width:0!important}
+}
 </style></head><body>
 <div id="login" class="login"><form id="loginForm" class="loginbox"><h2 data-title-icon="🏠">德曜精密業務電訪記錄</h2><p>請輸入工號與密碼登入。</p><label>工號</label><input id="employeeNo" required autocomplete="username" placeholder="例如：A001"><label style="margin-top:12px">密碼</label><input id="pw" type="password" required autocomplete="current-password" placeholder="密碼"><div class="actions"><button id="loginSubmitBtn" type="button" class="btn primary">登入</button><span id="loginMsg" class="msg"></span></div></form></div>
 <div id="changePassword" class="login hidden"><form id="changePasswordForm" class="loginbox"><h2 data-title-icon="🔐">修改密碼</h2><label>新密碼</label><input id="changePw1" type="password" minlength="6" required autocomplete="new-password" placeholder="至少 6 個字元"><label style="margin-top:12px">再次輸入新密碼</label><input id="changePw2" type="password" minlength="6" required autocomplete="new-password" placeholder="再次輸入"><div class="actions"><button class="btn primary">確認修改</button><button id="cancelChangePassword" class="btn" type="button">取消</button><span id="changePwMsg" class="msg"></span></div></form></div>
