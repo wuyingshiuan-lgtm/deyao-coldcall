@@ -1,7 +1,7 @@
 /* Excel 聯繫歷史批次匯入：只新增後續歷史，不建立或覆蓋客戶 */
 (function(){
 const CATS={domestic:"國內電訪",foreignEmail:"國外 Email",exhibitions:"國內外展覽",prospecting:"陌生開發拜訪"};
-const RESULTS=["未接","已聯絡","待回覆","已寄送資料","暫無需求","已寄信","已回覆","可約拜訪","待追蹤","未回覆","無效 Email","有興趣","已報價","持續洽談","無需求","其他"];
+const RESULTS=["未接","已聯絡","待回覆","已寄送資料","暫無需求","已寄信","已寄回信","已回覆","可約拜訪","待追蹤","未回覆","無效 Email","有興趣","已報價","持續洽談","無需求","其他"];
 const $b=id=>document.getElementById(id), norm=s=>String(s||"").normalize("NFKC").replace(/\s+/g,"").toLowerCase();
 const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let candidates=[],busy=false;
