@@ -7,7 +7,7 @@ function planAddressUpdates(domestic,outreach){
 }
 let addressBackfillBusy=false;
 async function backfillCloudRegions(){
- if(addressBackfillBusy)return;if(currentProfile?.role!=='admin'){appNotice('此操作僅限管理員執行。');return}
+ if(addressBackfillBusy||cloudPhoneRegionBusy)return;if(currentProfile?.role!=='admin'){appNotice('此操作僅限管理員執行。');return}
  addressBackfillBusy=true;const panels=[...document.querySelectorAll('[data-address-status]')],buttons=[...document.querySelectorAll('[data-address-backfill]')];buttons.forEach(b=>b.disabled=true);
  const status=text=>panels.forEach(p=>p.textContent=text);status('正在讀取完整雲端資料並辨識地址…');
  try{
@@ -40,4 +40,85 @@ async function backfillCloudRegions(){
   panel.querySelector('[data-preview-paste]').onclick=()=>{const text=panel.querySelector('textarea').value;if(!text.trim()){appNotice('請先貼上包含表頭的 Excel 資料。');return}try{openCustomerImport(XLSX.read(text,{type:'string',raw:true}),key).catch(e=>appNotice(e.message))}catch(e){appNotice('無法讀取貼上的資料：'+e.message)}};
   panel.querySelector('[data-address-backfill]').onclick=backfillCloudRegions;section.appendChild(panel);
  }
+})();
+
+/* Shared with import preview; never guess a single county for shared calling areas. */
+function cloudPhoneRegion(row,domestic=false){
+ const labelled=String(row.notes||'').match(/(?:^|\n)(?:公司地址|地址)[：:]([^\n]+)/);
+ const address=String(row.company_address||row.address||row['公司地址']||row['地址']||labelled?.[1]||'').trim();
+ const existing=String(domestic?row.area||'':row.region||'').trim();
+ if(detectCity(address)||existing)return {city:'',label:'',skip:true};
+ const phone=String(row.phone||row['電話']||row['聯繫電話']||'').trim();
+ const country=String(row.country||row.location||'').trim();
+ const explicitTaiwan=/^(?:\+886|00886)/.test(phone.normalize('NFKC').replace(/[\s()\-]/g,''));
+ if(!domestic&&country&&!/^(台灣|臺灣|台灣地區|臺灣地區|台澎金馬|中華民國|Taiwan|TW|TWN|Taiwan,?\s*(?:R\.?O\.?C\.?|\(R\.?O\.?C\.?\)))$/i.test(country)&&!explicitTaiwan)return {city:'',label:'',skip:true};
+ return detectImportPhoneRegion(phone);
+}
+function planCloudPhoneUpdates(domestic,outreach){
+ const tasks=[],review=[];
+ for(const row of domestic){
+  const result=cloudPhoneRegion(row,true);
+  if(result.city)tasks.push({table:'cold_call_records',id:row.id,original:row,patch:{area:result.city}});
+  else if(!result.skip&&row.phone)review.push({category:'國內電訪',company:row.company_name||'未命名公司',phone:row.phone,reason:result.label});
+ }
+ for(const row of outreach){
+  const value=row.data||{},result=cloudPhoneRegion(value);
+  if(result.city)tasks.push({table:'outreach_records',id:row.id,original:row,patch:{data:{...value,region:result.city}}});
+  else if(!result.skip&&(value.phone||value['電話']||value['聯繫電話']))review.push({category:outreachConfig[row.category]?.title||row.category,company:value.company||'未命名公司',phone:value.phone||value['電話']||value['聯繫電話'],reason:result.label});
+ }
+ return {tasks,review};
+}
+let cloudPhoneRegionBusy=false,cloudPhoneAutoUser='',cloudPhoneLastResult=null;
+function renderCloudPhoneResult(result){
+ document.querySelectorAll('[data-phone-status]').forEach(p=>p.textContent=result.message);
+ document.querySelectorAll('[data-phone-review]').forEach(panel=>{
+  panel.innerHTML=result.review.length?'<summary>待人工確認 '+result.review.length+' 筆（顯示前 100 筆）</summary><div class="table-wrap"><table class="data-table"><thead><tr><th>分類</th><th>公司</th><th>電話</th><th>原因</th></tr></thead><tbody>'+result.review.slice(0,100).map(r=>'<tr><td>'+esc(r.category)+'</td><td>'+esc(r.company)+'</td><td>'+esc(r.phone)+'</td><td>'+esc(r.reason)+'</td></tr>').join('')+'</tbody></table></div>':'';
+ });
+}
+async function backfillCloudPhoneRegions(){
+ if(cloudPhoneRegionBusy||addressBackfillBusy)return;
+ if(currentProfile?.role!=='admin')return;
+ cloudPhoneRegionBusy=true;
+ const buttons=[...document.querySelectorAll('[data-phone-backfill],[data-address-backfill]')];buttons.forEach(b=>b.disabled=true);
+ const status=message=>document.querySelectorAll('[data-phone-status]').forEach(p=>p.textContent=message);
+ status('正在檢查全部雲端資料的市話區碼…');
+ try{
+  const [domestic,outreach]=await Promise.all([fetchAllReportRows('cold_call_records','*'),fetchAllReportRows('outreach_records','id,category,data,created_at',outreachKeys)]);
+  const {tasks}=planCloudPhoneUpdates(domestic,outreach);let updated=0,conflicts=0,failed=0,next=0;
+  async function worker(){while(next<tasks.length){const task=tasks[next++];try{
+   let query=sb.from(task.table).update(task.patch).eq('id',task.id);
+   if(task.table==='cold_call_records'){
+    for(const field of ['area','phone','company_address'])query=task.original[field]==null?query.is(field,null):query.eq(field,task.original[field]);
+   }else query=query.eq('data',JSON.stringify(task.original.data));
+   const {data:saved,error}=await query.select('id');if(error)throw error;
+   if(saved?.length===1)updated++;else conflicts++;
+  }catch(error){failed++}
+  status('市話縣市辨識：已更新 '+updated+'／'+tasks.length+' 筆。');
+  }}
+  await Promise.all(Array.from({length:Math.min(4,tasks.length)},worker));
+  const [afterDomestic,afterOutreach]=await Promise.all([fetchAllReportRows('cold_call_records','*'),fetchAllReportRows('outreach_records','id,category,data,created_at',outreachKeys)]);
+  const after=planCloudPhoneUpdates(afterDomestic,afterOutreach);
+  cloudPhoneLastResult={review:after.review,message:'市話區碼檢查完成：本次更新 '+updated+' 筆；仍待更新 '+after.tasks.length+' 筆；需人工確認 '+after.review.length+' 筆。'+(conflicts?' '+conflicts+' 筆資料同時被修改，已保留最新內容。':'')+(failed?' '+failed+' 筆寫入失敗，可按重新辨識重試。':'')};
+  renderCloudPhoneResult(cloudPhoneLastResult);
+  if(updated)await Promise.all([load(),loadOutreachCloud()]);
+  return {updated,remaining:after.tasks.length,conflicts,failed,review:after.review};
+ }catch(error){
+  cloudPhoneLastResult={review:[],message:'市話區碼檢查未完成：'+error.message+'。已完成的更新會保留，請按重新辨識重試。'};
+  renderCloudPhoneResult(cloudPhoneLastResult);
+  return {error:error.message};
+ }finally{cloudPhoneRegionBusy=false;buttons.forEach(b=>b.disabled=false)}
+}
+function scheduleCloudPhoneRegions(){
+ if(currentProfile?.role!=='admin'||cloudPhoneAutoUser===currentProfile.id)return;
+ cloudPhoneAutoUser=currentProfile.id;
+ setTimeout(()=>backfillCloudPhoneRegions(),0);
+}
+(function setupCloudPhoneRegions(){
+ for(const panel of document.querySelectorAll('.import-workflow-tools')){
+  const box=document.createElement('section');
+  box.innerHTML='<hr><h3>既有雲端資料：自動依市話區碼補齊縣市</h3><p>管理員登入後自動檢查。保留地址可辨識或已填縣市的資料，只補齊空白縣市。02、新竹及嘉義共用區碼、多地電話、手機與不完整號碼列為待確認，不會強行填入單一縣市。國外資料僅辨識台灣地區或明確 +886 電話。</p><button type="button" class="btn" data-phone-backfill>重新辨識雲端市話縣市</button><p role="status" data-phone-status>管理員登入後將自動檢查。</p><details data-phone-review></details>';
+  box.querySelector('[data-phone-backfill]').onclick=backfillCloudPhoneRegions;panel.appendChild(box);
+ }
+ if(cloudPhoneLastResult)renderCloudPhoneResult(cloudPhoneLastResult);
+ scheduleCloudPhoneRegions();
 })();
