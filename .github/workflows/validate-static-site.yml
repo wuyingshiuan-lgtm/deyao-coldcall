@@ -58,3 +58,8 @@ jobs:
           node --check address-region-tools.js
           node tests/address-regions.test.cjs
           node tests/import-outcome.test.cjs
+
+      - name: Check automatic factory address lookup
+        run: |
+          node --check business-address-lookup.js
+          node tests/factory-address.test.cjs
