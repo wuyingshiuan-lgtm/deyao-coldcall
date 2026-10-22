@@ -35,7 +35,7 @@ document.head.appendChild(responsiveStyle);
 const home=document.querySelector("#homeSection .home-links");
 if(home){const a=document.createElement("a");a.href="#bulkHistory";a.setAttribute("aria-label","Excel 批次匯入聯繫紀錄");a.className="home-feature home-feature-4 admin-excel";a.innerHTML='<span class="home-feature-top"><span class="home-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M3 9h18M9 9v12m6-12v12M3 15h18"/></svg></span><span class="home-feature-category">聯繫管理</span></span><strong>Excel 批次匯入聯繫紀錄</strong><span class="home-feature-description">一次新增多位客戶的後續聯繫歷史</span><span class="home-feature-action">批次匯入<span aria-hidden="true">↗</span></span>';home.appendChild(a);}
 const main=document.querySelector("main.wrap");
-const section=document.createElement("section");section.id="bulkHistorySection";section.className="box hidden";section.innerHTML='<div class="history-page-head"><button class="btn" type="button" id="bulkBack">← 返回首頁</button><h2>Excel 批次匯入聯繫紀錄</h2></div><p class="bulk-note">下載五欄 Excel 範本後填寫，依「分頁屬性＋公司名」自動對應既有客戶。匯入只會新增聯繫歷史，不會更改客戶資料。</p><div class="bulk-choices"><button type="button" class="bulk-choice" id="bulkTemplate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg><strong>下載 Excel 範本</strong><small>含分頁及聯繫結果下拉選單</small></button><button type="button" class="bulk-choice" id="bulkUpload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m-5 5 5-5 5 5M4 7V4h16v3"/></svg><strong>匯入 Excel 資料</strong><small>自動分配至對應公司</small></button></div><input id="bulkFile" class="hidden" type="file" accept=".xlsx,.xls"><div id="bulkStatus" role="status" aria-live="polite" class="bulk-note"></div><div id="bulkPreview" class="hidden"><h3>匯入前確認</h3><p id="bulkSummary"></p><div class="bulk-table-wrap"><table class="bulk-table"><thead><tr><th>列</th><th>分頁</th><th>日期</th><th>公司</th><th>備註</th><th>結果</th><th>檢查結果／處理</th></tr></thead><tbody id="bulkRows"></tbody></table></div><div class="actions"><button type="button" class="btn primary" id="bulkConfirm">確認新增可匯入資料</button><button type="button" class="btn" id="bulkReset">清除預覽</button></div></div>';
+const section=document.createElement("section");section.id="bulkHistorySection";section.className="box hidden";section.innerHTML='<div class="history-page-head"><button class="btn" type="button" id="bulkBack">← 返回首頁</button><h2>Excel 批次匯入聯繫紀錄</h2></div><p class="bulk-note">支援五欄範本，或直接匯入含「電子信箱、Created Date」的 Excel。Email 模式會比對各分頁客戶的所有信箱，聯繫結果固定為「已寄回信」，只取 Created Date 的日期。多位符合時請選擇客戶；找不到及重複紀錄會略過。只新增聯繫歷史，保留原有資料。</p><div class="bulk-choices"><button type="button" class="bulk-choice" id="bulkTemplate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg><strong>下載 Excel 範本</strong><small>含分頁及聯繫結果下拉選單</small></button><button type="button" class="bulk-choice" id="bulkUpload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m-5 5 5-5 5 5M4 7V4h16v3"/></svg><strong>匯入 Excel 資料</strong><small>自動分配至對應公司</small></button></div><input id="bulkFile" class="hidden" type="file" accept=".xlsx,.xls"><div id="bulkStatus" role="status" aria-live="polite" class="bulk-note"></div><div id="bulkPreview" class="hidden"><h3>匯入前確認</h3><p id="bulkSummary"></p><div class="bulk-table-wrap"><table class="bulk-table"><thead><tr><th>列</th><th>分頁</th><th>日期</th><th>公司</th><th>備註</th><th>結果</th><th>檢查結果／處理</th></tr></thead><tbody id="bulkRows"></tbody></table></div><div class="actions"><button type="button" class="btn primary" id="bulkConfirm">確認新增可匯入資料</button><button type="button" class="btn" id="bulkReset">清除預覽</button></div></div>';
 const before=document.getElementById("rangeReportSection");main.insertBefore(section,before||main.firstChild);
 pages.bulkHistory="bulkHistorySection";
 // Register before the first signed-in navigation, including direct links.
@@ -68,6 +68,16 @@ function formatDate(v){
  const s=String(v||"").trim().replace(/\//g,"-");if(!/^\d{4}-\d{1,2}-\d{1,2}$/.test(s))return "";
  const [y,m,d]=s.split("-").map(Number),dt=new Date(Date.UTC(y,m-1,d));return dt.getUTCFullYear()===y&&dt.getUTCMonth()===m-1&&dt.getUTCDate()===d?[y,String(m).padStart(2,"0"),String(d).padStart(2,"0")].join("-"):"";
 }
+function emailList(row){
+ const values=[row.email,row.mail,...(Array.isArray(row.emails)?row.emails:[])];
+ return [...new Set(values.flatMap(v=>String(v&&typeof v==="object"?v.email||v.mail||"":v||"").split(/[;,；，\s]+/)).map(v=>v.trim().toLowerCase()).filter(Boolean))];
+}
+function createdDate(v){
+ if(typeof v!=="string")return formatDate(v);
+ const m=v.trim().match(/^([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})(?:,|$|\s)/);
+ if(m){const month=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].indexOf(m[1].toLowerCase())+1;return month?formatDate(m[3]+"-"+month+"-"+m[2]):"";}
+ return formatDate(v.trim().replace(/^(\d{4}[-/]\d{1,2}[-/]\d{1,2})[ T].*$/,"$1"));
+}
 function categoryOf(v){return Object.keys(CATS).find(k=>norm(CATS[k])===norm(v)||k===String(v).trim()||(k==="foreignEmail"&&norm(v)==="國外email"))||"";}
 async function allCloudRows(){
  const [parents,histories,outreach]=await Promise.all([fetchAllReportRows("cold_call_records","*",null),fetchAllReportRows("cold_call_history","*",null),fetchAllReportRows("outreach_records","id,category,data",Object.keys(CATS).filter(k=>k!=="domestic"))]);
@@ -80,12 +90,12 @@ function signatures(target,key){
 const signature=(d,r,n)=>[formatDate(d),norm(r),norm(n)].join("|");
 function checkOne(c,groups){
  c.duplicate=false;c.matches=[];c.target=null;
- if(!c.key||!c.date||!c.company||!c.result){c.issue="欄位缺漏或日期／分頁不正確";return;}
+ if((!c.emailMode&&!c.key)||!c.date||!(c.emailMode?c.email:c.company)||!c.result){c.issue="欄位缺漏或日期／分頁不正確";return;}
  if(!RESULTS.includes(c.result)){c.issue="聯繫結果不在範本選項內";return;}
- const matches=groups[c.key].filter(x=>norm(x.row.company_name||x.row.company)===norm(c.company));c.matches=matches;
- if(matches.length===0){c.issue="找不到公司（不會建立新客戶）";c.target=null;return;}
- if(matches.length>1&&!matches.some(x=>String(x.id)===String(c.chosen))){c.issue="同名公司：請選擇正確客戶";c.target=null;return;}
- c.target=matches.find(x=>String(x.id)===String(c.chosen))||matches[0];
+ const matches=c.emailMode?Object.entries(groups).flatMap(([key,rows])=>rows.filter(x=>emailList(x.row).includes(c.email)).map(x=>({...x,key}))):groups[c.key].map(x=>({...x,key:c.key})).filter(x=>norm(x.row.company_name||x.row.company)===norm(c.company));c.matches=matches;
+ if(matches.length===0){c.issue=c.emailMode?"找不到此 Email 的客戶（略過，不會建立新客戶）":"找不到公司（不會建立新客戶）";c.target=null;return;}
+ if(matches.length>1&&!matches.some(x=>x.key+":"+x.id===c.chosen)){c.issue=c.emailMode?"Email 對應多位客戶：請選擇正確客戶":"同名公司：請選擇正確客戶";c.target=null;return;}
+ c.target=matches.find(x=>x.key+":"+x.id===c.chosen)||matches[0];c.key=c.target.key;if(c.emailMode)c.company=c.target.row.company_name||c.target.row.company||"未命名公司";
  const sig=signature(c.date,c.result,c.notes);
  const existing=signatures(c.target,c.key).includes(sig);
  const another=candidates.some(other=>other!==c&&other.key===c.key&&other.target&&String(other.target.id)===String(c.target.id)&&signature(other.date,other.result,other.notes)===sig&&other.index<c.index);
@@ -100,8 +110,8 @@ function renderPreview(){
  let msg=c.issue||"可新增為後續聯繫紀錄",cls=c.issue?"bulk-warn":"bulk-pill";
  if(!c.matches?.length)cls="bulk-error";
  let controls="";
- if(c.matches?.length>1){controls='<select data-pick="'+c.index+'"><option value="">請選擇同名公司</option>'+c.matches.map(m=>'<option value="'+escapeHtml(m.id)+'" '+(String(c.chosen)===String(m.id)?"selected":"")+'>'+escapeHtml(m.row.company_name||m.row.company)+'｜'+escapeHtml(m.row.contact_name||m.row.contactName||m.row.address||m.row.company_address||m.id)+'</option>').join("")+"</select>";}
- return '<tr><td data-label="Excel 列">'+(c.index+2)+'</td><td data-label="分頁屬性">'+escapeHtml(CATS[c.key]||c.rawCategory)+'</td><td data-label="聯繫日期">'+escapeHtml(c.date)+'</td><td data-label="公司名">'+escapeHtml(c.company)+'</td><td data-label="備註">'+escapeHtml(c.notes||"—")+'</td><td data-label="聯繫結果">'+escapeHtml(c.result)+'</td><td data-label="檢查結果／處理"><span class="'+cls+'">'+escapeHtml(msg)+'</span> '+controls+'</td></tr>';
+ if(c.matches?.length>1){controls='<select data-pick="'+c.index+'"><option value="">請選擇正確客戶</option>'+c.matches.map(m=>'<option value="'+escapeHtml(m.key+":"+m.id)+'" '+(c.chosen===m.key+":"+m.id?"selected":"")+'>'+escapeHtml(CATS[m.key])+'｜'+escapeHtml(m.row.company_name||m.row.company||'未命名公司')+'｜'+escapeHtml(m.row.contact_name||m.row.contactName||m.row.address||m.row.company_address||m.id)+'</option>').join("")+"</select>";}
+ return '<tr><td data-label="Excel 列">'+(c.index+2)+'</td><td data-label="分頁屬性">'+escapeHtml(CATS[c.key]||c.rawCategory)+'</td><td data-label="聯繫日期">'+escapeHtml(c.date)+'</td><td data-label="公司名">'+escapeHtml(c.company)+(c.emailMode?"<br><small>"+escapeHtml(c.email)+"</small>":"")+'</td><td data-label="備註">'+escapeHtml(c.notes||"—")+'</td><td data-label="聯繫結果">'+escapeHtml(c.result)+'</td><td data-label="檢查結果／處理"><span class="'+cls+'">'+escapeHtml(msg)+'</span> '+controls+'</td></tr>';
  }).join("");
  $b("bulkPreview").classList.remove("hidden");
  $b("bulkConfirm").disabled=busy||valid.length===0;
@@ -120,8 +130,9 @@ $b("bulkFile").onchange=async e=>{
  const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{defval:""});
  if(!rows.length)throw Error("Excel 無可匯入資料。");
  if(rows.length>2000)throw Error("單次最多匯入 2,000 筆。");
- const heads=["分頁屬性","聯繫日期","公司名","備註","聯繫結果"];if(!heads.every(h=>Object.prototype.hasOwnProperty.call(rows[0],h)))throw Error("Excel 必須包含五個指定欄位。");
- candidates=rows.map((r,i)=>({index:i,key:categoryOf(r["分頁屬性"]),rawCategory:r["分頁屬性"],date:formatDate(r["聯繫日期"]),company:String(r["公司名"]||"").trim(),notes:String(r["備註"]||"").trim(),result:String(r["聯繫結果"]||"").trim(),chosen:"",allowDuplicate:false,duplicate:false}));
+ const emailMode=["電子信箱","Created Date"].every(h=>Object.prototype.hasOwnProperty.call(rows[0],h));
+ const heads=["分頁屬性","聯繫日期","公司名","備註","聯繫結果"];if(!emailMode&&!heads.every(h=>Object.prototype.hasOwnProperty.call(rows[0],h)))throw Error("Excel 請使用五欄範本，或包含「電子信箱、Created Date」欄位。");
+ candidates=rows.map((r,i)=>emailMode?({index:i,emailMode:true,email:String(r["電子信箱"]||"").trim().toLowerCase(),key:"",rawCategory:"依 Email 配對",date:createdDate(r["Created Date"]),company:String(r["公司名稱"]||"").trim(),notes:"",result:"已寄回信",chosen:""}):({index:i,key:categoryOf(r["分頁屬性"]),rawCategory:r["分頁屬性"],date:formatDate(r["聯繫日期"]),company:String(r["公司名"]||"").trim(),notes:String(r["備註"]||"").trim(),result:String(r["聯繫結果"]||"").trim(),chosen:"",allowDuplicate:false,duplicate:false}));
  cloudGroups=await allCloudRows();renderPreview();status("已完成雲端比對；請確認檢查結果，再按新增。");
  }catch(err){status("匯入檢查失敗："+err.message);}finally{e.target.value="";}
 };
