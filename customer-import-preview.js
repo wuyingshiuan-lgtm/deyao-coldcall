@@ -1,3 +1,41 @@
+/* Taiwan geographic numbering: ambiguous calling areas require confirmation. */
+function detectImportPhoneRegion(value){
+ const rules=[
+ ['0826',/^6\d{4}$/,['金門縣']],['0836',/^[2-9]\d{4}$/,['連江縣']],
+ ['037',/^[2-9]\d{5}$/,['苗栗縣']],['049',/^[2-9]\d{6}$/,['南投縣']],
+ ['082',/^[2-57-9]\d{5}$/,['金門縣']],['089',/^[2-9]\d{5}$/,['臺東縣']],
+ ['02',/^[235-8]\d{7}$/,['臺北市','新北市','基隆市']],
+ ['03',/^[234]\d{6}$/,['桃園市']],['03',/^[56]\d{6}$/,['新竹市','新竹縣']],
+ ['03',/^8\d{6}$/,['花蓮縣']],['03',/^9\d{6}$/,['宜蘭縣']],
+ ['04',/^[23]\d{7}$/,['臺中市']],['04',/^[78]\d{6}$/,['彰化縣']],
+ ['05',/^[2-4]\d{6}$/,['嘉義市','嘉義縣']],['05',/^[5-7]\d{6}$/,['雲林縣']],
+ ['06',/^[235-7]\d{6}$/,['臺南市']],['06',/^9\d{6}$/,['澎湖縣']],
+ ['07',/^[2-9]\d{6}$/,['高雄市']],['08',/^[478]\d{6}$/,['屏東縣']]
+ ];
+ const parts=String(value||'').normalize('NFKC').split(/[;,；、/\n]+/).map(x=>x.trim()).filter(Boolean);
+ const found=[];
+ for(let part of parts){
+  part=part.replace(/(?:分機|轉|ext\.?|#|x)\s*\d+.*$/i,'').trim();
+  if(!/^[+\d\s()\-–—.]+$/.test(part))continue;
+  let number=part.replace(/[\s()\-–—.]/g,'');
+  if(number.startsWith('+886'))number='0'+number.slice(4).replace(/^0/,'');
+  else if(number.startsWith('00886'))number='0'+number.slice(5).replace(/^0/,'');
+  const prefix=rules.find(([code])=>number.startsWith(code))?.[0];
+  const match=rules.find(([code,re])=>code===prefix&&re.test(number.slice(code.length)));
+  if(match)found.push({code:match[0],cities:match[2]});
+ }
+ if(!found.length)return {city:'',label:value?'無法辨識市話區碼':'未填電話'};
+ const cities=[...new Set(found.flatMap(x=>x.cities))],codes=[...new Set(found.map(x=>x.code))];
+ return {city:cities.length===1?cities[0]:'',label:codes.join('、')+' → '+cities.join('／')+(cities.length>1?'（待確認）':'（市話區碼推定）')};
+}
+function resolveCustomerImportRegion(values,phoneEnabled){
+ const address=detectCity(values['公司地址']);
+ if(address)return {city:address,label:address+'（依地址）'};
+ const existing=String(values['縣市']||values['地區']||'').trim();
+ if(existing)return {city:existing,label:existing+'（原有縣市）'};
+ if(!phoneEnabled)return {city:'',label:'未啟用市話區碼辨識'};
+ return detectImportPhoneRegion(values['電話']);
+}
 const customerImportSessions=new Map();
 /* Import staging: original rows remain editable until individually accepted. */
 function customerImportStage(wb){
@@ -51,10 +89,11 @@ async function openCustomerImport(wb,key){
  if(!wb&&!customerImportSessions.has(key)){appNotice('目前沒有待修正的匯入資料，請先上傳 Excel 或貼上資料。');return}
  if(wb&&customerImportSessions.get(key)?.some(e=>!e.saved)&&!await appConfirm('目前仍有未匯入的資料。載入新檔會取代本頁暫存的預覽，是否繼續？'))return;
  const entries=wb?customerImportStage(wb):customerImportSessions.get(key);if(!entries.length)throw Error('檔案內沒有資料');customerImportSessions.set(key,entries);
+ let phoneEnabled=key!=='foreignEmail';
  let cloudNames=new Set(),cloudReady=false,busy=false,page=0,filter='pending',editingEntry=null;
  const dialog=document.createElement('dialog');dialog.id='customerImportPreview';dialog.setAttribute('aria-labelledby','customerImportTitle');
  dialog.style.cssText='width:min(1200px,94vw);max-height:90vh;border:1px solid #d5e0eb;border-radius:16px;padding:24px;color:#31485f;background:#ffffff;box-shadow:0 20px 80px #30203544;';
- dialog.innerHTML='<h2 id="customerImportTitle">匯入資料預覽與修正</h2><p>匯入至：'+esc(key==='domestic'?'國內電訪':outreachConfig[key].title)+'。未通過檢查的資料會留在此處，不會寫入雲端。可修改後重新檢查，或取消勾選暫不匯入的列。</p><p>公司同名時請先確認是否為同一家；既有客戶應使用新增聯繫紀錄。沒有公司表頭的工作表預設不勾選。預覽可於本頁繼續修正；重新整理網頁前請先完成匯入。</p><p data-import-summary role="status"></p><p data-import-message role="status" style="white-space:pre-wrap;color:#97365b"></p><div class="actions"><button type="button" class="btn" data-import-check>重新檢查雲端</button><select aria-label="預覽資料篩選" data-import-filter><option value="pending">未匯入資料</option><option value="issues">僅顯示問題資料</option><option value="all">全部資料</option><option value="ready">可匯入</option><option value="saved">已匯入</option></select><button type="button" class="btn" data-import-select>全選未匯入</button><button type="button" class="btn" data-import-deselect>取消全選</button></div><div data-import-editor></div><div class="table-wrap" style="max-height:42vh;overflow:auto"><table class="data-table"><thead><tr><th>匯入</th><th>來源工作表／列</th><th>公司名稱</th><th>公司地址</th><th>辨識縣市</th><th>狀態／未匯入原因</th><th>修正</th></tr></thead><tbody data-import-rows></tbody></table></div><div class="actions"><button type="button" class="btn" data-import-prev>上一頁</button><span data-import-page></span><button type="button" class="btn" data-import-next>下一頁</button></div><div class="actions"><button type="button" class="btn primary" data-import-save>匯入已勾選且通過檢查的資料</button><button type="button" class="btn" data-import-close>關閉預覽</button></div>';
+ dialog.innerHTML='<h2 id="customerImportTitle">匯入資料預覽與修正</h2><p>匯入至：'+esc(key==='domestic'?'國內電訪':outreachConfig[key].title)+'。未通過檢查的資料會留在此處，不會寫入雲端。可修改後重新檢查，或取消勾選暫不匯入的列。</p><p>公司同名時請先確認是否為同一家；既有客戶應使用新增聯繫紀錄。沒有公司表頭的工作表預設不勾選。預覽可於本頁繼續修正；重新整理網頁前請先完成匯入。</p><fieldset style="border:1px solid #cbddeb;border-radius:10px;padding:12px;margin:12px 0"><legend>縣市辨識設定</legend><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-import-phone-region>依台灣市話區碼補齊縣市</label><p>優先順序：地址 → 原有縣市 → 市話區碼。例如 07-6173055 → 高雄市。共用區碼會標示待確認；手機、缺少區碼或格式不明的電話不會自動填入。區碼為推定地區，請在匯入前確認。</p></fieldset><p data-import-summary role="status"></p><p data-import-message role="status" style="white-space:pre-wrap;color:#97365b"></p><div class="actions"><button type="button" class="btn" data-import-check>重新檢查雲端</button><select aria-label="預覽資料篩選" data-import-filter><option value="pending">未匯入資料</option><option value="issues">僅顯示問題資料</option><option value="all">全部資料</option><option value="ready">可匯入</option><option value="saved">已匯入</option></select><button type="button" class="btn" data-import-select>全選未匯入</button><button type="button" class="btn" data-import-deselect>取消全選</button></div><div data-import-editor></div><div class="table-wrap" style="max-height:42vh;overflow:auto"><table class="data-table"><thead><tr><th>匯入</th><th>來源工作表／列</th><th>公司名稱</th><th>公司地址</th><th>電話</th><th>辨識縣市／依據</th><th>狀態／未匯入原因</th><th>修正</th></tr></thead><tbody data-import-rows></tbody></table></div><div class="actions"><button type="button" class="btn" data-import-prev>上一頁</button><span data-import-page></span><button type="button" class="btn" data-import-next>下一頁</button></div><div class="actions"><button type="button" class="btn primary" data-import-save>匯入已勾選且通過檢查的資料</button><button type="button" class="btn" data-import-close>關閉預覽</button></div>';
  document.body.appendChild(dialog);dialog.showModal();
  const q=selector=>dialog.querySelector(selector),msg=q('[data-import-message]');
  function render(){
@@ -62,14 +101,17 @@ async function openCustomerImport(wb,key){
   q('[data-import-summary]').textContent='總共 '+entries.length+' 筆｜已匯入 '+saved+' 筆｜已勾選可匯入 '+ready.length+' 筆｜未匯入 '+(entries.length-saved)+' 筆｜問題資料 '+entries.filter(e=>!e.saved&&(e.issue||e.error)).length+' 筆';
   const visible=entries.filter(e=>filter==='all'||(filter==='issues'&&!e.saved&&!!(e.issue||e.error))||(filter==='saved'?e.saved:filter==='ready'?!e.saved&&e.selected&&!e.issue&&!e.error:filter==='pending'&&!e.saved));
   page=Math.max(0,Math.min(page,Math.ceil(visible.length/30)-1));
-  q('[data-import-rows]').innerHTML=visible.slice(page*30,page*30+30).map(e=>{const i=entries.indexOf(e);return '<tr><td><input type="checkbox" aria-label="選取 '+esc(e.sheet)+' 第 '+e.row+' 列" data-import-row="'+i+'" '+(e.selected?'checked ':'')+(e.saved||busy?'disabled':'')+'></td><td>'+esc(e.sheet)+'／'+e.row+'</td><td>'+esc(e.values['公司名稱']||'（未填）')+'</td><td>'+esc(e.values['公司地址']||'—')+'</td><td>'+esc(detectCity(e.values['公司地址'])||(e.values['公司地址']?'待確認':'未填地址'))+'</td><td style="white-space:pre-wrap;color:'+(e.issue||e.error?'#9a4350':e.saved?'#2c7059':'#425d78')+'">'+esc(e.saved?'✓ 已匯入':e.error||e.issue||(!cloudReady?'等待雲端檢查':!e.selected?'未勾選，暫不匯入':'✓ 可匯入'))+'</td><td><button type="button" class="btn small" data-import-edit="'+i+'" '+(e.saved||busy?'disabled':'')+'>查看／修改</button></td></tr>'}).join('');
+  q('[data-import-rows]').innerHTML=visible.slice(page*30,page*30+30).map(e=>{const i=entries.indexOf(e);return '<tr><td><input type="checkbox" aria-label="選取 '+esc(e.sheet)+' 第 '+e.row+' 列" data-import-row="'+i+'" '+(e.selected?'checked ':'')+(e.saved||busy?'disabled':'')+'></td><td>'+esc(e.sheet)+'／'+e.row+'</td><td>'+esc(e.values['公司名稱']||'（未填）')+'</td><td>'+esc(e.values['公司地址']||'—')+'</td><td>'+esc(e.values['電話']||'—')+'</td><td>'+esc(resolveCustomerImportRegion(e.values,phoneEnabled).label)+'</td><td style="white-space:pre-wrap;color:'+(e.issue||e.error?'#9a4350':e.saved?'#2c7059':'#425d78')+'">'+esc(e.saved?'✓ 已匯入':e.error||e.issue||(!cloudReady?'等待雲端檢查':!e.selected?'未勾選，暫不匯入':'✓ 可匯入'))+'</td><td><button type="button" class="btn small" data-import-edit="'+i+'" '+(e.saved||busy?'disabled':'')+'>查看／修改</button></td></tr>'}).join('');
   q('[data-import-page]').textContent=(page+1)+'／'+Math.max(1,Math.ceil(visible.length/30))+' 頁';
   q('[data-import-save]').disabled=busy||!cloudReady||!ready.length||!!editingEntry;
   q('[data-import-check]').disabled=busy;
+  q('[data-import-phone-region]').disabled=busy||!!editingEntry;
   q('[data-import-close]').disabled=busy;
   q('[data-import-prev]').disabled=busy||page===0;q('[data-import-next]').disabled=busy||(page+1)*30>=visible.length;
  }
  async function check(notify=false){cloudReady=false;render();msg.textContent='正在讀取全部分類的雲端公司名稱…';try{const [a,b]=await Promise.all([readAllCompanyRows('cold_call_records','id,company_name'),readAllCompanyRows('outreach_records','id,category,data')]);cloudNames=new Set([...a.map(r=>r.company_name),...b.map(r=>r.data?.company)].map(CustomerImport.companyKey).filter(Boolean));cloudReady=true;entries.forEach(e=>e.error='');msg.textContent='雲端檢查完成。修正問題列後，可與其他通過檢查的資料一起匯入。'}catch(err){entries.filter(e=>!e.saved).forEach(e=>e.error='雲端讀取失敗，尚未匯入：'+err.message);msg.textContent=err.message+'\n所有資料保留，可稍後按「重新檢查雲端」。';if(notify)appNotice('本次未寫入任何資料。\n'+err.message+'\n未匯入資料已保留在預覽中，可稍後重新檢查。',{title:'匯入檢查未完成',type:'danger'})}render()}
+ q('[data-import-phone-region]').checked=phoneEnabled;
+ q('[data-import-phone-region]').onchange=e=>{phoneEnabled=e.target.checked;render()};
  q('[data-import-check]').onclick=()=>check(true);
  q('[data-import-filter]').onchange=e=>{filter=e.target.value;page=0;render()};
  q('[data-import-select]').onclick=()=>{if(busy)return;entries.forEach(e=>{if(!e.saved)e.selected=true});render()};
@@ -118,6 +160,7 @@ async function openCustomerImport(wb,key){
     });
    }
    const mapped=key==='domestic'?mapDomesticImport(raw):mapOutreachImport(raw,key);
+   mapped.forEach((row,i)=>{const region=resolveCustomerImportRegion(raw[i],phoneEnabled).city;if(region)row[key==='domestic'?'area':'region']=region;});
    if(mapped.length!==raw.length)throw Error('資料筆數不一致，已停止寫入。');
    // Only atomic bulk insert errors are retried; completed rows are never resubmitted.
    await customerWrite(mapped,null,async()=>{const payload=key==='domestic'?mapped:mapped.map(row=>({category:key,data:row,created_by:currentProfile.id}));const {error}=await sb.from(key==='domestic'?'cold_call_records':'outreach_records').insert(payload);if(error)throw error});
