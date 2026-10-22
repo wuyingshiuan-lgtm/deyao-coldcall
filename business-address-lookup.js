@@ -166,3 +166,88 @@ function openBusinessAddressLookup(key,id){
  document.addEventListener('click',event=>{const button=event.target.closest('[data-business-address-id]');if(button){event.preventDefault();event.stopPropagation();openBusinessAddressLookup(button.dataset.businessAddressKey,button.dataset.businessAddressId)}});
  attach();
 })();
+
+/* Bulk address completion: only empty addresses with one legally matching factory. */
+let bulkFactoryAddressBusy=false,bulkFactoryAddressResult=null;
+function classifyBulkFactoryAddress(item,candidates){
+ if(item.address.trim())return {status:'保留原地址'};
+ const legal=factoryAddressLegalNameKey(item.company);
+ if(!candidates.length)return {status:'查無工廠資料'};
+ const legalMatches=candidates.filter(c=>factoryAddressLegalNameKey(c.name).startsWith(legal));
+ if(candidates.length!==1||legalMatches.length!==1)return {status:'同名或多據點，待確認'};
+ return {status:'可補齊',candidate:legalMatches[0]};
+}
+function collectBulkFactoryCompanies(domestic,outreach){
+ return [...domestic.map(row=>({key:'domestic',id:row.id,company:String(row.company_name||''),address:String(row.company_address||'').trim(),country:'台灣'})),
+ ...outreach.map(record=>{const row=record.data||{};return {key:record.category,id:record.id,company:String(row.company||''),address:String(row.address||row.company_address||row['公司地址']||'').trim(),country:String(row.country||row.location||'').trim()}})];
+}
+function renderBulkFactoryAddressResult(){
+ if(!bulkFactoryAddressResult)return;
+ const result=bulkFactoryAddressResult;
+ document.querySelectorAll('[data-bulk-factory-status]').forEach(el=>el.textContent=result.message);
+ document.querySelectorAll('[data-bulk-factory-report]').forEach(el=>{
+  const pending=result.rows.filter(r=>!['保留原地址','已補齊'].includes(r.status));
+  el.innerHTML=pending.length?'<summary>查看未補齊原因：'+pending.length+' 筆（顯示前 100 筆）</summary><div class="table-wrap"><table class="data-table"><thead><tr><th>分類</th><th>公司</th><th>結果</th></tr></thead><tbody>'+pending.slice(0,100).map(r=>'<tr><td>'+esc(r.key==='domestic'?'國內電訪':outreachConfig[r.key]?.title||r.key)+'</td><td>'+esc(r.company)+'</td><td>'+esc(r.status+(r.error?'：'+r.error:''))+'</td></tr>').join('')+'</tbody></table></div>':'';
+ });
+ document.querySelectorAll('[data-bulk-factory-export]').forEach(button=>button.disabled=!result.rows.length||bulkFactoryAddressBusy);
+}
+async function completeCloudFactoryAddresses(){
+ if(bulkFactoryAddressBusy)return;
+ if(currentProfile?.role!=='admin'){appNotice('僅限管理員執行雲端地址補齊。');return}
+ if((typeof addressBackfillBusy!=='undefined'&&addressBackfillBusy)||(typeof cloudPhoneRegionBusy!=='undefined'&&cloudPhoneRegionBusy)){appNotice('縣市辨識仍在執行，請完成後再補齊地址。');return}
+ bulkFactoryAddressBusy=true;const buttons=[...document.querySelectorAll('[data-bulk-factory-run]')];buttons.forEach(b=>b.disabled=true);
+ const status=message=>document.querySelectorAll('[data-bulk-factory-status]').forEach(el=>el.textContent=message);
+ let rows=[];
+ try{
+  status('正在讀取全部分類的雲端公司與現有地址…');
+  const [domestic,outreach]=await Promise.all([fetchAllReportRows('cold_call_records','*'),fetchAllReportRows('outreach_records','id,category,data,created_at',outreachKeys)]);
+  rows=collectBulkFactoryCompanies(domestic,outreach);
+  let next=0,checked=0,updated=0;
+  async function worker(){
+   while(next<rows.length){
+    const item=rows[next++];
+    try{
+     if(item.address){item.status='保留原地址';continue}
+     if(!item.company.trim()){item.status='缺少公司名稱';continue}
+     if(item.key!=='domestic'&&item.country&&!detectCity(item.country)&&!/^(台灣|臺灣|中華民國|台灣地區|臺灣地區|Taiwan|TW|TWN)$/i.test(item.country)){item.status='非台灣資料，需其他地址來源';continue}
+     const snapshot=await fetchFactoryAddressSnapshot(item.company);
+     const candidates=findFactoryAddressCandidates(snapshot.rows,item.company);
+     const decision=classifyBulkFactoryAddress(item,candidates);item.status=decision.status;
+     if(!decision.candidate)continue;
+     const candidate=decision.candidate;
+     await saveReviewedBusinessAddress(item,candidate.address,'工廠地址',candidate.source);
+     item.status='已送出，等待回讀';item.proposedAddress=candidate.address;item.source=candidate.source;updated++;
+    }catch(error){item.status='未完成，請重試／確認';item.error=error.message}
+    finally{checked++;status('地址補齊進度：已檢查 '+checked+'／'+rows.length+' 筆；已送出 '+updated+' 筆，完成後會逐筆回讀確認。')}
+   }
+  }
+  await Promise.all(Array.from({length:Math.min(3,rows.length)},worker));
+  status('正在重新讀取雲端，核對所有補齊結果…');
+  const [afterDomestic,afterOutreach]=await Promise.all([fetchAllReportRows('cold_call_records','*'),fetchAllReportRows('outreach_records','id,category,data,created_at',outreachKeys)]);
+  const actual=new Map(collectBulkFactoryCompanies(afterDomestic,afterOutreach).map(item=>[item.key+':'+item.id,item.address]));
+  for(const item of rows)if(item.status==='已送出，等待回讀')item.status=actual.get(item.key+':'+item.id)===item.proposedAddress?'已補齊':'回讀不一致，需確認';
+  const count=label=>rows.filter(item=>item.status===label).length;
+  const saved=count('已補齊'),retained=count('保留原地址'),remaining=rows.length-saved-retained;
+  bulkFactoryAddressResult={rows,message:'已檢查全部 '+rows.length+' 筆雲端紀錄；已補齊並核對 '+saved+' 筆；保留原地址 '+retained+' 筆；仍需確認 '+remaining+' 筆。查無工廠資料 '+count('查無工廠資料')+' 筆；同名或多據點 '+count('同名或多據點，待確認')+' 筆；非台灣資料 '+count('非台灣資料，需其他地址來源')+' 筆；其他未完成 '+(remaining-count('查無工廠資料')-count('同名或多據點，待確認')-count('非台灣資料，需其他地址來源'))+' 筆。'};
+  renderBulkFactoryAddressResult();
+  try{await Promise.all([load(),loadOutreachCloud()])}catch(error){bulkFactoryAddressResult.message+=' 列表更新未完成：'+error.message;renderBulkFactoryAddressResult()}
+  return bulkFactoryAddressResult;
+ }catch(error){
+  bulkFactoryAddressResult={rows,message:'批次補齊未完成：'+error.message+'。已成功寫入的資料會保留，請重新執行檢查。'};renderBulkFactoryAddressResult();
+  return bulkFactoryAddressResult;
+ }finally{bulkFactoryAddressBusy=false;buttons.forEach(b=>b.disabled=false);renderBulkFactoryAddressResult()}
+}
+function exportBulkFactoryAddressResult(){
+ if(!bulkFactoryAddressResult)return;
+ const output=bulkFactoryAddressResult.rows.map(row=>({'分類':row.key==='domestic'?'國內電訪':outreachConfig[row.key]?.title||row.key,'公司名稱':row.company,'原有地址':row.address,'補齊地址':row.proposedAddress||'','結果':row.status,'來源':row.source||'','錯誤原因':row.error||''}));
+ const workbook=XLSX.utils.book_new();XLSX.utils.book_append_sheet(workbook,XLSX.utils.json_to_sheet(output),'地址補齊結果');XLSX.writeFile(workbook,'雲端公司地址補齊結果.xlsx');
+}
+(function setupBulkFactoryAddresses(){
+ for(const panel of document.querySelectorAll('.import-workflow-tools')){
+  const section=document.createElement('section');
+  section.innerHTML='<hr><h3>批次補齊所有雲端公司地址</h3><p>一次檢查四大分類，只補齊空白地址。依官方工廠名錄比對完整公司名稱；單一符合工廠才寫入地址、縣市及來源。既有地址保留，同名、多據點、國外及查無資料均列出原因。</p><button type="button" class="btn primary" data-bulk-factory-run>自動補齊全部雲端公司地址</button> <button type="button" class="btn" data-bulk-factory-export disabled>匯出全部補齊結果</button><p role="status" data-bulk-factory-status>尚未執行批次補齊。</p><details data-bulk-factory-report></details>';
+  section.querySelector('[data-bulk-factory-run]').onclick=completeCloudFactoryAddresses;
+  section.querySelector('[data-bulk-factory-export]').onclick=exportBulkFactoryAddressResult;panel.appendChild(section);
+ }
+ renderBulkFactoryAddressResult();
+})();
