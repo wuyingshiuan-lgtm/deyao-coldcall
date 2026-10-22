@@ -1,4 +1,4 @@
-const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');require('../customer-import.js');const html=fs.readFileSync('index.html','utf8');const city=html.slice(html.indexOf('const CITY_ALIASES='),html.indexOf('function syncCityFromAddress'));
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');require('../customer-import.js');const html=fs.readFileSync('index.html','utf8');const city=html.match(/const CITY_ALIASES=[^\n]+/)[0]+'\n'+html.match(/function detectCity\(address\)\{[^\n]+/)[0];
 const context={CustomerImport,today:()=> '2026-10-21',currentProfile:{name:'管理員'}};vm.createContext(context);vm.runInContext(city,context);
 for(const [address,expected] of [['臺中市西屯區工業路1號','台中市'],[' 桃 園 市 中壢區','桃園市'],['台北縣板橋市','新北市'],['高雄縣路竹鄉','高雄市'],['300 新竹市科學園區','新竹市'],['新竹縣竹北市','新竹縣'],['台北市／新北市',''],['100 Taipei',''],['Germany',''],['','']])assert.equal(context.detectCity(address),expected);
 vm.runInContext(fs.readFileSync('address-region-tools.js','utf8').split('let addressBackfillBusy')[0],context);
