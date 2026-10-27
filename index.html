@@ -2921,17 +2921,18 @@ function selectCustomerRegion(select,region){
 }
 function regionCountButtons(rows,active,attribute,domestic=false){
  const counts=new Map();for(const row of rows){const region=customerRegion(row,domestic);counts.set(region,(counts.get(region)||0)+1)}
+ if(active&&!counts.has(active))counts.set(active,0);
  const order=CITY_ALIASES.map(([city])=>city);
  const regions=[...counts.keys()].sort((a,b)=>{if(a==="未分類")return 1;if(b==="未分類")return -1;const ia=order.indexOf(a),ib=order.indexOf(b);return (ia<0?999:ia)-(ib<0?999:ib)||a.localeCompare(b,"zh-Hant")});
  const button=(value,label,count)=>'<button type="button" class="btn '+(active===value?'active':'')+'" '+attribute+'="'+esc(value)+'" aria-pressed="'+(active===value)+'">'+esc(label)+'（'+count+'）</button>';
  return button("","全部區域",rows.length)+regions.map(region=>button(region,region,counts.get(region))).join("");
 }
 const customerRegionFilters={};
-function renderOutreachRegionCounts(key,target){
+function renderOutreachRegionCounts(key,target,rows){
  let panel=document.getElementById(key+"CustomerRegionCounts");
  if(!panel){panel=document.createElement("div");panel.id=key+"CustomerRegionCounts";panel.className="region-shortcuts";panel.setAttribute("aria-label","依客戶區域及筆數篩選");target.before(panel);
  panel.addEventListener("click",e=>{const button=e.target.closest("[data-customer-region]");if(!button)return;customerRegionFilters[key]=button.dataset.customerRegion;renderOutreachRecords(key,outreachTarget(key))})}
- panel.innerHTML=regionCountButtons(getOutreachRows(key),customerRegionFilters[key]||"","data-customer-region");
+ panel.innerHTML=regionCountButtons(rows,customerRegionFilters[key]||"","data-customer-region");
 }
 
 function renderProspectingCustomers(target){
@@ -3036,7 +3037,6 @@ $("prospectingHistoryForm").addEventListener("submit",async e=>{
 function renderOutreachRecords(key,targetId){
  const target=$(targetId);if(!target)return;
  let rows=getOutreachRows(key).slice();
- if(key!=="prospecting"){renderOutreachRegionCounts(key,target);const region=customerRegionFilters[key]||"";if(region)rows=rows.filter(row=>customerRegion(row)===region)}
  const search=$(key+"Search"),query=search?search.value.trim().toLowerCase():"";
  if(key==="prospecting"){renderProspectingCustomers(target);return}
  if(key==="foreignEmail"){
@@ -3047,6 +3047,8 @@ function renderOutreachRecords(key,targetId){
   const activeCountry=countryFilter?.value||selected;
   if(shortcuts){shortcuts.dataset.selectedCountry=activeCountry;shortcuts.innerHTML='<button type="button" class="btn '+(!activeCountry?'active':'')+'" data-country="">全部國家</button>'+countries.map(country=>'<button type="button" class="btn '+(activeCountry===country?'active':'')+'" data-country="'+esc(country)+'">'+(countryFlag(country)||'🌐')+' '+esc(country)+' <span class="country-count">'+countryCounts[country]+'</span></button>').join("");shortcuts.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{shortcuts.dataset.selectedCountry=b.dataset.country||"";if(countryFilter)countryFilter.value=b.dataset.country||"";renderOutreachRecords(key,targetId)}))}
   rows=rows.filter(r=>{const contactCount=1+getForeignEmailHistoryParts(r).followups.length;return (!selectedCount||(selectedCount==="4"?contactCount>=4:contactCount===Number(selectedCount)))&&(!activeCountry||(r.country||"").trim()===activeCountry)&&(!selectedDate||String(r.date||"").slice(0,10)===selectedDate)&&(!query||(()=>{const values=Object.values(r).map(v=>Array.isArray(v)?v.map(x=>Object.values(x).join(" ")).join(" "):String(v??""));if(r.date){const date=String(r.date).slice(0,10);values.push(date,date.replace(/[-/.]/g,""),date.replace(/-/g,"/"),date.replace(/-/g,"."));}return values.some(v=>v.toLowerCase().includes(query)|| (r.date&&String(r.date).slice(0,10).replace(/[-/.]/g,"").includes(query.replace(/[-/.]/g,""))));})())});
+  renderOutreachRegionCounts(key,target,rows);
+  const region=customerRegionFilters[key]||"";if(region)rows=rows.filter(row=>customerRegion(row)===region);
   setCustomerSummary(key+"ListSummary",rows.length,getOutreachRows(key).length);
   rows=outreachPageRows(key,key==="foreignEmail"?rows.slice().reverse():rows);
   const admin=currentProfile?.role==="admin";
@@ -3063,6 +3065,8 @@ function renderOutreachRecords(key,targetId){
   rows=rows.filter(r=>{const n=1+(Array.isArray(r.contactHistory)?r.contactHistory.length:0);return (!active||String(r.location||"").trim()===active)&&(!day||String(r.date||"").slice(0,7)===day)&&(!contactCountFilter||(contactCountFilter==="4+"?n>=4:n===Number(contactCountFilter)))&&(!query||Object.entries(r).filter(([k])=>!k.startsWith("_")).some(([k,v])=>String(v??"").toLocaleLowerCase().includes(query)))});
   rows.sort((a,b)=>String(b.date||"").localeCompare(String(a.date||""))||String(a.event||"").localeCompare(String(b.event||""),"zh-Hant"));
   if(sc){sc.dataset.selectedLocation=active;sc.innerHTML='<button type="button" class="btn '+(!active?'active':'')+'" data-location="">全部國家／地區</button>'+locations.map(v=>'<button type="button" class="btn '+(active===v?'active':'')+'" data-location="'+esc(v)+'">'+(countryFlag(v)||'🌐')+' '+esc(v)+' <span class="country-count">'+getOutreachRows(key).filter(r=>String(r.location||"").trim()===v).length+'</span></button>').join("");sc.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{sc.dataset.selectedLocation=b.dataset.location||"";if(lf)lf.value=b.dataset.location||"";renderOutreachRecords(key,targetId)}))}
+  renderOutreachRegionCounts(key,target,rows);
+  const region=customerRegionFilters[key]||"";if(region)rows=rows.filter(row=>customerRegion(row)===region);
   setCustomerSummary("exhibitionsListSummary",rows.length,getOutreachRows(key).length);
   rows=outreachPageRows(key,key==="foreignEmail"?rows.slice().reverse():rows);
   const admin=currentProfile?.role==="admin";
