@@ -5,7 +5,7 @@ function detectImportPhoneRegion(value){
  ['037',/^[2-9]\d{5}$/,['苗栗縣']],['049',/^[2-9]\d{6}$/,['南投縣']],
  ['082',/^[2-57-9]\d{5}$/,['金門縣']],['089',/^[2-9]\d{5}$/,['台東縣']],
  ['02',/^\d{8}$/,['雙北/基隆']],
- ['03',/^\d{7}$/,['新竹']],
+ ['03',/^\d{4,}$/,['新竹']],
  ['04',/^[23]\d{7}$/,['台中市']],['04',/^[78]\d{6}$/,['彰化縣']],
  ['05',/^\d{7}$/,['嘉義/雲林']],
  ['06',/^[235-7]\d{6}$/,['台南市']],['06',/^9\d{6}$/,['澎湖縣']],
@@ -15,6 +15,10 @@ function detectImportPhoneRegion(value){
  const found=[];
  for(let part of parts){
   part=part.replace(/(?:分機|轉|ext\.?|#|x)\s*\d+.*$/i,'').trim();
+  // A plus sign after a local number denotes an extension; keep +886 intact.
+  part=part.replace(/(\d)\s*\+\s*\d+.*$/, '$1');
+  // Excel may omit the leading zero when the area code is separated explicitly.
+  part=part.replace(/^\(?3\)?(?=[\s\-–—.])/, '03');
   if(!/^[+\d\s()\-–—.]+$/.test(part))continue;
   let number=part.replace(/[\s()\-–—.]/g,'');
   if(number.startsWith('+886'))number='0'+number.slice(4).replace(/^0/,'');
