@@ -69,7 +69,7 @@ function validateCustomerImport(entries,cloudNames,key){
   if(conflicts.length)entry.issue='欄位內容衝突：'+[...new Set(conflicts)].join('、')+'；請修改或清空其中一欄';
   const name=CustomerImport.companyKey(values['公司名稱']);
   if(!name)entry.issue=[entry.issue,'缺少公司名稱'].filter(Boolean).join('；');
-  else if(cloudNames.has(name))entry.issue=[entry.issue,'公司名稱已存在雲端資料內，不可重複新增'].filter(Boolean).join('；');
+  else if(cloudNames.has(name))entry.issue=[entry.issue,(cloudNames instanceof Map?CustomerImport.duplicateMessage(values['公司名稱'],cloudNames.get(name)):'公司名稱已存在雲端資料內，不可重複新增')].filter(Boolean).join('；');
   if(entry.selected&&name){if(!groups.has(name))groups.set(name,[]);groups.get(name).push(entry)}
  }
  for(const group of groups.values())if(group.length>1){
@@ -114,7 +114,7 @@ async function openCustomerImport(wb,key){
   q('[data-import-close]').disabled=busy;
   q('[data-import-prev]').disabled=busy||page===0;q('[data-import-next]').disabled=busy||(page+1)*30>=visible.length;
  }
- async function check(notify=false){cloudReady=false;render();msg.textContent='正在讀取全部分類的雲端公司名稱…';try{const [a,b]=await Promise.all([readAllCompanyRows('cold_call_records','id,company_name'),readAllCompanyRows('outreach_records','id,category,data')]);cloudNames=new Set([...a.map(r=>r.company_name),...b.map(r=>r.data?.company)].map(CustomerImport.companyKey).filter(Boolean));cloudReady=true;entries.forEach(e=>e.error='');msg.textContent='雲端檢查完成。修正問題列後，可與其他通過檢查的資料一起匯入。'}catch(err){entries.filter(e=>!e.saved).forEach(e=>e.error='雲端讀取失敗，尚未匯入：'+err.message);msg.textContent=err.message+'\n所有資料保留，可稍後按「重新檢查雲端」。';if(notify)appNotice('本次未寫入任何資料。\n'+err.message+'\n未匯入資料已保留在預覽中，可稍後重新檢查。',{title:'匯入檢查未完成',type:'danger'})}render()}
+ async function check(notify=false){cloudReady=false;render();msg.textContent='正在讀取全部分類的雲端公司名稱…';try{const [a,b]=await Promise.all([readAllCompanyRows('cold_call_records','id,company_name'),readAllCompanyRows('outreach_records','id,category,data')]);cloudNames=CustomerImport.companyLocations(a,b);cloudReady=true;entries.forEach(e=>e.error='');msg.textContent='雲端檢查完成。修正問題列後，可與其他通過檢查的資料一起匯入。'}catch(err){entries.filter(e=>!e.saved).forEach(e=>e.error='雲端讀取失敗，尚未匯入：'+err.message);msg.textContent=err.message+'\n所有資料保留，可稍後按「重新檢查雲端」。';if(notify)appNotice('本次未寫入任何資料。\n'+err.message+'\n未匯入資料已保留在預覽中，可稍後重新檢查。',{title:'匯入檢查未完成',type:'danger'})}render()}
  q('[data-import-phone-region]').checked=phoneEnabled;
  q('[data-import-phone-region]').onchange=e=>{phoneEnabled=e.target.checked;render()};
  q('[data-import-check]').onclick=()=>check(true);
