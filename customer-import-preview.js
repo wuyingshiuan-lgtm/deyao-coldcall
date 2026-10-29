@@ -1,14 +1,14 @@
-/* Taiwan geographic numbering: ambiguous calling areas require confirmation. */
+/* Shared calling areas use the customer directory's grouped region labels. */
 function detectImportPhoneRegion(value){
  const rules=[
  ['0826',/^6\d{4}$/,['金門縣']],['0836',/^[2-9]\d{4}$/,['連江縣']],
  ['037',/^[2-9]\d{5}$/,['苗栗縣']],['049',/^[2-9]\d{6}$/,['南投縣']],
  ['082',/^[2-57-9]\d{5}$/,['金門縣']],['089',/^[2-9]\d{5}$/,['台東縣']],
- ['02',/^[235-8]\d{7}$/,['台北市','新北市','基隆市']],
+ ['02',/^\d{8}$/,['雙北/基隆']],
  ['03',/^[234]\d{6}$/,['桃園市']],['03',/^[56]\d{6}$/,['新竹市','新竹縣']],
  ['03',/^8\d{6}$/,['花蓮縣']],['03',/^9\d{6}$/,['宜蘭縣']],
  ['04',/^[23]\d{7}$/,['台中市']],['04',/^[78]\d{6}$/,['彰化縣']],
- ['05',/^[2-4]\d{6}$/,['嘉義市','嘉義縣']],['05',/^[5-7]\d{6}$/,['雲林縣']],
+ ['05',/^\d{7}$/,['嘉義/雲林']],
  ['06',/^[235-7]\d{6}$/,['台南市']],['06',/^9\d{6}$/,['澎湖縣']],
  ['07',/^[2-9]\d{6}$/,['高雄市']],['08',/^[478]\d{6}$/,['屏東縣']]
  ];
@@ -93,7 +93,7 @@ async function openCustomerImport(wb,key){
  let cloudNames=new Set(),cloudReady=false,busy=false,page=0,filter='pending',editingEntry=null;
  const dialog=document.createElement('dialog');dialog.id='customerImportPreview';dialog.setAttribute('aria-labelledby','customerImportTitle');
  dialog.style.cssText='width:min(1200px,94vw);max-height:90vh;border:1px solid #d5e0eb;border-radius:16px;padding:24px;color:#31485f;background:#ffffff;box-shadow:0 20px 80px #30203544;';
- dialog.innerHTML='<h2 id="customerImportTitle">匯入資料預覽與修正</h2><p>匯入至：'+esc(key==='domestic'?'國內電訪':outreachConfig[key].title)+'。未通過檢查的資料會留在此處，不會寫入雲端。可修改後重新檢查，或取消勾選暫不匯入的列。</p><p>公司同名時請先確認是否為同一家；既有客戶應使用新增聯繫紀錄。沒有公司表頭的工作表預設不勾選。預覽可於本頁繼續修正；重新整理網頁前請先完成匯入。</p><fieldset style="border:1px solid #cbddeb;border-radius:10px;padding:12px;margin:12px 0"><legend>縣市辨識設定</legend><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-import-phone-region>依台灣市話區碼補齊縣市</label><p>優先順序：地址 → 原有縣市 → 市話區碼。例如 07-6173055 → 高雄市。共用區碼會標示待確認；手機、缺少區碼或格式不明的電話不會自動填入。區碼為推定地區，請在匯入前確認。</p></fieldset><p data-import-summary role="status"></p><p data-import-message role="status" style="white-space:pre-wrap;color:#97365b"></p><div class="actions"><button type="button" class="btn" data-import-check>重新檢查雲端</button><select aria-label="預覽資料篩選" data-import-filter><option value="pending">未匯入資料</option><option value="issues">僅顯示問題資料</option><option value="all">全部資料</option><option value="ready">可匯入</option><option value="saved">已匯入</option></select><button type="button" class="btn" data-import-select>全選未匯入</button><button type="button" class="btn" data-import-deselect>取消全選</button></div><div data-import-editor></div><div class="table-wrap" style="max-height:42vh;overflow:auto"><table class="data-table"><thead><tr><th>匯入</th><th>來源工作表／列</th><th>公司名稱</th><th>公司地址</th><th>電話</th><th>辨識縣市／依據</th><th>狀態／未匯入原因</th><th>修正</th></tr></thead><tbody data-import-rows></tbody></table></div><div class="actions"><button type="button" class="btn" data-import-prev>上一頁</button><span data-import-page></span><button type="button" class="btn" data-import-next>下一頁</button></div><div class="actions"><button type="button" class="btn primary" data-import-save>匯入已勾選且通過檢查的資料</button><button type="button" class="btn" data-import-close>關閉預覽</button></div>';
+ dialog.innerHTML='<h2 id="customerImportTitle">匯入資料預覽與修正</h2><p>匯入至：'+esc(key==='domestic'?'國內電訪':outreachConfig[key].title)+'。未通過檢查的資料會留在此處，不會寫入雲端。可修改後重新檢查，或取消勾選暫不匯入的列。</p><p>公司同名時請先確認是否為同一家；既有客戶應使用新增聯繫紀錄。沒有公司表頭的工作表預設不勾選。預覽可於本頁繼續修正；重新整理網頁前請先完成匯入。</p><fieldset style="border:1px solid #cbddeb;border-radius:10px;padding:12px;margin:12px 0"><legend>縣市辨識設定</legend><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-import-phone-region>依台灣市話區碼補齊縣市</label><p>優先順序：地址 → 原有縣市 → 市話區碼。例如 07-6173055 → 高雄市。02 統一為雙北/基隆，05 統一為嘉義/雲林；其他共用區碼會標示待確認；手機、缺少區碼或格式不明的電話不會自動填入。區碼為推定地區，請在匯入前確認。</p></fieldset><p data-import-summary role="status"></p><p data-import-message role="status" style="white-space:pre-wrap;color:#97365b"></p><div class="actions"><button type="button" class="btn" data-import-check>重新檢查雲端</button><select aria-label="預覽資料篩選" data-import-filter><option value="pending">未匯入資料</option><option value="issues">僅顯示問題資料</option><option value="all">全部資料</option><option value="ready">可匯入</option><option value="saved">已匯入</option></select><button type="button" class="btn" data-import-select>全選未匯入</button><button type="button" class="btn" data-import-deselect>取消全選</button></div><div data-import-editor></div><div class="table-wrap" style="max-height:42vh;overflow:auto"><table class="data-table"><thead><tr><th>匯入</th><th>來源工作表／列</th><th>公司名稱</th><th>公司地址</th><th>電話</th><th>辨識縣市／依據</th><th>狀態／未匯入原因</th><th>修正</th></tr></thead><tbody data-import-rows></tbody></table></div><div class="actions"><button type="button" class="btn" data-import-prev>上一頁</button><span data-import-page></span><button type="button" class="btn" data-import-next>下一頁</button></div><div class="actions"><button type="button" class="btn primary" data-import-save>匯入已勾選且通過檢查的資料</button><button type="button" class="btn" data-import-close>關閉預覽</button></div>';
  document.body.appendChild(dialog);dialog.showModal();
  const q=selector=>dialog.querySelector(selector),msg=q('[data-import-message]');
  function render(){
