@@ -2899,6 +2899,13 @@ document.addEventListener('click',e=>{
  const label=target.querySelector('[data-outreach-selected-count]');if(label)label.textContent='已選 '+count+' 筆';
 });
 
+function mergeCustomerRegion(value){
+ const region=String(value||"").trim().replace(/臺/g,"台");
+ if(/^(?:台北市?|新北市?|基隆市?|雙北[\/／]基隆)$/.test(region))return "雙北/基隆";
+ if(/^(?:新竹[市縣]?|新竹市[\/／]新竹縣)$/.test(region))return "新竹";
+ if(/^(?:嘉義[市縣]?|雲林縣?|嘉義[\/／]雲林)$/.test(region))return "嘉義/雲林";
+ return region;
+}
 function customerRegion(row,domestic=false){
  const city=detectCity(domestic?row.company_address:row.address||row.company_address||"");
  const rawRegion=String((domestic?row.area:row.region)||"").trim();
@@ -2906,26 +2913,28 @@ function customerRegion(row,domestic=false){
  const labelled=String(row.notes||"").split(/\r?\n/).filter(line=>/^\s*(?:公司區域|縣市區域|公司地區|縣市|地區)\s*[：:]/.test(line)).join("\n");
  const noteCity=detectCity(labelled);
  const phoneRegion=typeof cloudPhoneRegion==="function"?cloudPhoneRegion(row,domestic):null;
- return city||detectCity(region)||noteCity||(!/待確認|無法辨識|未分類|未知|未填|尚未填寫|空白|^(?:[-—–]|N\/?A|null|none)$/i.test(region)?region:'')||phoneRegion?.city||(!domestic&&!/待確認|無法辨識|未分類|未知|未填|尚未填寫|空白|^(?:[-—–]|N\/?A|null|none)$/i.test(String(row.country||row.location||""))?String(row.country||row.location||"").trim():"")||"未分類";
+ return mergeCustomerRegion(city||detectCity(region)||noteCity||(!/待確認|無法辨識|未分類|未知|未填|尚未填寫|空白|^(?:[-—–]|N\/?A|null|none)$/i.test(region)?region:'')||phoneRegion?.city||(!domestic&&!/待確認|無法辨識|未分類|未知|未填|尚未填寫|空白|^(?:[-—–]|N\/?A|null|none)$/i.test(String(row.country||row.location||""))?String(row.country||row.location||"").trim():"")||"未分類");
 }
 function syncCustomerRegionFilter(select,rows,domestic=false){
  if(!select)return;
- const active=select.value,counts=new Map();
+ const active=mergeCustomerRegion(select.value),counts=new Map();
  rows.forEach(row=>{const region=customerRegion(row,domestic);counts.set(region,(counts.get(region)||0)+1)});
- const regions=[...CITY_ALIASES.map(([city])=>city),...counts.keys()].filter((value,index,all)=>all.indexOf(value)===index);
+ const regions=[...CITY_ALIASES.map(([city])=>mergeCustomerRegion(city)),...counts.keys()].filter((value,index,all)=>all.indexOf(value)===index);
  if(active&&!regions.includes(active))regions.push(active);
  const markup='<option value="">全部地區</option>'+regions.map(region=>'<option value="'+esc(region)+'">'+esc(region)+(counts.has(region)?'（'+counts.get(region)+'）':'')+'</option>').join('');
  if(select.innerHTML!==markup){select.innerHTML=markup;select.value=active}
 }
 function selectCustomerRegion(select,region){
  if(!select)return;
+ region=mergeCustomerRegion(region);
  if(!Array.from(select.options).some(option=>option.value===region))select.add(new Option(region,region));
  select.value=region;
 }
 function regionCountButtons(rows,active,attribute,domestic=false){
+ active=mergeCustomerRegion(active);
  const counts=new Map();for(const row of rows){const region=customerRegion(row,domestic);counts.set(region,(counts.get(region)||0)+1)}
  if(active&&!counts.has(active))counts.set(active,0);
- const order=CITY_ALIASES.map(([city])=>city);
+ const order=CITY_ALIASES.map(([city])=>mergeCustomerRegion(city));
  const regions=[...counts.keys()].sort((a,b)=>{if(a==="未分類")return 1;if(b==="未分類")return -1;const ia=order.indexOf(a),ib=order.indexOf(b);return (ia<0?999:ia)-(ib<0?999:ib)||a.localeCompare(b,"zh-Hant")});
  const button=(value,label,count)=>'<button type="button" class="btn '+(active===value?'active':'')+'" '+attribute+'="'+esc(value)+'" aria-pressed="'+(active===value)+'">'+esc(label)+'（'+count+'）</button>';
  return button("","全部區域",rows.length)+regions.map(region=>button(region,region,counts.get(region))).join("");
