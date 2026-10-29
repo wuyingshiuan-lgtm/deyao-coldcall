@@ -51,7 +51,12 @@ function customerImportStage(wb){
   const headers=matrix[0].map((h,i)=>String(h||'未命名欄 '+(i+1)));
   const hasCompany=headers.some(h=>CustomerImport.canonical(h)==='公司名稱');
   matrix.slice(1).forEach((cells,i)=>{if(!cells.some(v=>String(v??'').trim()))return;
-   const fields=cells.map((v,j)=>({header:headers[j]||'未命名欄 '+(j+1),value:String(v??'')}));
+   const fields=cells.map((v,j)=>{
+    const header=headers[j]||'未命名欄 '+(j+1);
+    const cell=XLSX.utils.encode_cell?wb.Sheets[sheet][XLSX.utils.encode_cell({r:i+1,c:j})]:null;
+    const link=CustomerImport.canonical(header)==='公司官網'?cell?.l?.Target:null;
+    return {header,value:String(link&&/^https?:\/\//i.test(link)?link:v??'')};
+   });
    headers.forEach((h,j)=>{if(!fields[j])fields[j]={header:h,value:''}});
    if(!hasCompany)fields.unshift({header:'公司名稱',value:''});
    entries.push({sheet,row:i+2,fields,selected:hasCompany,saved:false,issue:'',error:'',values:{}});
@@ -98,7 +103,8 @@ async function openCustomerImport(wb,key){
  let cloudNames=new Set(),cloudReady=false,busy=false,page=0,filter='pending',editingEntry=null;
  const dialog=document.createElement('dialog');dialog.id='customerImportPreview';dialog.setAttribute('aria-labelledby','customerImportTitle');
  dialog.style.cssText='width:min(1200px,94vw);max-height:90vh;border:1px solid #d5e0eb;border-radius:16px;padding:24px;color:#31485f;background:#ffffff;box-shadow:0 20px 80px #30203544;';
- dialog.innerHTML='<h2 id="customerImportTitle">匯入資料預覽與修正</h2><p>匯入至：'+esc(key==='domestic'?'國內電訪':outreachConfig[key].title)+'。未通過檢查的資料會留在此處，不會寫入雲端。可修改後重新檢查，或取消勾選暫不匯入的列。</p><p>公司同名時請先確認是否為同一家；既有客戶應使用新增聯繫紀錄。沒有公司表頭的工作表預設不勾選。預覽可於本頁繼續修正；重新整理網頁前請先完成匯入。</p><fieldset style="border:1px solid #cbddeb;border-radius:10px;padding:12px;margin:12px 0"><legend>縣市辨識設定</legend><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-import-phone-region>依台灣市話區碼補齊縣市</label><p>優先順序：地址 → 原有縣市 → 市話區碼。例如 07-6173055 → 高雄市。02 統一為雙北/基隆，05 統一為嘉義/雲林，03 統一為新竹；同欄有多個電話時採用第一個可辨識的市話區碼；無市話區碼的資料歸為未分類。</p></fieldset><p data-import-summary role="status"></p><p data-import-message role="status" style="white-space:pre-wrap;color:#97365b"></p><div class="actions"><button type="button" class="btn" data-import-check>重新檢查雲端</button><select aria-label="預覽資料篩選" data-import-filter><option value="pending">未匯入資料</option><option value="issues">僅顯示問題資料</option><option value="all">全部資料</option><option value="ready">可匯入</option><option value="saved">已匯入</option></select><button type="button" class="btn" data-import-select>全選未匯入</button><button type="button" class="btn" data-import-deselect>取消全選</button></div><div data-import-editor></div><div class="table-wrap" style="max-height:42vh;overflow:auto"><table class="data-table"><thead><tr><th>匯入</th><th>來源工作表／列</th><th>公司名稱</th><th>公司地址</th><th>電話</th><th>辨識縣市／依據</th><th>狀態／未匯入原因</th><th>修正</th></tr></thead><tbody data-import-rows></tbody></table></div><div class="actions"><button type="button" class="btn" data-import-prev>上一頁</button><span data-import-page></span><button type="button" class="btn" data-import-next>下一頁</button></div><div class="actions"><button type="button" class="btn primary" data-import-save>匯入已勾選且通過檢查的資料</button><button type="button" class="btn" data-import-close>關閉預覽</button></div>';
+ dialog.innerHTML='<h2 id="customerImportTitle">匯入資料預覽與修正</h2><p>匯入至：'+esc(key==='domestic'?'國內電訪':outreachConfig[key].title)+'。未通過檢查的資料會留在此處，不會寫入雲端。可修改後重新檢查，或取消勾選暫不匯入的列。</p><p>公司同名時請先確認是否為同一家；既有客戶應使用新增聯繫紀錄。沒有公司表頭的工作表預設不勾選。預覽可於本頁繼續修正；重新整理網頁前請先完成匯入。</p><fieldset style="border:1px solid #cbddeb;border-radius:10px;padding:12px;margin:12px 0"><legend>縣市辨識設定</legend><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-import-phone-region>依台灣市話區碼補齊縣市</label><p>優先順序：地址 → 原有縣市 → 市話區碼。例如 07-6173055 → 高雄市。02 統一為雙北/基隆，05 統一為嘉義/雲林，03 統一為新竹；同欄有多個電話時採用第一個可辨識的市話區碼；無市話區碼的資料歸為未分類。</p></fieldset><p data-import-summary role="status"></p><p data-import-message role="status" style="white-space:pre-wrap;color:#97365b"></p><div class="actions"><button type="button" class="btn" data-import-check>重新檢查雲端</button><select aria-label="預覽資料篩選" data-import-filter><option value="pending">未匯入資料</option><option value="issues">僅顯示問題資料</option><option value="all">全部資料</option><option value="ready">可匯入</option><option value="saved">已匯入</option></select><button type="button" class="btn" data-import-select>全選未匯入</button><button type="button" class="btn" data-import-deselect>取消全選</button></div><div data-import-editor></div><div class="table-wrap" style="max-height:42vh;overflow:auto"><table class="data-table"><thead><tr><th>匯入</th><th>來源工作表／列</th><th>公司名稱</th><th>公司地址</th><th>電話</th><th>'+ (key==='foreignEmail'?'國家／地區（自動辨識）':'辨識縣市／依據') +'</th><th>狀態／未匯入原因</th><th>修正</th></tr></thead><tbody data-import-rows></tbody></table></div><div class="actions"><button type="button" class="btn" data-import-prev>上一頁</button><span data-import-page></span><button type="button" class="btn" data-import-next>下一頁</button></div><div class="actions"><button type="button" class="btn primary" data-import-save>匯入已勾選且通過檢查的資料</button><button type="button" class="btn" data-import-close>關閉預覽</button></div>';
+ if(key==='foreignEmail'){dialog.querySelector('fieldset').hidden=true;dialog.querySelector('#customerImportTitle').insertAdjacentHTML('afterend','<p>「網站」會帶入官方網站；「地區」會自動轉成國家，例如 Ramsey → 美國。無法確定時保留原始地區，不猜填國家。</p>')}
  document.body.appendChild(dialog);dialog.showModal();
  const q=selector=>dialog.querySelector(selector),msg=q('[data-import-message]');
  function render(){
@@ -106,7 +112,7 @@ async function openCustomerImport(wb,key){
   q('[data-import-summary]').textContent='總共 '+entries.length+' 筆｜已匯入 '+saved+' 筆｜已勾選可匯入 '+ready.length+' 筆｜未匯入 '+(entries.length-saved)+' 筆｜問題資料 '+entries.filter(e=>!e.saved&&(e.issue||e.error)).length+' 筆';
   const visible=entries.filter(e=>filter==='all'||(filter==='issues'&&!e.saved&&!!(e.issue||e.error))||(filter==='saved'?e.saved:filter==='ready'?!e.saved&&e.selected&&!e.issue&&!e.error:filter==='pending'&&!e.saved));
   page=Math.max(0,Math.min(page,Math.ceil(visible.length/30)-1));
-  q('[data-import-rows]').innerHTML=visible.slice(page*30,page*30+30).map(e=>{const i=entries.indexOf(e);return '<tr><td><input type="checkbox" aria-label="選取 '+esc(e.sheet)+' 第 '+e.row+' 列" data-import-row="'+i+'" '+(e.selected?'checked ':'')+(e.saved||busy?'disabled':'')+'></td><td>'+esc(e.sheet)+'／'+e.row+'</td><td>'+esc(e.values['公司名稱']||'（未填）')+'</td><td>'+esc(e.values['公司地址']||'—')+'</td><td>'+esc(e.values['電話']||'—')+'</td><td>'+esc(resolveCustomerImportRegion(e.values,phoneEnabled).label)+'</td><td style="white-space:pre-wrap;color:'+(e.issue||e.error?'#9a4350':e.saved?'#2c7059':'#425d78')+'">'+esc(e.saved?'✓ 已匯入':e.error||e.issue||(!cloudReady?'等待雲端檢查':!e.selected?'未勾選，暫不匯入':'✓ 可匯入'))+'</td><td><button type="button" class="btn small" data-import-edit="'+i+'" '+(e.saved||busy?'disabled':'')+'>查看／修改</button></td></tr>'}).join('');
+  q('[data-import-rows]').innerHTML=visible.slice(page*30,page*30+30).map(e=>{const i=entries.indexOf(e);return '<tr><td><input type="checkbox" aria-label="選取 '+esc(e.sheet)+' 第 '+e.row+' 列" data-import-row="'+i+'" '+(e.selected?'checked ':'')+(e.saved||busy?'disabled':'')+'></td><td>'+esc(e.sheet)+'／'+e.row+'</td><td>'+esc(e.values['公司名稱']||'（未填）')+'</td><td>'+esc(e.values['公司地址']||'—')+'</td><td>'+esc(e.values['電話']||'—')+'</td><td>'+esc(key==='foreignEmail'?(CustomerImport.foreignCountryFor(e.values)||'無法確定國家（保留原始地區）'):resolveCustomerImportRegion(e.values,phoneEnabled).label)+'</td><td style="white-space:pre-wrap;color:'+(e.issue||e.error?'#9a4350':e.saved?'#2c7059':'#425d78')+'">'+esc(e.saved?'✓ 已匯入':e.error||e.issue||(!cloudReady?'等待雲端檢查':!e.selected?'未勾選，暫不匯入':'✓ 可匯入'))+'</td><td><button type="button" class="btn small" data-import-edit="'+i+'" '+(e.saved||busy?'disabled':'')+'>查看／修改</button></td></tr>'}).join('');
   q('[data-import-page]').textContent=(page+1)+'／'+Math.max(1,Math.ceil(visible.length/30))+' 頁';
   q('[data-import-save]').disabled=busy||!cloudReady||!ready.length||!!editingEntry;
   q('[data-import-check]').disabled=busy;
@@ -146,18 +152,19 @@ async function openCustomerImport(wb,key){
     }
     raw=[...byCompany.values()].map(group=>{
      const merged={...group[0]},contacts=[],seen=new Set(),names=[];
+     for(const field of ['公司官網','國家／地區','地區'])if(!String(merged[field]||'').trim()){const source=group.find(item=>String(item[field]||'').trim());if(source)merged[field]=source[field]};
      for(const item of group){
       const mails=String(item['Email']||'').split(/[;,；\n]+/).map(x=>x.trim()).filter(Boolean);
       for(const mail of mails){
        const position=String(item['職位']||'').trim(),person=String(item['聯絡人']||'').trim();
        const ident=mail.toLowerCase();
-       if(!seen.has(ident)){seen.add(ident);contacts.push({email:mail,position});}
-       else {const prior=contacts.find(c=>c.email.toLowerCase()===ident);if(prior&&position&&prior.position&&prior.position!==position)throw Error('同一 Email 的職位資料衝突：'+mail+'，請先修正。');if(prior&&!prior.position)prior.position=position;}
+       if(!seen.has(ident)){seen.add(ident);contacts.push({name:person,email:mail,position});}
+       else {const prior=contacts.find(c=>c.email.toLowerCase()===ident);if(prior&&position&&prior.position&&prior.position!==position)throw Error('同一 Email 的職位資料衝突：'+mail+'，請先修正。');if(prior&&person&&prior.name&&prior.name!==person)throw Error('同一 Email 的聯絡人姓名衝突：'+mail+'，請先修正。');if(prior&&!prior.position)prior.position=position;if(prior&&!prior.name)prior.name=person;}
        if(person)names.push(person+'｜'+mail+'｜'+(position||'未提供職位'));
       }
      }
      if(contacts.some(c=>!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email))))throw Error('公司「'+merged['公司名稱']+'」存在格式錯誤的 Email，請先修正。');
-     merged['Mail／所屬職位']=contacts;
+     merged['聯絡人姓名／職位／Email']=contacts;
      merged['Email']=contacts.map(x=>x.email).join(', ');
      if(names.length)merged['備註']=[String(merged['備註']||'').trim(),'聯絡人配對資料：\n'+names.join('\n')].filter(Boolean).join('\n');
      return merged;
