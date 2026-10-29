@@ -148,23 +148,7 @@ function openBusinessAddressLookup(key,id){
  };
 }
 (function setupBusinessAddressLookup(){
- const selectors=[
- ['domestic','#records [data-action="details"][data-record-id]','recordId'],
- ['prospecting','#prospectingRecords [data-prospecting-detail]','prospectingDetail'],
- ['exhibitions','#exhibitionsRecords [data-exhibition-company-link]','cloudId'],
- ['foreignEmail','#foreignEmailRecords [data-foreign-email-detail]','foreignEmailDetail']
- ];
- let pending=false;
- function attach(){
-  pending=false;if(currentProfile?.role!=='admin')return;
-  for(const [key,selector,attribute] of selectors)document.querySelectorAll(selector).forEach(company=>{
-   const parent=company.parentElement;if(company.closest('.company-detail-row')||parent.querySelector('[data-business-address-id]'))return;
-   const button=document.createElement('button');button.type='button';button.className='btn business-address-lookup';button.textContent='查詢營業／工廠地址';button.dataset.businessAddressId=company.dataset[attribute];button.dataset.businessAddressKey=key;parent.appendChild(button);
-  });
- }
- new MutationObserver(()=>{if(!pending){pending=true;queueMicrotask(attach)}}).observe(document.body,{childList:true,subtree:true});
  document.addEventListener('click',event=>{const button=event.target.closest('[data-business-address-id]');if(button){event.preventDefault();event.stopPropagation();openBusinessAddressLookup(button.dataset.businessAddressKey,button.dataset.businessAddressId)}});
- attach();
 })();
 
 /* Bulk address completion: only empty addresses with one legally matching factory. */
