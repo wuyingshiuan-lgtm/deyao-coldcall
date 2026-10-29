@@ -6,9 +6,10 @@
  '職位':['Position/Type','職稱','職位／部門','所屬職位／部門','position','title'],
  '電話':['聯繫電話','聯絡電話','公司電話','phone','tel'],
  '傳真電話':['傳真','fax','fax_phone'],
+ '聯絡人姓名／職位／Email':['Mail／所屬職位','Email／職位'],
  'Email':['Emails','電子郵件','電郵','mail','email','e-mail','Mail（彙整）'],
  '公司地址':['地址','address','company_address'],
- '公司官網':['官網','網站','網址','website'],
+ '公司官網':['官網','官方網站','網站','網址','website','web site','url'],
  '產業類別':['產業','產業分類','industry'],
  '分機':['extension','ext'],
  '地區':['區域','縣市','縣市區域','公司地區','region','area'],
@@ -23,6 +24,65 @@
  '開發信寄出日期':['寄出日期'],
  '開發來源':['source']
  };
+
+ // Match full place names/tokens, never substrings such as "US" inside a company name.
+ const placeKey=v=>String(v??'').normalize('NFKC').toLocaleLowerCase().replace(/\./g,'').replace(/\s+/g,' ').trim();
+ const countryAliases=new Map(),placeCountries=new Map();
+ function addCountry(code,names,places=[]){
+  for(const name of names)countryAliases.set(placeKey(name),code);
+  for(const place of places){const k=placeKey(place);if(!placeCountries.has(k))placeCountries.set(k,new Set());placeCountries.get(k).add(code)}
+ }
+ const countryNames={US:'美國',GB:'英國',TW:'台灣',CN:'中國',JP:'日本',KR:'韓國',DE:'德國',FR:'法國',CA:'加拿大',AU:'澳洲',NZ:'紐西蘭',VN:'越南',TH:'泰國',MY:'馬來西亞',SG:'新加坡',IN:'印度',ID:'印尼',PH:'菲律賓',IT:'義大利',ES:'西班牙',NL:'荷蘭',CH:'瑞士',AE:'阿拉伯聯合大公國',TR:'土耳其',ZA:'南非'};
+ const displays=['zh-Hant','en'].map(locale=>new Intl.DisplayNames([locale],{type:'region'}));
+ // Intl supplies localized country names; codes are accepted only as complete tokens.
+ for(let a=65;a<=90;a++)for(let b=65;b<=90;b++){
+  const code=String.fromCharCode(a,b),en=displays[1].of(code);
+  if(en&&en!==code){const zh=countryNames[code]||displays[0].of(code);countryNames[code]=zh;addCountry(code,[code,en,zh])}
+ }
+ addCountry('US',['USA','U.S.A.','U.S.','United States of America','美利堅合眾國'],[
+ 'Ramsey','Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming','District of Columbia','Los Angeles','San Francisco','San Diego','San Jose','Chicago','Houston','Dallas','Boston','Seattle','Detroit','Minneapolis','加州','加利福尼亞','明尼蘇達','紐澤西','紐約','德州','新澤西'
+ ]);
+ addCountry('GB',['UK','U.K.','United Kingdom','Great Britain'],['England','Scotland','Wales','Northern Ireland','London','Manchester','Birmingham','Leeds','Liverpool','Bristol','Sheffield','Edinburgh','Glasgow','倫敦','英格蘭','蘇格蘭']);
+ addCountry('JP',[],['Tokyo','Osaka','Nagoya','Kyoto','Yokohama','Fukuoka','Kobe','東京','大阪','名古屋','京都','橫濱','福岡']);
+ addCountry('DE',[],['Berlin','Munich','München','Hamburg','Frankfurt','Stuttgart','Düsseldorf','Dusseldorf','Cologne','Köln','Bavaria','Baden-Württemberg','柏林','慕尼黑','漢堡','法蘭克福']);
+ addCountry('FR',[],['Paris','Lyon','Marseille','Toulouse','Bordeaux','巴黎','里昂']);
+ addCountry('CA',[],['Ontario','Quebec','Québec','British Columbia','Alberta','Toronto','Vancouver','Montreal','Montréal','Ottawa','Calgary','多倫多','溫哥華','安大略']);
+ addCountry('AU',[],['New South Wales','Queensland','Western Australia','South Australia','Tasmania','Sydney','Melbourne','Brisbane','Perth','Adelaide','雪梨','悉尼','墨爾本']);
+ addCountry('NZ',['New Zealand'],['Auckland','Wellington','Christchurch','奧克蘭']);
+ addCountry('KR',['South Korea','Republic of Korea','南韓'],['Seoul','Busan','Incheon','Gyeonggi','首爾','釜山','仁川']);
+ addCountry('TW',['Taiwan','臺灣'],['Taipei','New Taipei','Taichung','Tainan','Kaohsiung','Hsinchu','台北','臺北','新北','台中','臺中','台南','臺南','高雄','新竹']);
+ addCountry('CN',['PRC','People’s Republic of China','中國大陸'],['Beijing','Shanghai','Shenzhen','Guangzhou','Dongguan','Suzhou','Zhejiang','Jiangsu','Guangdong','北京','上海','深圳','廣州','東莞','蘇州','浙江','江蘇','廣東']);
+ addCountry('VN',[],['Hanoi','Ho Chi Minh City','Ho Chi Minh','Haiphong','Binh Duong','河內','胡志明市','平陽']);
+ addCountry('TH',[],['Bangkok','Chonburi','Rayong','Samut Prakan','曼谷','春武里','羅勇']);
+ addCountry('MY',[],['Kuala Lumpur','Penang','Johor','Selangor','吉隆坡','檳城','柔佛','雪蘭莪']);
+ addCountry('IN',[],['Mumbai','Delhi','New Delhi','Bengaluru','Bangalore','Chennai','Pune','Gujarat','Maharashtra','Tamil Nadu','孟買','新德里','班加羅爾']);
+ addCountry('ID',[],['Jakarta','Surabaya','Bekasi','Tangerang','雅加達','泗水']);
+ addCountry('PH',[],['Manila','Cebu','馬尼拉','宿霧']);
+ addCountry('IT',[],['Milan','Milano','Rome','Roma','Turin','Torino','Bologna','Brescia','米蘭','羅馬','都靈']);
+ addCountry('ES',[],['Madrid','Barcelona','Valencia','馬德里','巴塞隆納']);
+ addCountry('NL',[],['Amsterdam','Rotterdam','Eindhoven','阿姆斯特丹','鹿特丹']);
+ addCountry('CH',[],['Zurich','Zürich','Geneva','Basel','蘇黎世','日內瓦']);
+ addCountry('AE',['UAE'],['Dubai','Abu Dhabi','杜拜','阿布達比']);
+ addCountry('TR',['Türkiye'],['Istanbul','Ankara','Izmir','伊斯坦堡','安卡拉']);
+ addCountry('ZA',[],['Johannesburg','Cape Town','Durban','約翰尼斯堡','開普敦']);
+ function detectImportCountry(value){
+  const text=placeKey(value);if(!text)return '';
+  if(countryAliases.has(text))return countryNames[countryAliases.get(text)];
+  const parts=text.split(/[,，;；|/()（）\n]+/).map(x=>x.trim()).filter(Boolean);
+  // An explicit country takes precedence over cities or states with the same name.
+  const explicit=new Set(parts.map(x=>countryAliases.get(x)).filter(Boolean));
+  if(explicit.size===1)return countryNames[[...explicit][0]];
+  if(explicit.size>1)return '';
+  const found=new Set();
+  for(const [place,codes] of placeCountries){
+   const escaped=place.replace(/[.*+?^$\{\}()|[\]\\]/g,'\\ const headerKey=');
+   const match=/[a-z]/i.test(place)?new RegExp('(?:^|[^a-z])'+escaped+'(?:$|[^a-z])','i').test(text):parts.includes(place);
+   if(match)for(const code of codes)found.add(code);
+  }
+  return found.size===1?countryNames[[...found][0]]:'';
+ }
+ function foreignCountryFor(row){return detectImportCountry(row['國家／地區'])||detectImportCountry(row['地區'])}
+
  const headerKey=v=>String(v??'').normalize('NFKC').trim().toLowerCase().replace(/[\s／/（）()_\-]/g,'');
  const companyKey=v=>String(v??'').normalize('NFKC').trim().toLowerCase().replace(/\s+/g,'');
  const lookup=new Map();for(const [label,aliases] of Object.entries(groups))for(const a of [label,...aliases])lookup.set(headerKey(a),label);
@@ -45,6 +105,6 @@
   return locations;
  }
  function duplicateMessage(name,pages){return '公司名稱「'+String(name).trim()+'」已存在雲端資料內，不可重複新增。\n所在分頁：'+[...pages].join('、')+'。\n請至上述分頁，以公司名稱搜尋原有資料。'}
- root.CustomerImport={companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
+ root.CustomerImport={detectImportCountry,foreignCountryFor,companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
 })(typeof window!=='undefined'?window:globalThis);
 
