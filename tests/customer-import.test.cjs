@@ -43,3 +43,6 @@ vm.createContext(context);vm.runInContext(guard+';this.write=customerWrite',cont
  const unknown=ctx.mapOutreachImport([{'公司名稱':'未知','地區':'Unlisted Place'}],'foreignEmail')[0];assert.equal(unknown.country,'');assert.equal(unknown.region,'Unlisted Place');
  console.log('PASS: website alias, international place-to-country mapping, explicit country priority, unknown region preservation and actual foreign import mapper');
 })();
+
+for(const header of ['電子信箱',' 電子信箱 ','電子郵箱','Email Address','E-mail Address','Email','Mail']){assert.equal(C.canonical(header),'Email');const mapped=C.mapRows([{'公司名稱':'信箱測試',[header]:'hello@example.com'}]);assert.equal(mapped.rows[0].Email,'hello@example.com');assert.equal(C.valueFor(mapped.rows[0],'Mail（彙整）','email'),'hello@example.com')};
+console.log('PASS Chinese email headers and address aliases map to shared Email field');
