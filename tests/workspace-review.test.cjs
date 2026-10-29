@@ -32,3 +32,14 @@ context.$=()=>({value:'missing'});assert.equal(context.exportRows('foreignEmail'
 console.log('PASS: exhibition status export order, preserved fields, multiple email roles, filtering and empty exports');
 
 })();
+
+(function(){
+const assert=require('node:assert/strict');require('../exhibition-mail-status.js');const api=global.ExhibitionMailStatus,xlsx={utils:{sheet_to_json:s=>s}};
+for(const header of ['電子信箱','電子\n信箱','\uFEFF電子信箱\u200B','Email','Mail','E-mail Address']){
+ for(const prefix of [[],[[],['報表說明']]]){
+  const wb={SheetNames:['Sheet1'],Sheets:{Sheet1:[...prefix,[header,'Created Date'],['info@preferredproductsdesign.com','Oct 07 2026,']]}};
+  const rows=api.readEmailWorkbook(wb,xlsx);assert.deepEqual(rows[0].emails,['info@preferredproductsdesign.com']);assert.equal(rows[0].line,prefix.length+2);
+ }
+}
+console.log('PASS status workbook email headers, screenshot address, hidden characters, title rows and original line numbers');
+})();
