@@ -51,7 +51,7 @@ function cloudPhoneRegion(row,domestic=false){
  const phone=String(row.phone||row['電話']||row['聯繫電話']||'').trim();
  const country=String(row.country||row.location||'').trim();
  const explicitTaiwan=/^(?:\+886|00886)/.test(phone.normalize('NFKC').replace(/[\s()\-]/g,''));
- if(!domestic&&country&&!/^(台灣|臺灣|台灣地區|臺灣地區|台澎金馬|中華民國|Taiwan|TW|TWN|Taiwan,?\s*(?:R\.?O\.?C\.?|\(R\.?O\.?C\.?\)))$/i.test(country)&&!explicitTaiwan)return {city:'',label:'',skip:true};
+ if(!domestic&&country&&!/待確認|無法辨識|未分類|未知/.test(country)&&!/^(台灣|臺灣|台灣地區|臺灣地區|台澎金馬|中華民國|Taiwan|TW|TWN|Taiwan,?\s*(?:R\.?O\.?C\.?|\(R\.?O\.?C\.?\)))$/i.test(country)&&!explicitTaiwan)return {city:'',label:'',skip:true};
  return detectImportPhoneRegion(phone);
 }
 function planCloudPhoneUpdates(domestic,outreach){
