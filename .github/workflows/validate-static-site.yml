@@ -51,6 +51,7 @@ jobs:
         run: |
           node --check customer-import.js
           node tests/customer-import.test.cjs
+          node tests/workspace-review.test.cjs
           node --check customer-import-preview.js
           node tests/customer-import-preview.test.cjs
           node tests/save-feedback.test.cjs
