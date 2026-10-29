@@ -103,6 +103,16 @@
   return kept.join('\n').trim();
  }
 
+ function normalizeImportDate(value){
+  const raw=String(value??'').normalize('NFKC').trim();
+  const match=raw.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?=$|[T\s])/);
+  if(!match)return raw;
+  const year=Number(match[1]),month=Number(match[2]),day=Number(match[3]);
+  const date=new Date(0);date.setUTCFullYear(year,month-1,day);date.setUTCHours(0,0,0,0);
+  if(date.getUTCFullYear()!==year||date.getUTCMonth()!==month-1||date.getUTCDate()!==day)throw Error('無效日期：'+raw);
+  return match[1]+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+ }
+
  const headerKey=v=>String(v??'').normalize('NFKC').trim().toLowerCase().replace(/[\s／/（）()_\-]/g,'');
  const companyKey=v=>String(v??'').normalize('NFKC').trim().toLowerCase().replace(/\s+/g,'');
  const lookup=new Map();for(const [label,aliases] of Object.entries(groups))for(const a of [label,...aliases])lookup.set(headerKey(a),label);
@@ -125,6 +135,6 @@
   return locations;
  }
  function duplicateMessage(name,pages){return '公司名稱「'+String(name).trim()+'」已存在雲端資料內，不可重複新增。\n所在分頁：'+[...pages].join('、')+'。\n請至上述分頁，以公司名稱搜尋原有資料。'}
- root.CustomerImport={cleanForeignEmailNotes,detectImportCountry,foreignCountryFor,companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
+ root.CustomerImport={normalizeImportDate,cleanForeignEmailNotes,detectImportCountry,foreignCountryFor,companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
 })(typeof window!=='undefined'?window:globalThis);
 
