@@ -1,5 +1,7 @@
 /* Phone directories: summary first, complete details on company-name click. */
-html body.ui-refresh :is(.mobile-company-actions,.mobile-filter-toggle,.mobile-list-hint){display:none!important}
+html body.ui-refresh :is(.mobile-filter-toggle,.mobile-list-hint){display:none!important}
+html body.ui-refresh .mobile-company-actions{display:block!important;margin:12px 0}
+@media(min-width:761px){html body.ui-refresh .mobile-company-actions > button:not(.business-address-lookup){display:none!important}}
 @media(max-width:760px){
  html body.ui-refresh :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection).mobile-compact-directory .mobile-filter-toggle{display:inline-flex!important;margin:10px 0 14px!important;min-height:36px!important;padding:7px 12px!important;font-size:12px!important}
  html body.ui-refresh :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection).mobile-compact-directory .mobile-list-hint{display:block!important;color:#8295aa!important;font-size:12px!important;margin:12px 0!important}
