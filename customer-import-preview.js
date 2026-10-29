@@ -151,7 +151,6 @@ async function openCustomerImport(wb,key){
        if(person)names.push(person+'｜'+mail+'｜'+(position||'未提供職位'));
       }
      }
-     if(!contacts.length)throw Error('公司「'+merged['公司名稱']+'」沒有有效 Email，請先修正。');
      if(contacts.some(c=>!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email))))throw Error('公司「'+merged['公司名稱']+'」存在格式錯誤的 Email，請先修正。');
      merged['Mail／所屬職位']=contacts;
      merged['Email']=contacts.map(x=>x.email).join(', ');
