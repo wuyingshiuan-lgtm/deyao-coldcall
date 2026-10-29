@@ -56,8 +56,7 @@ function businessAddressLinks(company,website){
 }
 function businessAddressPatch(row,domestic,address,kind,source){
  const city=detectCity(address);
- const note='【營業／工廠地址核對】'+kind+'｜'+source;
- const notes=[String(row.notes||'').replace(/(?:^|\n)【營業／工廠地址核對】[^\n]*/g,'').trim(),note].filter(Boolean).join('\n');
+ const notes=row.notes||'';
  return domestic?{company_address:address,area:city||'',notes}:{...row,address,region:city||'',notes};
 }
 async function saveReviewedBusinessAddress(context,address,kind,source){
