@@ -2905,7 +2905,7 @@ function customerRegion(row,domestic=false){
  const labelled=String(row.notes||"").split(/\r?\n/).filter(line=>/^\s*(?:公司區域|縣市區域|公司地區|縣市|地區)\s*[：:]/.test(line)).join("\n");
  const noteCity=detectCity(labelled);
  const phoneRegion=typeof cloudPhoneRegion==="function"?cloudPhoneRegion(row,domestic):null;
- return city||detectCity(region)||noteCity||region||phoneRegion?.city||(phoneRegion?.label&&String(domestic?row.phone||"":row.phone||row['電話']||row['聯繫電話']||'').trim()?'待確認：'+phoneRegion.label:'')||(!domestic?String(row.country||row.location||"").trim():"")||"未分類";
+ return city||detectCity(region)||noteCity||(!/待確認|無法辨識|未分類|未知/.test(region)?region:'')||phoneRegion?.city||(!domestic?String(row.country||row.location||"").trim():"")||"未分類";
 }
 function syncCustomerRegionFilter(select,rows,domestic=false){
  if(!select)return;
@@ -3649,7 +3649,7 @@ document.querySelectorAll('.industry-value').forEach(input=>{
  input.form.addEventListener('reset',()=>queueMicrotask(syncIndustryOptions));
 });
 syncIndustryOptions();
-</script><script src="customer-import-preview.js?v=20261029-all-phone-formats"></script><script src="address-region-tools.js?v=20261029-all-phone-formats"></script><script src="bulk-history.js?v=20261022-email-match"></script><script src="business-address-lookup.js?v=20261022-bulk-factory-v1"></script></body></html>
+</script><script src="customer-import-preview.js?v=20261029-auto-phone-region"></script><script src="address-region-tools.js?v=20261029-all-phone-formats"></script><script src="bulk-history.js?v=20261022-email-match"></script><script src="business-address-lookup.js?v=20261022-bulk-factory-v1"></script></body></html>
 
 
 
