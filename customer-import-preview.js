@@ -10,6 +10,8 @@ function detectImportPhoneRegion(value){
  for(let part of parts){
   part=part.replace(/^(?:(?:聯絡|聯繫|公司)?電話|市話|tel(?:ephone)?|phone|fax|傳真)\s*[:：]?\s*/i,'');
   part=part.replace(/^[\s\-–—.:：]+/, '');
+  // A range suffix denotes additional lines at the same area code.
+  part=part.replace(/\s*[~～∼〜至]\s*\d+(?:\s*[-~～∼〜至]\s*\d+)*\s*$/, '');
   part=part.replace(/(?:分機|轉|ext(?:ension)?\.?|#|\*|x)\s*[:：]?\s*\d+.*$/i,'').trim();
   part=part.replace(/(\d)\s*\+\s*\d+.*$/, '$1');
   part=part.replace(/^\(?(826|836|37|49|82|89|[2-8])\)?(?=[\s\-–—.:：])/, '0$1');
