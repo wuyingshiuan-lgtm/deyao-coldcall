@@ -47,7 +47,7 @@ function cloudPhoneRegion(row,domestic=false){
  const labelled=String(row.notes||'').match(/(?:^|\n)(?:公司地址|地址)[：:]([^\n]+)/);
  const address=String(row.company_address||row.address||row['公司地址']||row['地址']||labelled?.[1]||'').trim();
  const existing=String(domestic?row.area||'':row.region||'').trim();
- if(detectCity(address)||existing)return {city:'',label:'',skip:true};
+ if(detectCity(address)||(existing&&!/待確認|無法辨識|未分類|未知/.test(existing)))return {city:'',label:'',skip:true};
  const phone=String(row.phone||row['電話']||row['聯繫電話']||'').trim();
  const country=String(row.country||row.location||'').trim();
  const explicitTaiwan=/^(?:\+886|00886)/.test(phone.normalize('NFKC').replace(/[\s()\-]/g,''));
@@ -116,7 +116,7 @@ function scheduleCloudPhoneRegions(){
 (function setupCloudPhoneRegions(){
  for(const panel of document.querySelectorAll('.import-workflow-tools')){
   const box=document.createElement('section');
-  box.innerHTML='<hr><h3>既有雲端資料：自動依市話區碼補齊縣市</h3><p>管理員登入後自動檢查。保留地址可辨識或已填縣市的資料，只補齊空白縣市。02 統一辨識為「雙北/基隆」，05 統一辨識為「嘉義/雲林」，03 統一辨識為「新竹」。其他共用區碼、多地電話、手機與不完整號碼列為待確認。國外資料僅辨識台灣地區或明確 +886 電話。</p><button type="button" class="btn" data-phone-backfill>重新辨識雲端市話縣市</button><p role="status" data-phone-status>管理員登入後將自動檢查。</p><details data-phone-review></details>';
+  box.innerHTML='<hr><h3>既有雲端資料：自動依市話區碼補齊縣市</h3><p>管理員登入後自動檢查。保留地址可辨識或已填縣市的資料，補齊空白縣市及重新處理標示待確認、無法辨識的資料。02 統一辨識為「雙北/基隆」，05 統一辨識為「嘉義/雲林」，03 統一辨識為「新竹」。支援括號、分機、尾碼、國碼及省略開頭 0 的區碼格式；無足夠區碼資訊或跨地區電話保留待確認。國外資料僅辨識台灣地區或明確 +886 電話。</p><button type="button" class="btn" data-phone-backfill>重新辨識雲端市話縣市</button><p role="status" data-phone-status>管理員登入後將自動檢查。</p><details data-phone-review></details>';
   box.querySelector('[data-phone-backfill]').onclick=backfillCloudPhoneRegions;panel.appendChild(box);
  }
  if(cloudPhoneLastResult)renderCloudPhoneResult(cloudPhoneLastResult);
