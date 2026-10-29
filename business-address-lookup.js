@@ -235,3 +235,27 @@ function exportBulkFactoryAddressResult(){
  }
  renderBulkFactoryAddressResult();
 })();
+
+/* Address audit notes cleanup with a recoverable backup and concurrent-write checks. */
+function removeAddressAuditNote(value){return String(value||'').split('\n').filter(line=>!line.includes('【營業／工廠地址核對】')).join('\n');}
+(function(){
+ const backupKey='deyao-address-audit-notes-backup-v1';let busy=false;
+ async function run(restore=false){
+  if(busy||currentProfile?.role!=='admin')return;busy=true;status.textContent='正在讀取並核對備註…';
+  try{
+   let jobs=[];
+   if(restore){jobs=JSON.parse(localStorage.getItem(backupKey)||'[]').map(j=>({...j,before:j.after,after:j.before}));}
+   else{
+    const [domestic,outreach]=await Promise.all([fetchAllReportRows('cold_call_records','*'),fetchAllReportRows('outreach_records','id,category,data,created_at',['foreignEmail','exhibitions','prospecting'])]);
+    for(const r of domestic){if(String(r.notes||'').includes('【營業／工廠地址核對】'))jobs.push({table:'cold_call_records',id:r.id,before:r.notes,after:removeAddressAuditNote(r.notes)});}
+    for(const r of outreach){if(String(r.data?.notes||'').includes('【營業／工廠地址核對】'))jobs.push({table:'outreach_records',id:r.id,category:r.category,before:r.data,after:{...r.data,notes:removeAddressAuditNote(r.data.notes)}});}
+    if(jobs.length)localStorage.setItem(backupKey,JSON.stringify(jobs));
+   }
+   let saved=0;for(const j of jobs){const field=j.table==='cold_call_records'?'notes':'data';let q=sb.from(j.table).update({[field]:j.after}).eq('id',j.id);q=q.eq(field,typeof j.before==='object'?JSON.stringify(j.before):j.before);const result=await q.select('id');if(result.error)throw result.error;if(result.data?.length!==1)throw Error('資料已變更，請重新執行；已完成 '+saved+' 筆。');const check=await sb.from(j.table).select(field).eq('id',j.id).single();if(check.error||JSON.stringify(check.data?.[field])!==JSON.stringify(j.after))throw Error('回讀核對失敗');saved++;status.textContent='已核對 '+saved+' / '+jobs.length+' 筆';}
+   await Promise.all([load(),loadOutreachCloud()]);status.textContent=(restore?'已還原 ':'已清除地址核對備註 ')+saved+' 筆，逐筆回讀核對成功。其他備註與地址已保留。';
+  }catch(e){status.textContent='未全部完成：'+e.message;}finally{busy=false;}
+ }
+ const box=document.createElement('div'),clean=document.createElement('button'),undo=document.createElement('button'),status=document.createElement('p');box.className='actions';clean.className=undo.className='btn';clean.type=undo.type='button';clean.textContent='清除地址核對備註';undo.textContent='還原上次清理的備註';clean.onclick=()=>run();undo.onclick=()=>run(true);box.append(clean,undo,status);
+ function mount(){const target=document.getElementById('adminSection')||document.getElementById('customerSection');if(target&&currentProfile?.role==='admin'&&!box.isConnected)target.append(box);}
+ new MutationObserver(mount).observe(document.body,{childList:true,subtree:true});mount();
+})();
