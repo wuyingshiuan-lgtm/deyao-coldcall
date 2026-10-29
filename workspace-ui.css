@@ -216,3 +216,22 @@ html body.ui-refresh #exhibitionsCustomerSection>.actions{justify-content:flex-s
 html body.ui-refresh #exhibitionsCustomerSection>.actions label{display:flex!important;align-items:center!important;gap:9px!important;margin:0!important;white-space:nowrap!important}
 html body.ui-refresh #exhibitionsCustomerSection>.actions select{width:165px!important}
 @media(max-width:760px){html body.ui-refresh #exhibitionsCustomerSection>.actions label{width:100%!important;justify-content:space-between!important}html body.ui-refresh #exhibitionsCustomerSection>.actions select{flex:1;max-width:230px!important}}
+/* Phone directories: summary first, complete details on company-name click. */
+html body.ui-refresh :is(.mobile-company-actions,.mobile-filter-toggle,.mobile-list-hint){display:none!important}
+@media(max-width:760px){
+ html body.ui-refresh .mobile-compact-directory .mobile-filter-toggle{display:inline-flex!important;margin:10px 0 14px!important;min-height:36px!important;padding:7px 12px!important;font-size:12px!important}
+ html body.ui-refresh .mobile-compact-directory .mobile-list-hint{display:block!important;color:#8295aa!important;font-size:12px!important;margin:12px 0!important}
+ html body.ui-refresh .mobile-compact-directory:not(.mobile-filters-open) :is(.mobile-secondary-filter,.region-shortcuts,[id$="CountryShortcuts"],[id$="LocationShortcuts"]){display:none!important}
+ html body.ui-refresh .mobile-compact-directory table:is(.record-table,.data-table) tbody tr:not(:has(>td[colspan])){display:grid!important;grid-template-columns:minmax(0,1fr) 32px!important;padding:13px!important;gap:3px 8px!important;border-radius:14px!important}
+ html body.ui-refresh .mobile-compact-directory table:is(.record-table,.data-table) tbody tr:not(:has(>td[colspan]))>td:nth-child(n){display:none!important;border:0!important;min-height:0!important;padding:4px 0!important;grid-column:1/-1!important;line-height:1.65!important}
+ html body.ui-refresh .mobile-compact-directory table:is(.record-table,.data-table) tbody tr:not(:has(>td[colspan]))>td:is([data-label="公司名稱"],[data-label="聯繫"],[data-label="聯繫次數"],[data-label="區域"],[data-label="國家"],[data-label="國家／地區"],[data-label="狀態"],[data-label="開發進度"],[data-label="寄送Email"]):nth-child(n){display:grid!important;grid-template-columns:76px minmax(0,1fr)!important;gap:8px!important;font-size:12px!important}
+ html body.ui-refresh .mobile-compact-directory table:is(.record-table,.data-table) tbody tr:not(:has(>td[colspan]))>td[data-label="公司名稱"]:nth-child(n){display:block!important;grid-column:1!important;grid-row:1!important;padding:0 0 9px!important}
+ html body.ui-refresh .mobile-compact-directory table:is(.record-table,.data-table) tbody tr:not(:has(>td[colspan]))>td[data-label="公司名稱"]::before{display:none!important}
+ html body.ui-refresh .mobile-compact-directory table:is(.record-table,.data-table) tbody tr:not(:has(>td[colspan]))>td:is([data-label="選取"],[data-label="全選結果"]):nth-child(n){display:flex!important;justify-content:flex-end!important;align-items:start!important;grid-column:2!important;grid-row:1!important;padding:3px 0!important}
+ html body.ui-refresh .mobile-compact-directory table:is(.record-table,.data-table) tbody tr:not(:has(>td[colspan]))>td:is([data-label="選取"],[data-label="全選結果"])::before{display:none!important}
+ html body.ui-refresh .mobile-compact-directory td[data-label="公司名稱"] :is(.company-detail-toggle,.customer-company-button,.foreign-email-company-link,.exhibitions-company-link){font-size:16px!important;line-height:1.7!important;padding:2px 0!important;text-decoration:none!important}
+ html body.ui-refresh .mobile-compact-directory td[data-label="公司名稱"] .business-address-lookup{display:none!important}
+ html body.ui-refresh .mobile-company-actions{display:flex!important;flex-wrap:wrap!important;gap:8px!important;margin:16px 0!important;padding-top:12px!important;border-top:1px solid #e7edf5!important}
+ html body.ui-refresh .mobile-compact-directory table:is(.record-table,.data-table) tbody tr:has(>td[colspan]){display:block!important}
+ html body.ui-refresh .mobile-compact-directory table:is(.record-table,.data-table) tbody tr>td[colspan]:nth-child(n){display:block!important;grid-column:1/-1!important;padding:0!important}
+}
