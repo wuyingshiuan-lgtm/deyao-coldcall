@@ -37,7 +37,8 @@ vm.createContext(context);vm.runInContext(guard+';this.write=customerWrite',cont
  assert.equal(C.foreignCountryFor({'國家／地區':'Japan','地區':'Ramsey'}),'日本');
  const config=html.slice(html.indexOf('const outreachConfig='),html.indexOf('function renderForeignEmailExcelPreview'));
  const mapper=html.slice(html.indexOf('function mapOutreachImport('),html.indexOf('document.querySelectorAll("[data-outreach-file]")'));
- const ctx={CustomerImport:C,detectCity:()=>''};vm.createContext(ctx);vm.runInContext(config+mapper,ctx);
+ const ctx={CustomerImport:C,detectCity:()=>'',today:()=> '2026-10-29'};vm.createContext(ctx);vm.runInContext(config+mapper,ctx);
+ for(const date of [undefined,'','  ']){const source={'公司名稱':'日期測試'};if(date!==undefined)source['開發信寄出日期']=date;assert.equal(ctx.mapOutreachImport([source],'foreignEmail')[0].date,'2026-10-29')};assert.equal(ctx.mapOutreachImport([{'公司名稱':'日期測試','開發信寄出日期':'2026/10/8'}],'foreignEmail')[0].date,'2026-10-08');
  const result=ctx.mapOutreachImport([row],'foreignEmail')[0];assert.equal(result.website,'https://example.com');assert.equal(result.country,'美國');assert.equal(result.region,'Ramsey');
  const unknown=ctx.mapOutreachImport([{'公司名稱':'未知','地區':'Unlisted Place'}],'foreignEmail')[0];assert.equal(unknown.country,'');assert.equal(unknown.region,'Unlisted Place');
  console.log('PASS: website alias, international place-to-country mapping, explicit country priority, unknown region preservation and actual foreign import mapper');
