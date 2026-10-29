@@ -7,7 +7,7 @@
  '電話':['聯繫電話','聯絡電話','公司電話','phone','tel'],
  '傳真電話':['傳真','fax','fax_phone'],
  '聯絡人姓名／職位／Email':['Mail／所屬職位','Email／職位'],
- 'Email':['Emails','電子郵件','電郵','mail','email','e-mail','Mail（彙整）'],
+ 'Email':['電子信箱','電子郵箱','Email Address','E-mail Address','Emails','電子郵件','電郵','mail','email','e-mail','Mail（彙整）'],
  '公司地址':['地址','address','company_address'],
  '公司官網':['官網','官方網站','網站','網址','website','web site','url'],
  '產業類別':['產業','產業分類','industry'],
