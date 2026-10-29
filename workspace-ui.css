@@ -211,3 +211,8 @@ html body.ui-refresh .skip-to-main:focus{top:14px}
 /* Visibility is functional: role-gated links and inactive pages must stay hidden. */
 html body.ui-refresh :is(.page-tabs,.outreach-tabs):not(.hidden){display:flex!important}
 html body.ui-refresh .hidden.hidden.hidden{display:none!important}
+/* Keep the mail-status import tools beside their heading without excess whitespace. */
+html body.ui-refresh #exhibitionsCustomerSection>.actions{justify-content:flex-start!important;gap:12px!important;margin:0 0 18px!important;padding:0 0 18px!important;border-bottom:1px solid #edf1f6!important}
+html body.ui-refresh #exhibitionsCustomerSection>.actions label{display:flex!important;align-items:center!important;gap:9px!important;margin:0!important;white-space:nowrap!important}
+html body.ui-refresh #exhibitionsCustomerSection>.actions select{width:165px!important}
+@media(max-width:760px){html body.ui-refresh #exhibitionsCustomerSection>.actions label{width:100%!important;justify-content:space-between!important}html body.ui-refresh #exhibitionsCustomerSection>.actions select{flex:1;max-width:230px!important}}
