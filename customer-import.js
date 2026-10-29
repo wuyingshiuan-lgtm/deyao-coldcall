@@ -75,13 +75,33 @@
   if(explicit.size>1)return '';
   const found=new Set();
   for(const [place,codes] of placeCountries){
-   const escaped=place.replace(/[.*+?^$\{\}()|[\]\\]/g,'\\ const headerKey=');
+   const escaped=place.replace(/[.*+?^$\{\}()|[\]\\]/g,'\\$&');
    const match=/[a-z]/i.test(place)?new RegExp('(?:^|[^a-z])'+escaped+'(?:$|[^a-z])','i').test(text):parts.includes(place);
    if(match)for(const code of codes)found.add(code);
   }
   return found.size===1?countryNames[[...found][0]]:'';
  }
  function foreignCountryFor(row){return detectImportCountry(row['國家／地區'])||detectImportCountry(row['地區'])}
+
+ function cleanForeignEmailNotes(value){
+  const lines=String(value??'').replace(/\r\n?/g,'\n').split('\n'),kept=[];let pairing=false;
+  const metadata=/^(?:From|職位|類型|ID|電話|Domain)\s*[:：]/i;
+  for(const line of lines){
+   const marker=line.indexOf('聯絡人配對資料');
+   if(marker>=0&&/^聯絡人配對資料\s*[:：]/.test(line.slice(marker))){
+    const prefix=line.slice(0,marker).trimEnd();if(prefix)kept.push(prefix);pairing=true;continue;
+   }
+   const text=line.trim();
+   if(metadata.test(text))continue;
+   if(pairing){
+    if(!text)continue;
+    if(/^[^｜|\n]*[｜|][^｜|\s]+@[^｜|\s]+[｜|]/.test(text))continue;
+    pairing=false;
+   }
+   kept.push(line);
+  }
+  return kept.join('\n').trim();
+ }
 
  const headerKey=v=>String(v??'').normalize('NFKC').trim().toLowerCase().replace(/[\s／/（）()_\-]/g,'');
  const companyKey=v=>String(v??'').normalize('NFKC').trim().toLowerCase().replace(/\s+/g,'');
@@ -105,6 +125,6 @@
   return locations;
  }
  function duplicateMessage(name,pages){return '公司名稱「'+String(name).trim()+'」已存在雲端資料內，不可重複新增。\n所在分頁：'+[...pages].join('、')+'。\n請至上述分頁，以公司名稱搜尋原有資料。'}
- root.CustomerImport={detectImportCountry,foreignCountryFor,companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
+ root.CustomerImport={cleanForeignEmailNotes,detectImportCountry,foreignCountryFor,companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
 })(typeof window!=='undefined'?window:globalThis);
 
