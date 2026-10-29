@@ -5,7 +5,7 @@ function detectImportPhoneRegion(value){
  ['082','金門縣'],['089','台東縣'],['02','雙北/基隆'],['03','新竹'],
  ['04','台中市'],['05','嘉義/雲林'],['06','台南市'],['07','高雄市'],['08','屏東縣']
  ];
- const parts=String(value||'').normalize('NFKC').split(/[;,；、/\n]+/).map(x=>x.trim()).filter(Boolean);
+ const parts=String(value||'').normalize('NFKC').replace(/[‐‑‒–—−﹣]/g,'-').replace(/[˜⁓〜～∼]/g,'~').split(/[;,；、/\n]+/).map(x=>x.trim()).filter(Boolean);
  const found=[];let unresolved=false;
  for(let part of parts){
   part=part.replace(/^(?:(?:聯絡|聯繫|公司)?電話|市話|tel(?:ephone)?|phone|fax|傳真)\s*[:：]?\s*/i,'');
@@ -37,7 +37,7 @@ function resolveCustomerImportRegion(values,phoneEnabled){
  const address=detectCity(values['公司地址']);
  if(address)return {city:address,label:address+'（依地址）'};
  const existing=String(values['縣市']||values['地區']||values['縣市區域']||values['公司地區']||'').trim();
- if(existing)return {city:detectCity(existing)||existing,label:(detectCity(existing)||existing)+'（原有縣市）'};
+ if(existing&&!/待確認|無法辨識|未分類|未知|未填|尚未填寫|空白|^(?:[-—–]|N\/?A|null|none)$/i.test(existing))return {city:detectCity(existing)||existing,label:(detectCity(existing)||existing)+'（原有縣市）'};
  if(!phoneEnabled)return {city:'',label:'未啟用市話區碼辨識'};
  return detectImportPhoneRegion(values['電話']);
 }
