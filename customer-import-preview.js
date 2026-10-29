@@ -160,13 +160,13 @@ async function openCustomerImport(wb,key){
        const ident=mail.toLowerCase();
        if(!seen.has(ident)){seen.add(ident);contacts.push({name:person,email:mail,position});}
        else {const prior=contacts.find(c=>c.email.toLowerCase()===ident);if(prior&&position&&prior.position&&prior.position!==position)throw Error('同一 Email 的職位資料衝突：'+mail+'，請先修正。');if(prior&&person&&prior.name&&prior.name!==person)throw Error('同一 Email 的聯絡人姓名衝突：'+mail+'，請先修正。');if(prior&&!prior.position)prior.position=position;if(prior&&!prior.name)prior.name=person;}
-       if(person)names.push(person+'｜'+mail+'｜'+(position||'未提供職位'));
+       
       }
      }
      if(contacts.some(c=>!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email))))throw Error('公司「'+merged['公司名稱']+'」存在格式錯誤的 Email，請先修正。');
      merged['聯絡人姓名／職位／Email']=contacts;
      merged['Email']=contacts.map(x=>x.email).join(', ');
-     if(names.length)merged['備註']=[String(merged['備註']||'').trim(),'聯絡人配對資料：\n'+names.join('\n')].filter(Boolean).join('\n');
+     merged['備註']=CustomerImport.cleanForeignEmailNotes(merged['備註']);
      return merged;
     });
    }
