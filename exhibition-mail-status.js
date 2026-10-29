@@ -2,6 +2,29 @@
 (function(root){
  const statuses=['','取消訂閱','退件'];
  const emails=value=>[...new Set((String(value??'').match(/[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9.-]*[A-Z0-9])?\.[A-Z]{2,}/gi)||[]).map(x=>x.toLowerCase()))];
+
+ function isEmailHeader(value){
+  const key=String(value??'').normalize('NFKC').replace(/[\s\u200B-\u200D\u2060\uFEFF_\-／/()（）:：]/g,'').toLowerCase();
+  return ['電子信箱','電子郵件','電子郵箱','電郵','email','emails','mail','emailaddress','recipient','收件人','mail彙整'].includes(key);
+ }
+ function readEmailWorkbook(wb,xlsx){
+  const raw=[];let headerFound=false;
+  for(const sheet of wb.SheetNames){
+   const rows=xlsx.utils.sheet_to_json(wb.Sheets[sheet],{header:1,defval:'',raw:false,range:0,blankrows:true});
+   const headerIndex=rows.findIndex(row=>(row||[]).some(isEmailHeader));
+   if(headerIndex<0)continue;headerFound=true;
+   const cols=rows[headerIndex].map((h,i)=>isEmailHeader(h)?i:-1).filter(i=>i>=0);
+   rows.slice(headerIndex+1).forEach((r,i)=>{
+    if(!r.some(x=>String(x??'').trim()))return;
+    if(cols.some(c=>isEmailHeader(r[c])))return;
+    raw.push({sheet,line:headerIndex+i+2,emails:emails(cols.map(c=>r[c]).join(';'))});
+   });
+  }
+  if(!headerFound)throw Error('找不到 Email 欄位，請使用「電子信箱」、「Email」或「Mail」表頭');
+  if(!raw.length)throw Error('已找到 Email 欄位，但表頭下方沒有資料');
+  return raw;
+ }
+
  const rowEmails=row=>emails([row.email,...(Array.isArray(row.emails)?row.emails.map(x=>typeof x==='string'?x:x.email):[])].join(';'));
  function matchRows(raw,cloud){
   const index=new Map();for(const r of cloud)for(const email of rowEmails(r.data||{})){if(!index.has(email))index.set(email,[]);index.get(email).push(r)}
@@ -15,7 +38,7 @@
   if((row.data.mailStatus||'')!==status){const {data:saved,error:writeError}=await client.from('outreach_records').update({data:{...row.data,mailStatus:status}}).eq('category',category).eq('id',id).eq('data',JSON.stringify(row.data)).select('id').maybeSingle();if(writeError)throw writeError;if(!saved)throw Error('資料已由其他操作更新，請重試');}
   const {data:verified,error:verifyError}=await client.from('outreach_records').select('id,data').eq('category',category).eq('id',id).single();if(verifyError)throw verifyError;if((verified?.data?.mailStatus||'')!==status)throw Error('雲端狀態驗證未完成，請重新檢查');
  }
- root.ExhibitionMailStatus={emails,rowEmails,matchRows,saveStatus};
+ root.ExhibitionMailStatus={emails,isEmailHeader,readEmailWorkbook,rowEmails,matchRows,saveStatus};
  if(typeof document==='undefined')return;
  for(const category of ['exhibitions','foreignEmail']){
  const label=category==='foreignEmail'?'國外 Email':'展覽';
@@ -30,7 +53,7 @@
   if(excel){const button=document.createElement('button');button.type='button';button.className='btn';button.textContent='匯入 Email 更新狀態';button.onclick=()=>actions.querySelector('[data-mail-status-import]').click();excel.append(button)}
  }
 
- file.onchange=async()=>{const selectedFile=file.files[0];file.value='';if(!selectedFile)return;try{if(!root.XLSX)throw Error('Excel 元件未載入，請重新整理');const wb=XLSX.read(await selectedFile.arrayBuffer(),{type:'array'}),raw=[];for(const sheet of wb.SheetNames){const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheet],{header:1,defval:'',raw:false});const cols=(rows[0]||[]).map((h,i)=>({h:CustomerImport.canonical(h),i})).filter(c=>c.h==='Email'||/^(電子信箱|emailaddress|e-mailaddress|recipient|收件人)$/i.test(String(rows[0][c.i]).replace(/\s/g,'')));if(!cols.length)continue;rows.slice(1).forEach((r,i)=>{if(r.some(x=>String(x).trim()))raw.push({sheet,line:i+2,emails:emails(cols.map(c=>r[c.i]).join(';'))})})}if(!raw.length)throw Error('找不到 Email 資料，請使用「Email」、「Mail」或「電子信箱」欄位');const cloud=(await readAllCompanyRows('outreach_records','id,category,data')).filter(r=>r.category===category);openPreview(matchRows(raw,cloud));}catch(err){appNotice('匯入狀態未完成：'+err.message)}};
+ file.onchange=async()=>{const selectedFile=file.files[0];file.value='';if(!selectedFile)return;try{if(!root.XLSX)throw Error('Excel 元件未載入，請重新整理');const wb=XLSX.read(await selectedFile.arrayBuffer(),{type:'array'}),raw=readEmailWorkbook(wb,XLSX);const cloud=(await readAllCompanyRows('outreach_records','id,category,data')).filter(r=>r.category===category);openPreview(matchRows(raw,cloud));}catch(err){appNotice('匯入狀態未完成：'+err.message)}};
  function openPreview(entries){
   const dialog=document.createElement('dialog');dialog.style.cssText='width:min(1100px,94vw);max-height:90vh;overflow:auto;border:1px solid #cedbea;border-radius:16px;padding:24px';dialog.setAttribute('aria-labelledby','mailStatusTitle');dialog.innerHTML='<h2 id="mailStatusTitle">匯入 Mail 更新'+label+'客戶狀態</h2><p>依 Email 比對既有'+label+'客戶，可重複匯入。只更新狀態，保留客戶資料與聯繫紀錄。找不到、多筆符合及重複客戶不會自動更新。</p><label>本次統一更新為 <select data-status><option value="">請選擇狀態</option><option>取消訂閱</option><option>退件</option></select></label><div class="actions"><button class="btn" data-all>全選可更新</button><button class="btn" data-none>取消全選</button></div><p data-summary role="status" style="white-space:pre-wrap"></p><div class="table-wrap" style="max-height:45vh;overflow:auto"><table class="data-table"><thead><tr><th>勾選</th><th>來源列</th><th>Email</th><th>公司名稱</th><th>目前狀態</th><th>檢查結果</th></tr></thead><tbody></tbody></table></div><div class="actions"><button class="btn primary" data-save>更新已勾選客戶狀態</button><button class="btn" data-close>關閉</button></div>';
   const q=s=>dialog.querySelector(s);let busy=false;
