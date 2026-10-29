@@ -2469,7 +2469,7 @@ body #summary.customer-search-summary,body #foreignEmailListSummary.customer-sea
 <div class="footer-phrase">💗 積極聯繫　│　▥ 持續追蹤　│　♟ 拓展客戶　│　⭐ 達成目標　　Together for a Better Tomorrow!</div>
 </main>
 <script>const statusDock=document.createElement('div');statusDock.className='status-dock';statusDock.setAttribute('aria-label','登入狀態與帳號操作');statusDock.append(document.getElementById('onlineCount'),document.querySelector('.account-actions'));document.querySelector("header").insertAdjacentElement("afterend",statusDock);document.querySelector(".skip-to-main")?.addEventListener("click",event=>{event.preventDefault();document.getElementById("mainContent")?.focus();});</script>
-<script src="site-dialogs.js?v=20261021b"></script><script src="customer-import.js?v=20261029-duplicate-location"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
+<script src="site-dialogs.js?v=20261021b"></script><script src="customer-import.js?v=notes-clean-20261029-20261029-duplicate-location"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
 // Initialize city aliases before any startup rendering or cloud callbacks.
 const CITY_ALIASES=[["台北市",["台北市","臺北市"]],["新北市",["新北市","台北縣","臺北縣"]],["基隆市",["基隆市"]],["桃園市",["桃園市","桃園縣"]],["新竹市",["新竹市"]],["新竹縣",["新竹縣"]],["苗栗縣",["苗栗縣"]],["台中市",["台中市","臺中市","台中縣","臺中縣"]],["彰化縣",["彰化縣"]],["南投縣",["南投縣"]],["雲林縣",["雲林縣"]],["嘉義市",["嘉義市"]],["嘉義縣",["嘉義縣"]],["台南市",["台南市","臺南市","台南縣","臺南縣"]],["高雄市",["高雄市","高雄縣"]],["屏東縣",["屏東縣"]],["宜蘭縣",["宜蘭縣"]],["花蓮縣",["花蓮縣"]],["台東縣",["台東縣","臺東縣"]],["澎湖縣",["澎湖縣"]],["金門縣",["金門縣"]],["連江縣",["連江縣"]]];
 function industryBadge(value){
@@ -2815,10 +2815,32 @@ function getOutreachRows(key){return Array.isArray(outreachCache[key])?outreachC
 function getForeignEmailHistoryParts(row){const history=Array.isArray(row?.contactHistory)?row.contactHistory:[];const initialIndex=history.findIndex(h=>!String(h?.result||"").trim()&&(String(h?.date||"").slice(0,10)===String(row?.date||"").slice(0,10)||String(h?.notes||"")===String(row?.notes||"")));return{initial:initialIndex>=0?history[initialIndex]:null,followups:history.filter((h,i)=>i!==initialIndex)}}
 function saveOutreachRows(key,rows){outreachCache[key]=rows}
 function outreachTarget(key){return key==="foreignEmail"?"foreignEmailRecords":key==="exhibitions"?"exhibitionsRecords":"prospectingRecords"}
+
+async function cleanStoredForeignEmailNotes(cloudRows){
+ let cleanedCount=0,failedCount=0;
+ for(const row of cloudRows){
+  if(row.category!=="foreignEmail"||!row.data)continue;
+  const original=row.data,notes=CustomerImport.cleanForeignEmailNotes(original.notes);
+  if(notes===String(original.notes??""))continue;
+  const clean={...original,notes};
+  // Exact JSON comparison prevents overwriting another user's changes.
+  const {data:saved,error}=await sb.from("outreach_records").update({data:clean}).eq("id",row.id).eq("category","foreignEmail").eq("data",JSON.stringify(original)).select("id").maybeSingle();
+  if(error||!saved){failedCount++;continue}
+  row.data=clean;cleanedCount++;
+ }
+ if(cleanedCount||failedCount){
+  const section=$("foreignEmailCustomerSection");let status=$("foreignEmailNotesCleanupStatus");
+  if(!status&&section){status=document.createElement("p");status.id="foreignEmailNotesCleanupStatus";status.setAttribute("role","status");section.querySelector("h2")?.insertAdjacentElement("afterend",status)}
+  if(status)status.textContent="已清理 "+cleanedCount+" 筆備註的匯入附加資料。"+(failedCount?"另有 "+failedCount+" 筆未完成，請重新整理重試。":"");
+ }
+ return {cleanedCount,failedCount};
+}
+
 async function loadOutreachCloud(){
  if(!currentProfile)return;
  // Local storage is a cache only. Do not upload it on page load: stale browser caches can resurrect deleted cloud records.
  const cloudRows=await fetchAllReportRows("outreach_records","id,category,data,created_at",outreachKeys);
+ await cleanStoredForeignEmailNotes(cloudRows);
  cloudRows.sort((a,b)=>String(a.created_at||"").localeCompare(String(b.created_at||"")));
  for(const key of outreachKeys){const rows=(cloudRows||[]).filter(x=>x.category===key).map(x=>({...x.data,_cloudId:x.id,_createdAt:x.created_at}));outreachCache[key]=rows;try{localStorage.setItem("deyao_outreach_"+key,JSON.stringify(rows.map(({_cloudId,...row})=>row)))}catch(_){}}
  outreachCloudReady=true;
@@ -3428,7 +3450,7 @@ function outreachDownloadCsv(key){const rows=outreachExportRows(key),headers=Obj
 document.querySelectorAll("[data-outreach-export]").forEach(btn=>btn.addEventListener("click",()=>{const key=btn.dataset.outreachExport,rows=outreachExportRows(key);if(!window.XLSX){appNotice("Excel 元件載入失敗，請重新整理頁面後再試。");return}const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(rows.length?rows:[Object.fromEntries(outreachConfig[key].fields.map(([,label])=>[label,""]))]);XLSX.utils.book_append_sheet(wb,ws,outreachConfig[key].title.slice(0,31));XLSX.writeFile(wb,outreachConfig[key].title+"_資料.xlsx")}));
 document.querySelectorAll("[data-outreach-csv]").forEach(btn=>btn.addEventListener("click",()=>outreachDownloadCsv(btn.dataset.outreachCsv)));
 document.querySelectorAll("[data-outreach-import]").forEach(btn=>btn.addEventListener("click",()=>{const input=document.querySelector('[data-outreach-file="'+btn.dataset.outreachImport+'"]');if(!input){appNotice("找不到對應的匯入檔案欄位，請重新整理頁面。");return;}input.value="";input.click();}));
-function mapOutreachImport(raw,key){const cfg=outreachConfig[key];return raw.map(row=>{const out={};for(const [f,label] of cfg.fields){const value=CustomerImport.valueFor(row,label,f);if(key==="foreignEmail"&&f==="emails"){if(Array.isArray(value))out.emails=value;else{const raw=String(value||"").trim();out.emails=raw?raw.split(/[;；\n]+/).map(item=>{const m=item.trim().match(/^(.*?)（(.*?)）$/);return m?{email:m[1].trim(),position:m[2].trim()}:{email:item.trim(),position:""}}).filter(x=>x.email||x.position):[]}}else out[f]=String(value).trim()}if(key==="foreignEmail"){out.country=CustomerImport.foreignCountryFor(row);if(!out.emails.length&&row["Email"])out.emails=[{name:String(row["聯絡人"]||""),email:String(row["Email"]),position:String(row["職位"]||"")}];if(!out.email)out.email=out.emails.map(x=>x.email).filter(Boolean).join(", ");}out.address=String(row["公司地址"]||out.address||"").trim();out.region=detectCity(out.address)||String(out.region||row["地區"]||"");if(key==="exhibitions"){out.contact=String(out.contact||"").trim()||"customer";out.visitSuitable=CustomerImport.booleanValue(out.visitSuitable);out.emailSent=CustomerImport.booleanValue(out.emailSent)}out.notes=CustomerImport.preserveExtra(row,[...cfg.fields.map(x=>x[1]),"公司地址","地區"],out.notes);out.createdAt=new Date().toISOString();return out}).filter(row=>Object.entries(row).some(([f,v])=>f!=="createdAt"&&v));}
+function mapOutreachImport(raw,key){const cfg=outreachConfig[key];return raw.map(row=>{const out={};for(const [f,label] of cfg.fields){const value=CustomerImport.valueFor(row,label,f);if(key==="foreignEmail"&&f==="emails"){if(Array.isArray(value))out.emails=value;else{const raw=String(value||"").trim();out.emails=raw?raw.split(/[;；\n]+/).map(item=>{const m=item.trim().match(/^(.*?)（(.*?)）$/);return m?{email:m[1].trim(),position:m[2].trim()}:{email:item.trim(),position:""}}).filter(x=>x.email||x.position):[]}}else out[f]=String(value).trim()}if(key==="foreignEmail"){out.country=CustomerImport.foreignCountryFor(row);if(!out.emails.length&&row["Email"])out.emails=[{name:String(row["聯絡人"]||""),email:String(row["Email"]),position:String(row["職位"]||"")}];if(!out.email)out.email=out.emails.map(x=>x.email).filter(Boolean).join(", ");}out.address=String(row["公司地址"]||out.address||"").trim();out.region=detectCity(out.address)||String(out.region||row["地區"]||"");if(key==="exhibitions"){out.contact=String(out.contact||"").trim()||"customer";out.visitSuitable=CustomerImport.booleanValue(out.visitSuitable);out.emailSent=CustomerImport.booleanValue(out.emailSent)}out.notes=key==="foreignEmail"?CustomerImport.cleanForeignEmailNotes(row["備註"]??out.notes):CustomerImport.preserveExtra(row,[...cfg.fields.map(x=>x[1]),"公司地址","地區"],out.notes);out.createdAt=new Date().toISOString();return out}).filter(row=>Object.entries(row).some(([f,v])=>f!=="createdAt"&&v));}
 document.querySelectorAll("[data-outreach-file]").forEach(input=>input.addEventListener("change",async e=>{const file=e.target.files?.[0];if(!file)return;try{const wb=XLSX.read(await file.arrayBuffer(),{type:"array"});await openCustomerImport(wb,input.dataset.outreachFile)}catch(err){appNotice("無法開啟匯入預覽："+err.message)}finally{input.value=""}}));
 const excelSearch=$("foreignEmailExcelSearch");if(excelSearch)excelSearch.addEventListener("input",renderForeignEmailExcelPreview);
 const foreignEmailStatsQuery=$("foreignEmailStatsQuery");if(foreignEmailStatsQuery)foreignEmailStatsQuery.addEventListener("click",()=>renderOutreachStats("foreignEmail"));
@@ -3694,7 +3716,7 @@ document.querySelectorAll('.industry-value').forEach(input=>{
  input.form.addEventListener('reset',()=>queueMicrotask(syncIndustryOptions));
 });
 syncIndustryOptions();
-</script><script src="customer-import-preview.js?v=20261029-duplicate-location"></script><script src="address-region-tools.js?v=20261029-complete-region-v3"></script><script src="bulk-history.js?v=20261022-email-match"></script><script src="business-address-lookup.js?v=20261029-notes-cleanup-v1"></script><script src="exhibition-mail-status.js?v=20261029-status-v1"></script><script>
+</script><script src="customer-import-preview.js?v=notes-clean-20261029-20261029-duplicate-location"></script><script src="address-region-tools.js?v=20261029-complete-region-v3"></script><script src="bulk-history.js?v=20261022-email-match"></script><script src="business-address-lookup.js?v=20261029-notes-cleanup-v1"></script><script src="exhibition-mail-status.js?v=20261029-status-v1"></script><script>
 (function(){
  const sections=[["customerSection","search"],["foreignEmailCustomerSection","foreignEmailSearch"],["exhibitionsCustomerSection","exhibitionsSearch"],["prospectingCustomerSection","prospectingSearch"]];
  sections.forEach(([id,searchId])=>{
