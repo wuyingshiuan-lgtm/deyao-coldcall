@@ -28,3 +28,17 @@ vm.createContext(context);vm.runInContext(guard+';this.write=customerWrite',cont
  assert.deepEqual(results.map(x=>x.status),['fulfilled','rejected']);assert.equal(writes,2);
  console.log('PASS: aliases, conflicting headers, missing names, extra-field preservation, cross-category duplicates, >1000 records, self edit, offline fail-closed, concurrent requests');
 })().catch(e=>{console.error(e);process.exitCode=1});
+
+(function(){
+ const row=C.mapRows([{'公司名稱':'海外測試','網站':'https://example.com','地區':'Ramsey'}]).rows[0];
+ assert.equal(row['公司官網'],'https://example.com');
+ assert.equal(C.foreignCountryFor(row),'美國');
+ for(const [place,country] of [['Ramsey, NJ','美國'],['Minnesota','美國'],['New Jersey','美國'],['Tokyo','日本'],['London, Canada','加拿大'],['Berlin','德國'],['United States','美國'],['台灣','台灣'],['Unlisted Place','']])assert.equal(C.detectImportCountry(place),country);
+ assert.equal(C.foreignCountryFor({'國家／地區':'Japan','地區':'Ramsey'}),'日本');
+ const config=html.slice(html.indexOf('const outreachConfig='),html.indexOf('function renderForeignEmailExcelPreview'));
+ const mapper=html.slice(html.indexOf('function mapOutreachImport('),html.indexOf('document.querySelectorAll("[data-outreach-file]")'));
+ const ctx={CustomerImport:C,detectCity:()=>''};vm.createContext(ctx);vm.runInContext(config+mapper,ctx);
+ const result=ctx.mapOutreachImport([row],'foreignEmail')[0];assert.equal(result.website,'https://example.com');assert.equal(result.country,'美國');assert.equal(result.region,'Ramsey');
+ const unknown=ctx.mapOutreachImport([{'公司名稱':'未知','地區':'Unlisted Place'}],'foreignEmail')[0];assert.equal(unknown.country,'');assert.equal(unknown.region,'Unlisted Place');
+ console.log('PASS: website alias, international place-to-country mapping, explicit country priority, unknown region preservation and actual foreign import mapper');
+})();
