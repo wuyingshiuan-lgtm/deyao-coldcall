@@ -1,35 +1,34 @@
 /* Shared calling areas use the customer directory's grouped region labels. */
 function detectImportPhoneRegion(value){
  const rules=[
- ['0826',/^6\d{4}$/,['金門縣']],['0836',/^[2-9]\d{4}$/,['連江縣']],
- ['037',/^[2-9]\d{5}$/,['苗栗縣']],['049',/^[2-9]\d{6}$/,['南投縣']],
- ['082',/^[2-57-9]\d{5}$/,['金門縣']],['089',/^[2-9]\d{5}$/,['台東縣']],
- ['02',/^\d{8}$/,['雙北/基隆']],
- ['03',/^\d{4,}$/,['新竹']],
- ['04',/^[23]\d{7}$/,['台中市']],['04',/^[78]\d{6}$/,['彰化縣']],
- ['05',/^\d{7}$/,['嘉義/雲林']],
- ['06',/^[235-7]\d{6}$/,['台南市']],['06',/^9\d{6}$/,['澎湖縣']],
- ['07',/^[2-9]\d{6}$/,['高雄市']],['08',/^[478]\d{6}$/,['屏東縣']]
+ ['0826','金門縣'],['0836','連江縣'],['037','苗栗縣'],['049','南投縣'],
+ ['082','金門縣'],['089','台東縣'],['02','雙北/基隆'],['03','新竹'],
+ ['04','台中市'],['05','嘉義/雲林'],['06','台南市'],['07','高雄市'],['08','屏東縣']
  ];
  const parts=String(value||'').normalize('NFKC').split(/[;,；、/\n]+/).map(x=>x.trim()).filter(Boolean);
- const found=[];
+ const found=[];let unresolved=false;
  for(let part of parts){
-  part=part.replace(/(?:分機|轉|ext\.?|#|x)\s*\d+.*$/i,'').trim();
-  // A plus sign after a local number denotes an extension; keep +886 intact.
+  part=part.replace(/^(?:(?:聯絡|聯繫|公司)?電話|市話|tel(?:ephone)?|phone|fax|傳真)\s*[:：]?\s*/i,'');
+  part=part.replace(/(?:分機|轉|ext(?:ension)?\.?|#|x)\s*[:：]?\s*\d+.*$/i,'').trim();
   part=part.replace(/(\d)\s*\+\s*\d+.*$/, '$1');
-  // Excel may omit the leading zero when the area code is separated explicitly.
-  part=part.replace(/^\(?3\)?(?=[\s\-–—.])/, '03');
-  if(!/^[+\d\s()\-–—.]+$/.test(part))continue;
-  let number=part.replace(/[\s()\-–—.]/g,'');
+  part=part.replace(/^\(?(826|836|37|49|82|89|[2-8])\)?(?=[\s\-–—.:：])/, '0$1');
+  if(!/^[+\d\s()\-–—.:：]+$/.test(part)){unresolved=true;continue}
+  let number=part.replace(/[\s()\-–—.:：]/g,'');
   if(number.startsWith('+886'))number='0'+number.slice(4).replace(/^0/,'');
   else if(number.startsWith('00886'))number='0'+number.slice(5).replace(/^0/,'');
-  const prefix=rules.find(([code])=>number.startsWith(code))?.[0];
-  const match=rules.find(([code,re])=>code===prefix&&re.test(number.slice(code.length)));
-  if(match)found.push({code:match[0],cities:match[2]});
+  else if(number.startsWith('886'))number='0'+number.slice(3).replace(/^0/,'');
+  if(/^09\d{8}$/.test(number))continue;
+  const rule=rules.find(([code])=>number.startsWith(code));
+  if(!rule||!/^\d{4,16}$/.test(number.slice(rule[0].length))){unresolved=true;continue}
+  let city=rule[1];
+  if(rule[0]==='04'&&/^[78]/.test(number.slice(2)))city='彰化縣';
+  if(rule[0]==='06'&&number[2]==='9')city='澎湖縣';
+  found.push({code:rule[0],city});
  }
  if(!found.length)return {city:'',label:value?'無法辨識市話區碼':'未填電話'};
- const cities=[...new Set(found.flatMap(x=>x.cities))],codes=[...new Set(found.map(x=>x.code))];
- return {city:cities.length===1?cities[0]:'',label:codes.join('、')+' → '+cities.join('／')+(cities.length>1?'（待確認）':'（市話區碼推定）')};
+ const cities=[...new Set(found.map(x=>x.city))],codes=[...new Set(found.map(x=>x.code))];
+ const confirmed=cities.length===1&&!unresolved;
+ return {city:confirmed?cities[0]:'',label:codes.join('、')+' → '+cities.join('／')+(confirmed?'（市話區碼推定）':'（待確認）')};
 }
 function resolveCustomerImportRegion(values,phoneEnabled){
  const address=detectCity(values['公司地址']);
