@@ -248,3 +248,36 @@ html body.ui-refresh :is(#customerSection,#foreignEmailCustomerSection,#exhibiti
  html body.ui-refresh :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection).mobile-compact-directory table:is(.record-table,.data-table) tbody tr:not(:has(>td[colspan]))>td[data-label="公司名稱"]:nth-child(n){display:flex!important;align-items:center!important;justify-content:center!important;grid-column:1!important;grid-row:1!important;min-width:0!important}
  html body.ui-refresh :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection).mobile-compact-directory table:is(.record-table,.data-table) tbody tr:not(:has(>td[colspan]))>td[data-label="公司名稱"] :is(a,button){max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 }
+/* Restore the original DEYAO blue palette while retaining the current layout. */
+html body.ui-refresh{background:linear-gradient(130deg,#e2f1ff 0%,#d9ebff 55%,#eff8ff 100%)!important;color:#173c78!important}
+html body.ui-refresh header{background:linear-gradient(110deg,#fff 0%,#ddebff 48%,#83bdf4 100%)!important;border-bottom-color:#c5e0ff!important}
+html body.ui-refresh header p,html body.ui-refresh h2,html body.ui-refresh h3{color:#174681!important}
+html body.ui-refresh .side-nav{background:linear-gradient(#fff,#e8f5ff)!important;border-color:#cde4ff!important}
+html body.ui-refresh .side-nav a{color:#204b85!important}
+html body.ui-refresh .side-nav a.active{background:#c8e5ff!important;color:#124b9c!important;border-color:#9bcafa!important;box-shadow:inset 3px 0 0 #2a76d6!important}
+html body.ui-refresh .wrap>.box{background:rgba(255,255,255,.94)!important;border-color:#cde4ff!important;box-shadow:0 8px 20px #3672bc14!important}
+html body.ui-refresh :is(input,select,textarea){border-color:#bad5f8!important;color:#173c78!important}
+html body.ui-refresh .btn{background:#f8fbff!important;border-color:#b9d5f9!important;color:#204b85!important}
+html body.ui-refresh .btn.primary{background:linear-gradient(115deg,#2680e5,#216bd1)!important;border-color:#216bd1!important;color:#fff!important}
+html body.ui-refresh .btn.danger{background:#fff0f2!important;color:#a52626!important;border-color:#f4bdc7!important}
+html body.ui-refresh :is(.page-tabs,.outreach-tabs){background:#d9ebff!important;border-color:#bad5f8!important}
+html body.ui-refresh :is(.page-tabs,.outreach-tabs) a{color:#204b85!important}
+html body.ui-refresh :is(.page-tabs,.outreach-tabs) a.active{background:#fff!important;color:#1d5fb2!important}
+html body.ui-refresh .status-dock .role-pill{background:#e8efff!important;color:#3153a4!important}
+html body.ui-refresh .status-dock .online-count{background:#e8efff!important;color:#3153a4!important}
+html body.ui-refresh .customer-search-summary{background:#e4f2ff!important;border-color:#b9d5f9!important;color:#184784!important}
+html body.ui-refresh .company-detail-item,html body.ui-refresh .foreign-email-detail-item,html body.ui-refresh .exhibitions-company-detail-item{background:#eef5ff!important;border-color:#cde4ff!important}
+html body.ui-refresh :is(.record-table,.data-table) thead th{background:linear-gradient(180deg,#edf5ff,#dceeff)!important;color:#184986!important;border-color:#cfe1f7!important}
+html body.ui-refresh :is(.record-table,.data-table) tbody td{color:#173c78!important}
+html body.ui-refresh :is(.record-table,.data-table) tbody tr:hover>td{background:#f3f9ff!important}
+html body.ui-refresh :is(.record-table,.data-table) tbody tr>td{border-bottom-color:#d6e7fa!important}
+html body.ui-refresh .mobile-list-hint{color:#315b91!important}
+/* Wide customer tables now scroll inside their own frame, so no column disappears off-screen. */
+@media(min-width:761px){
+ html body.ui-refresh :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) :is(.table-wrap,#records,.foreign-email-table-wrap){display:block!important;width:100%!important;max-width:100%!important;overflow-x:auto!important;overflow-y:visible!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior-x:contain!important;scrollbar-width:auto!important}
+ html body.ui-refresh :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table:is(.record-table,.data-table){display:table!important;width:max-content!important;min-width:1300px!important;max-width:none!important;table-layout:auto!important;background:#fff!important}
+ html body.ui-refresh :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table:is(.record-table,.data-table) thead{display:table-header-group!important;position:static!important;width:auto!important;height:auto!important;clip:auto!important;overflow:visible!important}
+ html body.ui-refresh :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table:is(.record-table,.data-table) tbody{display:table-row-group!important;width:auto!important}
+ html body.ui-refresh :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table:is(.record-table,.data-table) tr{display:table-row!important;width:auto!important;min-width:0!important;background:transparent!important;border:0!important;margin:0!important;padding:0!important;box-shadow:none!important;overflow:visible!important}
+ html body.ui-refresh :is(#customerSection,#foreignEmailCustomerSection,#exhibitionsCustomerSection,#prospectingCustomerSection) table:is(.record-table,.data-table) tr>:is(th,td){display:table-cell!important;width:auto!important;min-width:72px!important;max-width:none!important;text-align:center!important;vertical-align:middle!important;white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;text-overflow:clip!important;padding:10px 14px!important}
+}
