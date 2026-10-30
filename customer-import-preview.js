@@ -79,11 +79,11 @@ function validateCustomerImport(entries,cloudNames,key){
   for(const f of entry.fields){const key=CustomerImport.canonical(f.header),value=f.value.trim();if(!value)continue;if(values[key]!==undefined&&values[key]!==value)conflicts.push(key);else values[key]=value}
   entry.values=values;entry.issue='';
   if(conflicts.length)entry.issue='欄位內容衝突：'+[...new Set(conflicts)].join('、')+'；請修改或清空其中一欄';
-  const name=CustomerImport.companyKey(values['公司名稱']);
+  const name=CustomerImport.companyKey(values['公司名稱']),identity=CustomerImport.companyIdentity(values,key);
   try{CustomerImport.visitValue(values['是否適合拜訪'])}catch(err){entry.issue=[entry.issue,err.message].filter(Boolean).join('；')}
   if(!name)entry.issue=[entry.issue,'缺少公司名稱'].filter(Boolean).join('；');
-  else if(cloudNames.has(name))entry.issue=[entry.issue,(cloudNames instanceof Map?CustomerImport.duplicateMessage(values['公司名稱'],cloudNames.get(name)):'公司名稱已存在雲端資料內，不可重複新增')].filter(Boolean).join('；');
-  if(entry.selected&&name){if(!groups.has(name))groups.set(name,[]);groups.get(name).push(entry)}
+  else if(cloudNames.has(identity))entry.issue=[entry.issue,(cloudNames instanceof Map?CustomerImport.duplicateMessage(values['公司名稱'],cloudNames.get(identity)):'公司名稱已存在雲端資料內，不可重複新增')].filter(Boolean).join('；');
+  if(entry.selected&&name){if(!groups.has(identity))groups.set(identity,[]);groups.get(identity).push(entry)}
  }
  for(const group of groups.values())if(group.length>1){
   if(key!=='foreignEmail'){for(const entry of group)entry.issue=[entry.issue,'檔案內公司重複：請修正或取消勾選重複列'].filter(Boolean).join('；');continue}
@@ -172,7 +172,7 @@ async function openCustomerImport(wb,key){
   q('[data-import-close]').disabled=busy;
   q('[data-import-prev]').disabled=busy||page===0;q('[data-import-next]').disabled=busy||(page+1)*30>=visible.length;
  }
- async function check(notify=false){cloudReady=false;render();msg.textContent='正在讀取全部分類的雲端公司名稱…';try{const [a,b]=await Promise.all([readAllCompanyRows('cold_call_records','id,company_name'),readAllCompanyRows('outreach_records','id,category,data')]);cloudNames=CustomerImport.companyLocations(a,b);cloudReady=true;entries.forEach(e=>e.error='');msg.textContent='雲端檢查完成。修正問題列後，可與其他通過檢查的資料一起匯入。'}catch(err){entries.filter(e=>!e.saved).forEach(e=>e.error='雲端讀取失敗，尚未匯入：'+err.message);msg.textContent=err.message+'\n所有資料保留，可稍後按「重新檢查雲端」。';if(notify)appNotice('本次未寫入任何資料。\n'+err.message+'\n未匯入資料已保留在預覽中，可稍後重新檢查。',{title:'匯入檢查未完成',type:'danger'})}render()}
+ async function check(notify=false){cloudReady=false;render();msg.textContent='正在讀取全部分類的雲端公司名稱…';try{const [a,b]=await Promise.all([readAllCompanyRows('cold_call_records','id,company_name'),readAllCompanyRows('outreach_records','id,category,data')]);cloudNames=CustomerImport.companyLocations(a,b,null,key);cloudReady=true;entries.forEach(e=>e.error='');msg.textContent='雲端檢查完成。修正問題列後，可與其他通過檢查的資料一起匯入。'}catch(err){entries.filter(e=>!e.saved).forEach(e=>e.error='雲端讀取失敗，尚未匯入：'+err.message);msg.textContent=err.message+'\n所有資料保留，可稍後按「重新檢查雲端」。';if(notify)appNotice('本次未寫入任何資料。\n'+err.message+'\n未匯入資料已保留在預覽中，可稍後重新檢查。',{title:'匯入檢查未完成',type:'danger'})}render()}
  q('[data-import-phone-region]').checked=phoneEnabled;
  q('[data-import-phone-region]').onchange=e=>{phoneEnabled=e.target.checked;render()};
  q('[data-import-check]').onclick=()=>check(true);
@@ -198,7 +198,7 @@ async function openCustomerImport(wb,key){
    if(key==='foreignEmail'){
     const byCompany=new Map();
     for(const entry of selected){
-     const v=entry.values,companyKey=CustomerImport.companyKey(v['公司名稱']);
+     const v=entry.values,companyKey=CustomerImport.companyIdentity(v,key);
      if(!byCompany.has(companyKey))byCompany.set(companyKey,[]);
      byCompany.get(companyKey).push(v);
     }
@@ -226,7 +226,7 @@ async function openCustomerImport(wb,key){
    mapped.forEach((row,i)=>{const region=resolveCustomerImportRegion(raw[i],phoneEnabled).city;if(region)row[key==='domestic'?'area':'region']=region;});
    if(mapped.length!==raw.length)throw Error('資料筆數不一致，已停止寫入。');
    // Only atomic bulk insert errors are retried; completed rows are never resubmitted.
-   await customerWrite(mapped,null,async()=>{const payload=key==='domestic'?mapped:mapped.map(row=>({category:key,data:row,created_by:currentProfile.id}));const {error}=await sb.from(key==='domestic'?'cold_call_records':'outreach_records').insert(payload);if(error)throw error});
+   await customerWrite(mapped,null,async()=>{const payload=key==='domestic'?mapped:mapped.map(row=>({category:key,data:row,created_by:currentProfile.id}));const {error}=await sb.from(key==='domestic'?'cold_call_records':'outreach_records').insert(payload);if(error)throw error},key);
    selected.forEach(e=>{e.saved=true;e.selected=false;e.error=''});render();
    filter='pending';page=0;q('[data-import-filter]').value=filter;render();appNotice('本次成功匯入 '+mapped.length+' 家公司（共 '+selected.length+' 筆來源資料），已儲存至雲端。\n尚有 '+entries.filter(e=>!e.saved).length+' 筆未匯入，可在預覽中查看原因並繼續修正。',{title:'資料匯入完成',type:'success'});
    msg.textContent='✓ 已成功匯入 '+mapped.length+' 家公司（'+selected.length+' 筆來源資料）。其餘 '+entries.filter(e=>!e.saved).length+' 筆仍保留，可繼續修正。';
