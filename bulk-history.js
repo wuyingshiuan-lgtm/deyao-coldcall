@@ -111,7 +111,7 @@ function renderPreview(){
  if(!c.matches?.length)cls="bulk-error";
  let controls="";
  if(c.matches?.length>1){controls='<select data-pick="'+c.index+'"><option value="">請選擇正確客戶</option>'+c.matches.map(m=>'<option value="'+escapeHtml(m.key+":"+m.id)+'" '+(c.chosen===m.key+":"+m.id?"selected":"")+'>'+escapeHtml(CATS[m.key])+'｜'+escapeHtml(m.row.company_name||m.row.company||'未命名公司')+'｜'+escapeHtml(m.row.contact_name||m.row.contactName||m.row.address||m.row.company_address||m.id)+'</option>').join("")+"</select>";}
- return '<tr><td data-label="Excel 列">'+(c.index+2)+'</td><td data-label="分頁屬性">'+escapeHtml(CATS[c.key]||c.rawCategory)+'</td><td data-label="聯繫日期">'+escapeHtml(c.date)+'</td><td data-label="公司名">'+escapeHtml(c.company)+(c.emailMode?"<br><small>"+escapeHtml(c.email)+"</small>":"")+'</td><td data-label="備註">'+escapeHtml(c.notes||"—")+'</td><td data-label="聯繫結果">'+escapeHtml(c.result)+'</td><td data-label="檢查結果／處理"><span class="'+cls+'">'+escapeHtml(msg)+'</span> '+controls+'</td></tr>';
+ return '<tr><td data-label="Excel 列">'+escapeHtml(c.sheet)+"／"+c.excelRow+'</td><td data-label="分頁屬性">'+escapeHtml(CATS[c.key]||c.rawCategory)+'</td><td data-label="聯繫日期">'+escapeHtml(c.date)+'</td><td data-label="公司名">'+escapeHtml(c.company)+(c.emailMode?"<br><small>"+escapeHtml(c.email)+"</small>":"")+'</td><td data-label="備註">'+escapeHtml(c.notes||"—")+'</td><td data-label="聯繫結果">'+escapeHtml(c.result)+'</td><td data-label="檢查結果／處理"><span class="'+cls+'">'+escapeHtml(msg)+'</span> '+controls+'</td></tr>';
  }).join("");
  $b("bulkPreview").classList.remove("hidden");
  $b("bulkConfirm").disabled=busy||valid.length===0;
@@ -121,18 +121,47 @@ $b("bulkRows").addEventListener("change",e=>{
  if(pick!==undefined){const candidate=candidates.find(c=>c.index===Number(pick));if(candidate)candidate.chosen=e.target.value;}
  renderPreview();
 });
+function readBulkWorkbook(wb){
+ const aliases={
+  "分頁屬性":["分頁屬性","分頁","分類","category"],
+  "聯繫日期":["聯繫日期","聯絡日期","contact date"],
+  "公司名":["公司名","公司名稱","company","company name"],
+  "備註":["備註","備註說明","notes","remark"],
+  "聯繫結果":["聯繫結果","聯絡結果","result"],
+  "電子信箱":["電子信箱","電子郵件","電子郵箱","email","e-mail","email address","mail"],
+  "Created Date":["Created Date","CreatedDate","created_date","建立日期","建立時間","創建日期"]
+ };
+ const headerKey=value=>norm(value).replace(/[\\u200B-\\u200D\\uFEFF_\\-]/g,"");
+ const lookup=new Map(Object.entries(aliases).flatMap(([label,names])=>names.map(name=>[headerKey(name),label])));
+ const entries=[],found=[];
+ for(const sheetName of wb.SheetNames){
+  const matrix=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:"",blankrows:true});
+  let headerIndex=-1,headers=[],emailMode=false;
+  for(let i=0;i<matrix.length;i++){
+   const labels=matrix[i].map(value=>lookup.get(headerKey(value))||"");
+   const email=labels.includes("電子信箱")&&labels.includes("Created Date");
+   const template=["分頁屬性","聯繫日期","公司名","聯繫結果"].every(label=>labels.includes(label));
+   if(email||template){headerIndex=i;headers=labels;emailMode=email;break;}
+  }
+  if(headerIndex<0){if(matrix.length)found.push(sheetName+"："+matrix.slice(0,3).map(row=>row.filter(Boolean).join("、")).join("／").slice(0,180));continue;}
+  matrix.slice(headerIndex+1).forEach((cells,index)=>{
+   if(!cells.some((value,j)=>headers[j]&&String(value??"").trim()))return;
+   const row={};headers.forEach((label,j)=>{if(label)row[label]=cells[j]??"";});
+   entries.push({row,emailMode,sheet:sheetName,excelRow:headerIndex+index+2});
+  });
+ }
+ if(!entries.length)throw Error("未找到可匯入的聯繫紀錄。請提供「電子信箱／Email＋Created Date」，或「分頁屬性、聯繫日期、公司名、聯繫結果」（備註可省略）。這是新增聯繫歷史功能；新增客戶名單請到國外 Email 的匯入頁面。"+(found.length?"\\n讀到的工作表／欄位："+found.join("；"):""));
+ return entries;
+}
 $b("bulkFile").onchange=async e=>{
  const file=e.target.files[0];if(!file)return;
  try{
  if(currentProfile?.role!=="admin")throw Error("只有管理員可以匯入。");
  if(!window.XLSX)throw Error("Excel 讀取元件尚未載入，請重新整理。");
  status("正在讀取 Excel 與最新雲端客戶資料…");$b("bulkPreview").classList.add("hidden");
- const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{defval:""});
- if(!rows.length)throw Error("Excel 無可匯入資料。");
- if(rows.length>2000)throw Error("單次最多匯入 2,000 筆。");
- const emailMode=["電子信箱","Created Date"].every(h=>Object.prototype.hasOwnProperty.call(rows[0],h));
- const heads=["分頁屬性","聯繫日期","公司名","備註","聯繫結果"];if(!emailMode&&!heads.every(h=>Object.prototype.hasOwnProperty.call(rows[0],h)))throw Error("Excel 請使用五欄範本，或包含「電子信箱、Created Date」欄位。");
- candidates=rows.map((r,i)=>emailMode?({index:i,emailMode:true,email:String(r["電子信箱"]||"").trim().toLowerCase(),key:"",rawCategory:"依 Email 配對",date:createdDate(r["Created Date"]),company:String(r["公司名稱"]||"").trim(),notes:"",result:"已寄回信",chosen:""}):({index:i,key:categoryOf(r["分頁屬性"]),rawCategory:r["分頁屬性"],date:formatDate(r["聯繫日期"]),company:String(r["公司名"]||"").trim(),notes:String(r["備註"]||"").trim(),result:String(r["聯繫結果"]||"").trim(),chosen:"",allowDuplicate:false,duplicate:false}));
+ const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true}),entries=readBulkWorkbook(wb);
+ if(entries.length>2000)throw Error("單次最多匯入 2,000 筆。");
+ candidates=entries.map(({row:r,emailMode,sheet,excelRow},i)=>({...emailMode?({emailMode:true,email:String(r["電子信箱"]||"").trim().toLowerCase(),key:"",rawCategory:"依 Email 配對",date:createdDate(r["Created Date"]),company:String(r["公司名"]||"").trim(),notes:"",result:"已寄回信",chosen:""}):({key:categoryOf(r["分頁屬性"]),rawCategory:r["分頁屬性"],date:formatDate(r["聯繫日期"]),company:String(r["公司名"]||"").trim(),notes:String(r["備註"]||"").trim(),result:String(r["聯繫結果"]||"").trim(),chosen:"",allowDuplicate:false,duplicate:false}),index:i,sheet,excelRow}));
  cloudGroups=await allCloudRows();renderPreview();status("已完成雲端比對；請確認檢查結果，再按新增。");
  }catch(err){status("匯入檢查失敗："+err.message);}finally{e.target.value="";}
 };
@@ -152,11 +181,11 @@ $b("bulkConfirm").onclick=async()=>{
  for(const c of selected){
  status("正在寫入雲端 "+(saved+skipped+failed.length+1)+" / "+selected.length+"…");
  try{const result=await saveOne(c);if(result==="saved")saved++;else skipped++;}
- catch(err){failed.push("Excel 第 "+(c.index+2)+" 列："+err.message);}
+ catch(err){failed.push("Excel "+c.sheet+" 第 "+c.excelRow+" 列："+err.message);}
  }
  try{cloudGroups=await allCloudRows();data=cloudGroups.domestic.map(x=>x.row);historyData=cloudGroups.domestic.flatMap(x=>x.histories);render();await loadOutreachCloud();}catch(err){failed.push("重新讀取雲端失敗："+err.message);}
  busy=false;["bulkReset","bulkUpload"].forEach(id=>$b(id).disabled=false);
- const done=new Set(selected.filter(c=>!failed.some(x=>x.startsWith("Excel 第 "+(c.index+2)+" 列："))).map(c=>c.index));
+ const done=new Set(selected.filter(c=>!failed.some(x=>x.startsWith("Excel "+c.sheet+" 第 "+c.excelRow+" 列："))).map(c=>c.index));
  candidates=candidates.filter(c=>!done.has(c.index));
  if(candidates.length)renderPreview();else $b("bulkPreview").classList.add("hidden");
  status("匯入完成：成功 "+saved+" 筆、重複略過 "+skipped+" 筆、失敗 "+failed.length+" 筆。"+(failed.length?"\n"+failed.join("\n"):"")+" 原有客戶及首次聯繫紀錄未修改。");
