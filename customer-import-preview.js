@@ -108,14 +108,28 @@ async function openCustomerImport(wb,key){
  if(wb&&customerImportSessions.get(key)?.some(e=>!e.saved)&&!await appConfirm('目前仍有未匯入的資料。載入新檔會取代本頁暫存的預覽，是否繼續？'))return;
  const entries=wb?customerImportStage(wb,key):customerImportSessions.get(key);if(!entries.length)throw Error('檔案內沒有資料');customerImportSessions.set(key,entries);
  let phoneEnabled=key!=='foreignEmail';
+ let importSource='馬太平台';
  let cloudNames=new Set(),cloudReady=false,busy=false,page=0,filter='pending',editingEntry=null;
  const dialog=document.createElement('dialog');dialog.id='customerImportPreview';dialog.setAttribute('aria-labelledby','customerImportTitle');
  dialog.style.cssText='width:min(1200px,94vw);max-height:90vh;border:1px solid #d5e0eb;border-radius:16px;padding:24px;color:#31485f;background:#ffffff;box-shadow:0 20px 80px #30203544;';
  dialog.innerHTML='<h2 id="customerImportTitle">匯入資料預覽與修正</h2><p>匯入至：'+esc(key==='domestic'?'國內電訪':outreachConfig[key].title)+'。未通過檢查的資料會留在此處，不會寫入雲端。可修改後重新檢查，或取消勾選暫不匯入的列。</p><p>公司同名時請先確認是否為同一家；既有客戶應使用新增聯繫紀錄。沒有公司表頭的工作表預設不勾選。預覽可於本頁繼續修正；重新整理網頁前請先完成匯入。</p><fieldset style="border:1px solid #cbddeb;border-radius:10px;padding:12px;margin:12px 0"><legend>縣市辨識設定</legend><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-import-phone-region>依台灣市話區碼補齊縣市</label><p>優先順序：地址 → 原有縣市 → 市話區碼。例如 07-6173055 → 高雄市。02 統一為雙北/基隆，05 統一為嘉義/雲林，03 統一為新竹；同欄有多個電話時採用第一個可辨識的市話區碼；無市話區碼的資料歸為未分類。</p></fieldset><p data-import-summary role="status"></p><p data-import-message role="status" style="white-space:pre-wrap;color:#97365b"></p><div class="actions"><button type="button" class="btn" data-import-check>重新檢查雲端</button><select aria-label="預覽資料篩選" data-import-filter><option value="pending">未匯入資料</option><option value="issues">僅顯示問題資料</option><option value="all">全部資料</option><option value="ready">可匯入</option><option value="saved">已匯入</option></select><button type="button" class="btn" data-import-select>全選未匯入</button><button type="button" class="btn" data-import-deselect>取消全選</button></div><div data-import-editor></div><div class="table-wrap" style="max-height:42vh;overflow:auto"><table class="data-table"><thead><tr><th>匯入</th><th>來源工作表／列</th><th>公司名稱</th><th>公司地址</th><th>電話</th><th>'+ (key==='foreignEmail'?'國家／地區（自動辨識）':'辨識縣市／依據') +'</th><th>狀態／未匯入原因</th><th>修正</th></tr></thead><tbody data-import-rows></tbody></table></div><div class="actions"><button type="button" class="btn" data-import-prev>上一頁</button><span data-import-page></span><button type="button" class="btn" data-import-next>下一頁</button></div><div class="actions"><button type="button" class="btn primary" data-import-save>匯入已勾選且通過檢查的資料</button><button type="button" class="btn" data-import-close>關閉預覽</button></div>';
- if(key==='foreignEmail'){dialog.querySelector('fieldset').hidden=true;dialog.querySelector('#customerImportTitle').insertAdjacentHTML('afterend','<p>Source／開發來源欄位不會讀取或匯入。「網站」會帶入官方網站；「地區」會自動轉成國家，例如 Ramsey → 美國。無法確定時保留原始地區，不猜填國家。</p>')}
+ if(key==='foreignEmail'){dialog.querySelector('fieldset').hidden=true;dialog.querySelector('#customerImportTitle').insertAdjacentHTML('afterend','<p>檔案中的 Source／開發來源欄位會略過，改用下方選擇的來源。「網站」會帶入官方網站；「地區」會自動轉成國家，例如 Ramsey → 美國。無法確定時保留原始地區，不猜填國家。</p>')}
+ if(key==='foreignEmail'){
+  const sourceField=document.createElement('fieldset');
+  sourceField.style.cssText='border:1px solid #cbddeb;border-radius:10px;padding:12px;margin:12px 0';
+  sourceField.innerHTML='<legend>本批匯入資料的開發來源</legend><div style="display:flex;gap:10px;flex-wrap:wrap">'+['馬太平台','自行開發','展覽'].map(source=>'<button type="button" class="btn" data-import-source="'+source+'" aria-pressed="'+String(source===importSource)+'">'+source+'</button>').join('')+'</div><p data-import-source-summary></p>';
+  dialog.querySelector('[data-import-summary]').before(sourceField);
+  sourceField.addEventListener('click',event=>{
+   const button=event.target.closest('[data-import-source]');
+   if(!button||busy)return;
+   importSource=button.dataset.importSource;render();
+  });
+ }
  document.body.appendChild(dialog);dialog.showModal();
  const q=selector=>dialog.querySelector(selector),msg=q('[data-import-message]');
  function render(){
+  dialog.querySelectorAll('[data-import-source]').forEach(button=>{const selected=button.dataset.importSource===importSource;button.classList.toggle('primary',selected);button.setAttribute('aria-pressed',String(selected));button.disabled=busy;});
+  const sourceSummary=dialog.querySelector('[data-import-source-summary]');if(sourceSummary)sourceSummary.textContent='本次勾選匯入的資料將統一設為：'+importSource+'。';
   const ready=validateCustomerImport(entries,cloudNames,key),saved=entries.filter(e=>e.saved).length;
   q('[data-import-summary]').textContent='總共 '+entries.length+' 筆｜已匯入 '+saved+' 筆｜已勾選可匯入 '+ready.length+' 筆｜未匯入 '+(entries.length-saved)+' 筆｜問題資料 '+entries.filter(e=>!e.saved&&(e.issue||e.error)).length+' 筆';
   const visible=entries.filter(e=>filter==='all'||(filter==='issues'&&!e.saved&&!!(e.issue||e.error))||(filter==='saved'?e.saved:filter==='ready'?!e.saved&&e.selected&&!e.issue&&!e.error:filter==='pending'&&!e.saved));
@@ -178,6 +192,7 @@ async function openCustomerImport(wb,key){
     });
    }
    const mapped=key==='domestic'?mapDomesticImport(raw):mapOutreachImport(raw,key);
+   if(key==='foreignEmail')mapped.forEach(row=>row.source=importSource);
    mapped.forEach((row,i)=>{const region=resolveCustomerImportRegion(raw[i],phoneEnabled).city;if(region)row[key==='domestic'?'area':'region']=region;});
    if(mapped.length!==raw.length)throw Error('資料筆數不一致，已停止寫入。');
    // Only atomic bulk insert errors are retried; completed rows are never resubmitted.
