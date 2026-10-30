@@ -152,14 +152,20 @@
  function visitLabel(value){const v=visitValue(value);return v===null?'待評估':v?'適合':'不適合'}
  function booleanValue(value){const text=String(value??'').normalize('NFKC').trim().toLowerCase();return ['是','true','1','yes','y','v','✓','✔','☑','適合','適合拜訪','已寄送'].includes(text)?'true':'false'}
  const companyPages={domestic:'國內電訪-客戶名單',foreignEmail:'國外Email-開發客戶名單',exhibitions:'國內外展覽-客戶名單',prospecting:'陌生開發拜訪-客戶名單'};
- function companyLocations(domestic,outreach,exclude){
+ function companyIdentity(row,category='domestic'){
+ const name=companyKey(row.company_name??row.company??row['公司名稱']);
+ if(category!=='foreignEmail')return name;
+ const raw=row.country??row['國家／地區']??row['地區']??row.location??'';
+ const country=detectImportCountry(raw)||companyKey(raw);
+ return JSON.stringify([name,country]);
+ }
+ function companyLocations(domestic,outreach,exclude,category='domestic'){
   const locations=new Map();
-  const add=(table,row,name,category)=>{if(exclude&&exclude.table===table&&String(exclude.id)===String(row.id))return;const key=companyKey(name);if(!key)return;if(!locations.has(key))locations.set(key,new Set());locations.get(key).add(companyPages[category]||'其他客戶分頁')};
+  const add=(table,row,name,sourceCategory)=>{if(exclude&&exclude.table===table&&String(exclude.id)===String(row.id))return;const item=table==='cold_call_records'?{company:name,country:'台灣'}:{...row.data,company:name,country:row.data?.country||row.data?.location||detectImportCountry(row.data?.address)||''};const key=companyIdentity(item,category);if(!companyKey(name))return;if(!locations.has(key))locations.set(key,new Set());locations.get(key).add(companyPages[sourceCategory]||'其他客戶分頁')};
   domestic.forEach(r=>add('cold_call_records',r,r.company_name,'domestic'));
   outreach.forEach(r=>add('outreach_records',r,r.data?.company,r.category));
   return locations;
  }
- function duplicateMessage(name,pages){return '公司名稱「'+String(name).trim()+'」已存在雲端資料內，不可重複新增。\n所在分頁：'+[...pages].join('、')+'。\n請至上述分頁，以公司名稱搜尋原有資料。'}
- root.CustomerImport={visitValue,visitKey,visitLabel,foreignContacts,normalizeImportDate,cleanForeignEmailNotes,detectImportCountry,foreignCountryFor,companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
+ function duplicateMessage(name,pages,country){return '公司名稱「'+String(name).trim()+'」'+(country!==undefined?'、國家「'+String(country).trim()+'」':'')+'已存在雲端資料內，不可重複新增。\n所在分頁：'+[...pages].join('、')+'。\n請至上述分頁，以公司名稱搜尋原有資料。'}
+ root.CustomerImport={visitValue,visitKey,visitLabel,foreignContacts,normalizeImportDate,cleanForeignEmailNotes,detectImportCountry,foreignCountryFor,companyIdentity,companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
 })(typeof window!=='undefined'?window:globalThis);
-
