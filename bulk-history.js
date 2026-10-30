@@ -135,7 +135,12 @@ function readBulkWorkbook(wb){
   "電子信箱":["電子信箱","電子郵件","電子郵箱","email","e-mail","email address","mail"],
   "Created Date":["Created Date","CreatedDate","created_date","建立日期","建立時間","創建日期"]
  };
- const headerKey=value=>norm(value).replace(/[\u200B-\u200D\uFEFF_-]/g,"");
+ // HTML-based .xls exports may retain numeric HTML entities in cell text.
+ const decodeHeader=value=>String(value??"").replace(/&#(x[0-9a-f]+|[0-9]+);?/gi,(entity,code)=>{
+  const point=code[0].toLowerCase()==="x"?parseInt(code.slice(1),16):parseInt(code,10);
+  return point>0&&point<=0x10ffff&&!(point>=0xd800&&point<=0xdfff)?String.fromCodePoint(point):entity;
+ }).replace(/&nbsp;/gi," ").replace(/&amp;/gi,"&");
+ const headerKey=value=>norm(decodeHeader(value)).replace(/[\u200B-\u200D\uFEFF_-]/g,"");
  const lookup=new Map(Object.entries(aliases).flatMap(([label,names])=>names.map(name=>[headerKey(name),label])));
  const entries=[],found=[];
  for(const sheetName of wb.SheetNames){
