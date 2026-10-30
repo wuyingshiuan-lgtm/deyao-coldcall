@@ -56,6 +56,8 @@ jobs:
           node tests/customer-import-preview.test.cjs
           node tests/save-feedback.test.cjs
           node tests/cloud-pagination.test.cjs
+          node --check home-company-search.js
+          node tests/home-company-search.test.cjs
           node --check address-region-tools.js
           node tests/address-regions.test.cjs
           node tests/import-outcome.test.cjs

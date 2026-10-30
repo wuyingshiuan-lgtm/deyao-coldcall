@@ -1,0 +1,24 @@
+#homeSection .home-company-search{margin:24px 0;padding:22px;border:1px solid #d5e4f7;border-radius:18px;background:#f5f9ff;text-align:left}
+#homeSection .home-company-search h3{margin:0 0 8px;color:#24558e;font-size:21px}
+#homeSection .home-company-search .meta{margin:0 0 16px;line-height:1.8}
+#homeSection .home-company-search-bar{display:flex;gap:10px;flex-wrap:wrap}
+#homeSection .home-company-search-bar input{flex:1 1 230px;min-width:0;width:auto;background:white;min-height:48px;font-size:16px}
+#homeSection .home-company-search-bar .btn{min-height:48px;font-weight:700}
+#homeSection .home-company-search-status{font-size:14px;color:#476c98;line-height:1.8;margin:14px 0 0}
+#homeSection .home-company-result{margin-top:12px;border:1px solid #d5e4f7;border-radius:12px;background:#fff;overflow:hidden}
+#homeSection .home-company-result summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px;cursor:pointer;list-style:none;min-height:56px}
+#homeSection .home-company-result summary::-webkit-details-marker{display:none}
+#homeSection .home-company-result summary:focus-visible{outline:3px solid #2879d4;outline-offset:-3px}
+#homeSection .home-company-name{color:#2268b5;font-size:18px;font-weight:800;overflow-wrap:anywhere}
+#homeSection .home-company-category{color:#4b6383;background:#edf3fb;padding:4px 9px;border-radius:20px;font-size:12px}
+#homeSection .home-company-open{margin-left:auto;font-size:12px;color:#6684a6}
+#homeSection .home-company-open:after{content:' ▾'}
+#homeSection details[open] .home-company-open:after{content:' ▴'}
+#homeSection .home-company-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:18px;border-top:1px solid #e2ebf6}
+#homeSection .home-company-fields>div{min-width:0}
+#homeSection .home-company-fields span{display:block;font-size:12px;color:#71869e;margin-bottom:4px}
+#homeSection .home-company-fields strong{display:block;font-size:14px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:600;color:#29445f}
+#homeSection .home-company-fields a{font-size:13px;color:#2268b5}
+#homeSection .home-company-search-pages{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;font-size:13px}
+#homeSection .home-company-search-pages:empty{display:none}
+@media(max-width:760px){#homeSection .home-company-search{padding:16px;margin:20px 0}#homeSection .home-company-search-bar input{flex-basis:100%}#homeSection .home-company-search-bar .btn{flex:1}#homeSection .home-company-fields{grid-template-columns:minmax(0,1fr)}#homeSection .home-company-open{width:100%;margin-left:0}}
