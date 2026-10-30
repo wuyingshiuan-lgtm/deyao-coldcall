@@ -140,7 +140,17 @@
  }
  function valueFor(row,label,field){const k=canonical(label);return row[k]??row[field]??(field==='date'?(row['電訪日期']??row['開發日期']??row['開發信寄出日期']):undefined)??(field==='location'?row['國家／地區']:undefined)??''}
  function preserveExtra(row,labels,notes){const supported=new Set(labels.map(canonical));const extra=Object.entries(row).filter(([k,v])=>!supported.has(k)&&String(v??'').trim()).map(([k,v])=>k+'：'+v);return [String(notes??'').trim(),...extra].filter(Boolean).join('\n')}
- function booleanValue(value){const text=String(value??'').normalize('NFKC').trim().toLowerCase();return ['是','true','1','yes','y','v','✓','✔','適合','適合拜訪','已寄送'].includes(text)?'true':'false'}
+ // Null is the third state in the existing nullable boolean column.
+ function visitValue(value){
+  const v=String(value??'').normalize('NFKC').trim().toLowerCase();
+  if(['是','true','1','yes','y','v','✓','✔','☑','適合','適合拜訪'].includes(v))return true;
+  if(['否','false','0','no','n','不適合','不適合拜訪'].includes(v))return false;
+  if(['','pending','null','待評估','待確認','未評估'].includes(v))return null;
+  throw Error('是否適合拜訪請選擇：適合、不適合或待評估');
+ }
+ function visitKey(value){const v=visitValue(value);return v===null?'pending':String(v)}
+ function visitLabel(value){const v=visitValue(value);return v===null?'待評估':v?'適合':'不適合'}
+ function booleanValue(value){const text=String(value??'').normalize('NFKC').trim().toLowerCase();return ['是','true','1','yes','y','v','✓','✔','☑','適合','適合拜訪','已寄送'].includes(text)?'true':'false'}
  const companyPages={domestic:'國內電訪-客戶名單',foreignEmail:'國外Email-開發客戶名單',exhibitions:'國內外展覽-客戶名單',prospecting:'陌生開發拜訪-客戶名單'};
  function companyLocations(domestic,outreach,exclude){
   const locations=new Map();
@@ -150,6 +160,6 @@
   return locations;
  }
  function duplicateMessage(name,pages){return '公司名稱「'+String(name).trim()+'」已存在雲端資料內，不可重複新增。\n所在分頁：'+[...pages].join('、')+'。\n請至上述分頁，以公司名稱搜尋原有資料。'}
- root.CustomerImport={foreignContacts,normalizeImportDate,cleanForeignEmailNotes,detectImportCountry,foreignCountryFor,companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
+ root.CustomerImport={visitValue,visitKey,visitLabel,foreignContacts,normalizeImportDate,cleanForeignEmailNotes,detectImportCountry,foreignCountryFor,companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
 })(typeof window!=='undefined'?window:globalThis);
 

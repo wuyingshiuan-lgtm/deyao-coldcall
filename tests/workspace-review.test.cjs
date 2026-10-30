@@ -25,7 +25,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const config=html.slice(html.indexOf('const outreachConfig='),html.indexOf('function renderForeignEmailExcelPreview'));
 const exportSource=html.slice(html.indexOf('function outreachExportRows('),html.indexOf('function outreachDownloadCsv('));
 const tables={exhibitions:[{company:'甲',mailStatus:'取消訂閱',email:'a@example.com',notes:'保留備註',recorder:'測試員'}],foreignEmail:[{company:'乙',emails:[{name:'Alice',email:'b@example.com',position:'採購'},{name:'Bob',email:'c@example.com',position:'業務'}],mailStatus:'',date:'2026-10-29'}],prospecting:[]};
-const context={getOutreachRows:key=>tables[key],$:()=>({value:''})};vm.createContext(context);vm.runInContext(config+exportSource+';this.exportRows=outreachExportRows;',context);
+require('../customer-import.js');const context={CustomerImport,getOutreachRows:key=>tables[key],$:()=>({value:''})};vm.createContext(context);vm.runInContext(config+exportSource+';this.exportRows=outreachExportRows;',context);
 const e=context.exportRows('exhibitions');assert.equal(e[0]['狀態'],'取消訂閱');assert.equal(e[0]['紀錄者'],'測試員');assert.equal(e[0]['備註'],'保留備註');const cols=Object.keys(e[0]);assert.equal(cols.indexOf('狀態')+1,cols.indexOf('紀錄者'));
 assert.equal(context.exportRows('foreignEmail')[0]['聯絡人姓名／職位／Email'],'Alice／採購／b@example.com；Bob／業務／c@example.com');assert.equal(context.exportRows('prospecting').length,0);
 context.$=()=>({value:'missing'});assert.equal(context.exportRows('foreignEmail').length,0);context.$=()=>({value:'乙'});assert.equal(context.exportRows('foreignEmail').length,1);

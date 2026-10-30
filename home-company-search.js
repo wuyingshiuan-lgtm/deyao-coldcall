@@ -21,7 +21,7 @@
   const known=reportFields(key),extra=Object.keys(row).filter(field=>!field.startsWith('_')&&!['id','created_at','createdAt','updated_at','updatedAt','created_by','updated_by','contactHistory'].includes(field)&&!known.some(([name])=>name===field)).map(field=>[field,field]);
   return '<div class="home-company-fields">'+[...known,...extra].map(([field,label])=>{
    let value=row[field];if(field==='emails'&&Array.isArray(value))value=value.map(contact=>[contact.name,contact.position,contact.email].filter(Boolean).join('／')).join('\n');
-   const text=reportValue(value)||'—';let link='';
+   const text=['visit_suitable','visitSuitable'].includes(field)?CustomerImport.visitLabel(value):reportValue(value)||'—';let link='';
    if(field==='website'&&value){const raw=String(value).trim();try{const url=new URL(/^[a-z][a-z\d+.-]*:/i.test(raw)?raw:'https://'+raw);if(['http:','https:'].includes(url.protocol))link='<a href="'+esc(url.href)+'" target="_blank" rel="noopener noreferrer">開啟官網 ↗</a>'}catch{}}
    return '<div><span>'+esc(label)+'</span><strong>'+esc(text)+'</strong>'+link+'</div>';
   }).join('')+'</div>';

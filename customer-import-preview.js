@@ -53,7 +53,7 @@ function customerImportStage(wb){
   if(headerIndex<0)continue;
   const headers=matrix[headerIndex].map((h,i)=>String(h||'未命名欄 '+(i+1)));
   const hasCompany=headers.some(h=>CustomerImport.canonical(h)==='公司名稱');
-  matrix.slice(headerIndex+1).forEach((cells,i)=>{if(!cells.some(v=>String(v??'').trim()))return;
+  matrix.slice(headerIndex+1).forEach((cells,i)=>{if(!cells.some((v,j)=>!['是否適合拜訪','是否已寄送Mail'].includes(CustomerImport.canonical(headers[j]))&&String(v??'').trim()))return;
    const fields=cells.map((v,j)=>{
     const header=headers[j]||'未命名欄 '+(j+1);
     const cell=XLSX.utils.encode_cell?wb.Sheets[sheet][XLSX.utils.encode_cell({r:headerIndex+i+1,c:j})]:null;
@@ -76,6 +76,7 @@ function validateCustomerImport(entries,cloudNames,key){
   entry.values=values;entry.issue='';
   if(conflicts.length)entry.issue='欄位內容衝突：'+[...new Set(conflicts)].join('、')+'；請修改或清空其中一欄';
   const name=CustomerImport.companyKey(values['公司名稱']);
+  try{CustomerImport.visitValue(values['是否適合拜訪'])}catch(err){entry.issue=[entry.issue,err.message].filter(Boolean).join('；')}
   if(!name)entry.issue=[entry.issue,'缺少公司名稱'].filter(Boolean).join('；');
   else if(cloudNames.has(name))entry.issue=[entry.issue,(cloudNames instanceof Map?CustomerImport.duplicateMessage(values['公司名稱'],cloudNames.get(name)):'公司名稱已存在雲端資料內，不可重複新增')].filter(Boolean).join('；');
   if(entry.selected&&name){if(!groups.has(name))groups.set(name,[]);groups.get(name).push(entry)}
