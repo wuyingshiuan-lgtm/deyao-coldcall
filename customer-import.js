@@ -83,6 +83,21 @@
  }
  function foreignCountryFor(row){return detectImportCountry(row['國家／地區'])||detectImportCountry(row['地區'])}
 
+ function foreignContacts(row){
+  const paired=row['聯絡人姓名／職位／Email'];
+  const contacts=Array.isArray(paired)?paired.map(c=>({...c})):String(paired??'').split(/[;；\n]+/).filter(x=>x.trim()).map(item=>{
+   const legacy=item.trim().match(/^(.*?)（(.*?)）$/);
+   if(legacy)return {name:'',position:legacy[2].trim(),email:legacy[1].trim()};
+   const parts=item.split('／').map(x=>x.trim()),email=parts.pop()||'';
+   return {name:parts.length>1?parts[0]:'',position:parts.length>1?parts.slice(1).join('／'):parts[0]||'',email};
+  });
+  const seen=new Set(contacts.map(c=>String(c.email||'').toLowerCase()));
+  for(const email of String(row['Email']??'').split(/[,，;；\n]+/).map(x=>x.trim()).filter(Boolean)){
+   if(!seen.has(email.toLowerCase())){contacts.push({name:String(row['聯絡人']||''),position:String(row['職位']||''),email});seen.add(email.toLowerCase())}
+  }
+  return contacts;
+ }
+
  function cleanForeignEmailNotes(value){
   const lines=String(value??'').replace(/\r\n?/g,'\n').split('\n'),kept=[];let pairing=false;
   const metadata=/^(?:From|職位|類型|ID|電話|Domain)\s*[:：]/i;
@@ -113,7 +128,7 @@
   return match[1]+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
  }
 
- const headerKey=v=>String(v??'').normalize('NFKC').trim().toLowerCase().replace(/[\s／/（）()_\-]/g,'');
+ const headerKey=v=>String(v??'').normalize('NFKC').trim().toLowerCase().replace(/[\s\u200B-\u200D\u2060\uFEFF／/（）()_\-]/g,'');
  const companyKey=v=>String(v??'').normalize('NFKC').trim().toLowerCase().replace(/\s+/g,'');
  const lookup=new Map();for(const [label,aliases] of Object.entries(groups))for(const a of [label,...aliases])lookup.set(headerKey(a),label);
  const canonical=v=>lookup.get(headerKey(v))||String(v).trim();
@@ -135,6 +150,6 @@
   return locations;
  }
  function duplicateMessage(name,pages){return '公司名稱「'+String(name).trim()+'」已存在雲端資料內，不可重複新增。\n所在分頁：'+[...pages].join('、')+'。\n請至上述分頁，以公司名稱搜尋原有資料。'}
- root.CustomerImport={normalizeImportDate,cleanForeignEmailNotes,detectImportCountry,foreignCountryFor,companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
+ root.CustomerImport={foreignContacts,normalizeImportDate,cleanForeignEmailNotes,detectImportCountry,foreignCountryFor,companyLocations,duplicateMessage,companyKey,canonical,mapRows,valueFor,preserveExtra,booleanValue};
 })(typeof window!=='undefined'?window:globalThis);
 

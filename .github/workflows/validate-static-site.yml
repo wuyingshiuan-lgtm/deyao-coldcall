@@ -63,6 +63,7 @@ jobs:
           node --check address-region-tools.js
           node tests/address-regions.test.cjs
           node tests/import-outcome.test.cjs
+          node tests/import-regression.test.cjs
 
       - name: Check automatic factory address lookup
         run: |

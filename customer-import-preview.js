@@ -46,20 +46,23 @@ const customerImportSessions=new Map();
 function customerImportStage(wb){
  const entries=[];
  for(const sheet of wb.SheetNames){
-  const matrix=XLSX.utils.sheet_to_json(wb.Sheets[sheet],{header:1,defval:'',raw:false,blankrows:true});
+  const matrix=XLSX.utils.sheet_to_json(wb.Sheets[sheet],{header:1,defval:'',raw:false,blankrows:true,range:0,dateNF:'yyyy-mm-dd'});
   if(!matrix.length)continue;
-  const headers=matrix[0].map((h,i)=>String(h||'未命名欄 '+(i+1)));
+  const foundHeader=matrix.findIndex(row=>row.some(h=>CustomerImport.canonical(h)==='公司名稱'));
+  const headerIndex=foundHeader>=0?foundHeader:matrix.findIndex(row=>row.some(v=>String(v??'').trim()));
+  if(headerIndex<0)continue;
+  const headers=matrix[headerIndex].map((h,i)=>String(h||'未命名欄 '+(i+1)));
   const hasCompany=headers.some(h=>CustomerImport.canonical(h)==='公司名稱');
-  matrix.slice(1).forEach((cells,i)=>{if(!cells.some(v=>String(v??'').trim()))return;
+  matrix.slice(headerIndex+1).forEach((cells,i)=>{if(!cells.some(v=>String(v??'').trim()))return;
    const fields=cells.map((v,j)=>{
     const header=headers[j]||'未命名欄 '+(j+1);
-    const cell=XLSX.utils.encode_cell?wb.Sheets[sheet][XLSX.utils.encode_cell({r:i+1,c:j})]:null;
+    const cell=XLSX.utils.encode_cell?wb.Sheets[sheet][XLSX.utils.encode_cell({r:headerIndex+i+1,c:j})]:null;
     const link=CustomerImport.canonical(header)==='公司官網'?cell?.l?.Target:null;
     return {header,value:String(link&&/^https?:\/\//i.test(link)?link:v??'')};
    });
    headers.forEach((h,j)=>{if(!fields[j])fields[j]={header:h,value:''}});
    if(!hasCompany)fields.unshift({header:'公司名稱',value:''});
-   entries.push({sheet,row:i+2,fields,selected:hasCompany,saved:false,issue:'',error:'',values:{}});
+   entries.push({sheet,row:headerIndex+i+2,fields,selected:hasCompany,saved:false,issue:'',error:'',values:{}});
   });
  }
  return entries;
@@ -154,9 +157,8 @@ async function openCustomerImport(wb,key){
      const merged={...group[0]},contacts=[],seen=new Set(),names=[];
      for(const field of ['公司官網','國家／地區','地區'])if(!String(merged[field]||'').trim()){const source=group.find(item=>String(item[field]||'').trim());if(source)merged[field]=source[field]};
      for(const item of group){
-      const mails=String(item['Email']||'').split(/[;,；\n]+/).map(x=>x.trim()).filter(Boolean);
-      for(const mail of mails){
-       const position=String(item['職位']||'').trim(),person=String(item['聯絡人']||'').trim();
+      for(const contact of CustomerImport.foreignContacts(item)){
+       const mail=String(contact.email||'').trim(),position=String(contact.position||'').trim(),person=String(contact.name||'').trim();
        const ident=mail.toLowerCase();
        if(!seen.has(ident)){seen.add(ident);contacts.push({name:person,email:mail,position});}
        else {const prior=contacts.find(c=>c.email.toLowerCase()===ident);if(prior&&position&&prior.position&&prior.position!==position)throw Error('同一 Email 的職位資料衝突：'+mail+'，請先修正。');if(prior&&person&&prior.name&&prior.name!==person)throw Error('同一 Email 的聯絡人姓名衝突：'+mail+'，請先修正。');if(prior&&!prior.position)prior.position=position;if(prior&&!prior.name)prior.name=person;}
