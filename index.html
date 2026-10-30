@@ -3028,7 +3028,7 @@ function toggleProspectingPanel(button,history){
  const id=history?button.dataset.prospectingHistory:button.dataset.prospectingDetail,row=getOutreachRows("prospecting").find(r=>String(r._cloudId)===String(id));if(!row)return;
  const detail=document.createElement("tr");detail.className="company-detail-row prospecting-detail-row";detail.dataset.kind=kind;
  const cell=document.createElement("td");cell.colSpan=tr.cells.length;
- const fields=[["公司官網",row.website],["開發日期",row.date],["公司名稱",row.company],["產業類別",row.industry],["聯絡人",row.contact],["分機",row.extension],["職稱",row.title],["電話",row.phone],["公司地址",row.address],["公司地區",row.region||detectCity(row.address)],["Email",row.email],["開發方式",row.method],["開發進度",row.status],["備註",row.notes],["紀錄者",row.recorder]];
+ const fields=[["聯絡人資料",ContactGroups.summary(row)],["公司官網",row.website],["開發日期",row.date],["公司名稱",row.company],["產業類別",row.industry],["聯絡人",row.contact],["分機",row.extension],["職稱",row.title],["電話",row.phone],["公司地址",row.address],["公司地區",row.region||detectCity(row.address)],["Email",row.email],["開發方式",row.method],["開發進度",row.status],["備註",row.notes],["紀錄者",row.recorder]];
  const entries=[...(row.date?[{date:row.date,result:"首次開發",notes:row.notes,recorder:row.recorder}]:[]),...(Array.isArray(row.contactHistory)?row.contactHistory:[])];
  const body=history?(entries.length?entries.map((h,i)=>'<article class="history-item"><div class="history-item-head"><span>#'+(i+1)+'｜'+esc(h.date||"未填日期")+'</span><span>'+esc(h.result||"聯繫紀錄")+'</span></div><p>'+esc(h.notes||"（無備註）")+'</p><small>紀錄者：'+esc(h.recorder||"—")+'</small></article>').join(""):'<p>目前尚無聯繫紀錄。</p>'):'<div class="company-detail-grid">'+fields.map(([label,v])=>'<div class="company-detail-item"><span>'+esc(label)+'</span><strong>'+(label==="產業類別"?industryBadge(v):esc(v||"—"))+'</strong>'+(label==="公司官網"&&/^https?:\/\//i.test(String(v||""))?'<a href="'+esc(v)+'" target="_blank" rel="noopener noreferrer">開啟官網 ↗</a>':"")+'</div>').join("")+'</div>';
  cell.innerHTML='<section class="company-detail-panel"><h3>'+ (history?"🕰️ 聯繫歷史紀錄":"🏢 公司完整資料")+'｜'+esc(row.company||"未命名公司")+'</h3>'+body+mobileCompanyActions('prospecting',id)+'<div class="actions"><button type="button" class="btn" data-prospecting-collapse>收合詳細資料</button>'+'</div></section>';
@@ -3131,7 +3131,7 @@ function renderOutreachRecords(key,targetId){
  target.innerHTML='<div class="bulk-delete-toolbar"><label><input type="checkbox" data-outreach-select-all="'+key+'"> 全選本頁</label> <button type="button" class="btn danger" data-outreach-bulk-delete="'+key+'">批量刪除已選</button> <span data-outreach-selected-count="'+key+'">已選 0 筆</span></div>'+(rows.length?rows.slice().reverse().map(r=>'<article class="card"><div class="top"><label><input type="checkbox" data-outreach-select="'+key+'" data-cloud-id="'+esc(r._cloudId||"")+'"> 選取</label> <strong>'+esc(r.company||r.event||"未命名紀錄")+'</strong><span class="badge">'+esc(r.status||r.type||r.method||"已記錄")+'</span></div><div class="meta">'+esc(r.date||"")+(r.country?"｜"+esc(r.country):"")+(r.location?"｜"+esc(r.location):"")+'</div><div class="detail">'+Object.entries(r).filter(([k,v])=>v&&!k.startsWith("_")&& !["createdAt","company","event","date","status","type","method","emailAddress","emailPosition"].includes(k)).map(([k,v])=>{const label=({address:"公司地址",region:"公司地區",extension:"分機",country:"國家／地區",contact:"聯繫人",title:"職稱",email:"Mail",emails:"Mail／所屬職位",phone:"聯繫電話",fax:"傳真電話",website:"公司官網",company:"公司名稱",notes:"備註",owner:"舊版負責人",recorder:"紀錄者",industry:"產業類別"}[k]||k);const value=Array.isArray(v)?v.map(x=>[x.name||"",x.position||"",x.email||""].join("／")).filter(Boolean).join("、"):String(v);return '<div><b>'+esc(label)+'：</b>'+esc(value)+'</div>'}).join("")+'</div><div class="record-actions"><button type="button" class="btn small" data-outreach-edit="'+key+'" data-cloud-id="'+esc(r._cloudId||"")+'">✏️ 修改</button> <button type="button" class="btn small danger" data-outreach-delete="'+key+'" data-cloud-id="'+esc(r._cloudId||"")+'">🗑️ 刪除</button></div></article>').join(""):'<div class="history-empty">目前尚無紀錄。</div>');
 }
 async function editOutreachRecord(key,id){
- const row=getOutreachRows(key).find(r=>String(r._cloudId)===String(id));if(!row){appNotice("找不到這筆雲端紀錄，請重新整理。");return}if(key==="exhibitions"){if(currentProfile?.role!=="admin"){appNotice("只有管理員可以修改展覽資料。");return}const form=$("exhibitionsForm");if(!form)return;const statusField=form.querySelector('[name="mailStatus"]');if(statusField)statusField.value=row.mailStatus||"";window.currentExhibitionEditId=String(id);$("cancelExhibitionEdit")?.classList.remove("hidden");for(const [field,value] of Object.entries(row)){if(field.startsWith("_")||field==="contactHistory"||field==="createdAt")continue;const input=form.querySelector('[name="'+CSS.escape(field)+'"]');if(input)input.value=field==="date"?normalizeExhibitionMonth(value):String(value??"")}const contactDateField=form.querySelector('input[name="contactDate"]');if(contactDateField&&!contactDateField.value)contactDateField.value=String(row.createdAt||"").slice(0,10)||today();const mail=form.querySelector('[name="emailSent"]');if(mail)mail.value=String(row.emailSent??"false");const visit=form.querySelector('[name="visitSuitable"]');if(visit)visit.value=CustomerImport.visitKey(row.visitSuitable);form.querySelector('button[type="submit"]').textContent="儲存展覽資料修改";form.querySelectorAll("[data-exhibition-mail]").forEach(b=>b.classList.toggle("selected",b.dataset.exhibitionMail===String(mail?.value)));form.querySelectorAll("[data-exhibition-visit]").forEach(b=>b.classList.toggle("selected",b.dataset.exhibitionVisit===String(visit?.value)));$("formTitle")?.replaceChildren(document.createTextNode("修改展覽客戶紀錄"));location.hash="exhibitions";showPage();return}
+ const row=getOutreachRows(key).find(r=>String(r._cloudId)===String(id));if(!row){appNotice("找不到這筆雲端紀錄，請重新整理。");return}if(key==="exhibitions"){if(currentProfile?.role!=="admin"){appNotice("只有管理員可以修改展覽資料。");return}const form=$("exhibitionsForm");if(!form)return;const statusField=form.querySelector('[name="mailStatus"]');if(statusField)statusField.value=row.mailStatus||"";window.currentExhibitionEditId=String(id);$("cancelExhibitionEdit")?.classList.remove("hidden");for(const [field,value] of Object.entries(row)){if(field.startsWith("_")||field==="contactHistory"||field==="createdAt")continue;const input=form.querySelector('[name="'+CSS.escape(field)+'"]');if(input)input.value=field==="date"?normalizeExhibitionMonth(value):String(value??"")}ContactGroups.load("exhibitionsForm");const contactDateField=form.querySelector('input[name="contactDate"]');if(contactDateField&&!contactDateField.value)contactDateField.value=String(row.createdAt||"").slice(0,10)||today();const mail=form.querySelector('[name="emailSent"]');if(mail)mail.value=String(row.emailSent??"false");const visit=form.querySelector('[name="visitSuitable"]');if(visit)visit.value=CustomerImport.visitKey(row.visitSuitable);form.querySelector('button[type="submit"]').textContent="儲存展覽資料修改";form.querySelectorAll("[data-exhibition-mail]").forEach(b=>b.classList.toggle("selected",b.dataset.exhibitionMail===String(mail?.value)));form.querySelectorAll("[data-exhibition-visit]").forEach(b=>b.classList.toggle("selected",b.dataset.exhibitionVisit===String(visit?.value)));$("formTitle")?.replaceChildren(document.createTextNode("修改展覽客戶紀錄"));location.hash="exhibitions";showPage();return}
  if(key==="foreignEmail"){const form=$("foreignEmailForm");if(!form)return;window.currentForeignEmailEditId=String(id);$("cancelForeignEmailEdit").classList.remove("hidden");form.reset();const contacts=$("foreignEmailContacts");contacts.innerHTML="";for(const name of ["date","company","contact","country","industry","website","notes","recorder","mailStatus"]){const input=form.querySelector('[name="'+name+'"]');if(input)input.value=name==="date"?ContactHistoryTools.date(row[name]):String(row[name]??"")}form.querySelectorAll('input[name="source"]').forEach(input=>input.checked=input.value===String(row.source||""));const emails=Array.isArray(row.emails)&&row.emails.length?row.emails:(row.email?[{email:row.email,position:""}]:[]);(emails.length?emails:[{email:"",position:""}]).forEach((item,i)=>contacts.insertAdjacentHTML("beforeend",foreignEmailContactGroupMarkup({...item,name:item.name||(i===0?row.contact:"")})));form.querySelector('button[type="submit"]').textContent="儲存修改並同步雲端";$("foreignEmailSection").querySelector("h2").textContent="修改國外 Email 開發紀錄";location.hash="foreignEmail";showPage();window.scrollTo(0,0);return}
  if(key==="prospecting"){openProspectingEdit(row);return}
  const cfg=outreachConfig[key];if(!cfg)return;const updated={...row};
@@ -3360,7 +3360,7 @@ function openProspectingEdit(row){
  if(input.tagName==="SELECT"&&value&&!Array.from(input.options).some(o=>o.value===value))input.add(new Option(value,value));
  input.value=value;
  }
- syncProspectingRegion();
+ ContactGroups.load("prospectingForm");syncProspectingRegion();
  $("prospectingSection").querySelector("h2").textContent="修改陌生客戶開發紀錄";
  form.querySelector('button[type="submit"]').textContent="儲存修改並同步雲端";
  $("prospectingListMsg").textContent="";
@@ -3369,7 +3369,7 @@ function openProspectingEdit(row){
 async function updateProspectingRecord(id,record){
  const {data:cloud,error:readError}=await sb.from("outreach_records").select("id,data").eq("id",id).eq("category","prospecting").single();
  if(readError)throw readError;if(!cloud?.data)throw new Error("找不到要修改的客戶資料，請返回名單重新選擇。");
- const changes=Object.fromEntries(prospectingEditableFields.map(field=>[field,String(record[field]??"").trim()]));
+ const changes=Object.fromEntries(prospectingEditableFields.map(field=>[field,(ContactGroups.isField(field)?String(record[field]??""):String(record[field]??"").trim())]));
  changes.region=detectCity(changes.address);
  const clean={...cloud.data,...changes};
  await customerWrite([clean],{table:"outreach_records",id},async()=>{});
@@ -3386,7 +3386,7 @@ async function submitProspectingForm(form){
  if(!$("prospecting-company").value.trim()){msg.textContent="請輸入公司名稱。";$("prospecting-company").focus();return}
  if(currentProspectingEditId&&currentProfile?.role!=="admin"){msg.textContent="只有管理員可以修改客戶資料。";return}
  syncProspectingRegion();const record=Object.fromEntries(new FormData(form).entries());
- for(const field of prospectingEditableFields)record[field]=String(record[field]??"").trim();
+ for(const field of prospectingEditableFields)record[field]=(ContactGroups.isField(field)?String(record[field]??""):String(record[field]??"").trim());
  const editId=currentProspectingEditId,btn=form.querySelector('button[type="submit"]'),cancel=$("cancelProspectingEdit");
  form.dataset.saving="true";btn.disabled=true;cancel.disabled=true;msg.textContent="正在儲存雲端並驗證同步…";
  try{
@@ -3457,7 +3457,7 @@ function syncCityFromAddress(){let address=$("company_address").value.trim(),cit
 function syncMailStatus(){$("mail_sent").value=$("email").value.trim()?"true":"false";document.querySelectorAll("[data-mail]").forEach(el=>el.classList.toggle("selected",el.dataset.mail===$("mail_sent").value))}
 function syncVisitStatus(){document.querySelectorAll("[data-visit]").forEach(el=>{const selected=el.dataset.visit===$("visit_suitable").value;el.classList.toggle("selected",selected);el.setAttribute("aria-pressed",String(selected))})}
 function reset(){$("form").querySelector('button[type="submit"]').textContent="新增客戶";editing=null;$("form").reset();$("visit_date").value=today();syncMailStatus();syncVisitStatus();if(currentProfile){$("recorder").value=currentProfile.name;$("recorder").readOnly=true}$("formTitle").textContent=currentProfile?.role==="editor"?"新增國內電訪紀錄（僅可上傳）":"新增國內電訪紀錄";$("msg").textContent=""}
-function payload(){let o={};fields.forEach(k=>o[k]=$(k).value.trim());const existing=editing?data.find(r=>String(r.id)===String(editing)):null;o.recorder=editing?(existing?.recorder||o.recorder):(currentProfile?.name||"");o.area=detectCity(o.company_address)||o.area;o.mail_sent=!!o.email;o.visit_suitable=CustomerImport.visitValue($("visit_suitable").value);return o}
+function payload(){let o={};fields.forEach(k=>o[k]=ContactGroups.isField(k)?$(k).value:$(k).value.trim());const existing=editing?data.find(r=>String(r.id)===String(editing)):null;o.recorder=editing?(existing?.recorder||o.recorder):(currentProfile?.name||"");o.area=detectCity(o.company_address)||o.area;o.mail_sent=!!o.email;o.visit_suitable=CustomerImport.visitValue($("visit_suitable").value);return o}
 async function load(){
  if(!currentProfile)return;
  try{
@@ -3479,7 +3479,7 @@ function render(){let a=shown(),dt=$("dateFilter").value,admin=currentProfile?.r
 $("records").addEventListener("change",e=>{if(currentProfile?.role!=="admin")return;if(e.target.id==="selectAllRecords"){for(const r of shown())e.target.checked?selectedIds.add(String(r.id)):selectedIds.delete(String(r.id));$("records").querySelectorAll("[data-select-id]").forEach(box=>box.checked=e.target.checked)}else if(e.target.matches("[data-select-id]")){e.target.checked?selectedIds.add(e.target.dataset.selectId):selectedIds.delete(e.target.dataset.selectId)}updateSelection()});
 $("customerPagination").addEventListener("click",e=>{const btn=e.target.closest("[data-customer-page]");if(!btn||btn.disabled)return;customerPage=Number(btn.dataset.customerPage);render();$("customerSection").scrollIntoView({behavior:"smooth",block:"start"})});
 $("records").addEventListener("click",e=>{const btn=e.target.closest("button[data-action]");if(!btn)return;const id=btn.dataset.recordId;const record=data.find(r=>String(r.id)===id);if(!record)return;if(btn.dataset.action==="details"){expandedCustomerIds.has(String(id))?expandedCustomerIds.delete(String(id)):expandedCustomerIds.add(String(id));render();return}if(currentProfile?.role!=="admin")return;if(btn.dataset.action==="edit")editRec(record.id);else if(btn.dataset.action==="history")manageHistory(record);else if(btn.dataset.action==="delete")delRec(record.id)});
-window.editRec=id=>{$("form").querySelector('button[type="submit"]').textContent="儲存修改";let r=data.find(x=>x.id===id);if(!r)return;editing=id;fields.forEach(k=>$(k).value=r[k]??"");syncMailStatus();if(detectCity(r.company_address))syncCityFromAddress();$("visit_suitable").value=CustomerImport.visitKey(r.visit_suitable);syncVisitStatus();$("formTitle").textContent="編輯電訪紀錄";location.hash="new";showPage()}
+window.editRec=id=>{$("form").querySelector('button[type="submit"]').textContent="儲存修改";let r=data.find(x=>x.id===id);if(!r)return;editing=id;fields.forEach(k=>$(k).value=r[k]??"");ContactGroups.load("form");syncMailStatus();if(detectCity(r.company_address))syncCityFromAddress();$("visit_suitable").value=CustomerImport.visitKey(r.visit_suitable);syncVisitStatus();$("formTitle").textContent="編輯電訪紀錄";location.hash="new";showPage()}
 window.delRec=async id=>{if(!await appConfirm("確定刪除這筆紀錄？"))return;let {error}=await sb.from("cold_call_records").delete().eq("id",id);if(error)appNotice(error.message);else load()}
 function norm(s){return String(s??"").trim().toLowerCase().replace(/\s+/g,"")}
 function findDuplicate(p){let cn=norm(p.company_name),ph=norm(p.phone).replace(/[^0-9+]/g,""),em=norm(p.email);return data.find(r=>r.id!==editing&&((cn&&norm(r.company_name)===cn)||(ph&&norm(r.phone).replace(/[^0-9+]/g,"")===ph)||(em&&norm(r.email)===em)))}
@@ -3723,7 +3723,41 @@ syncIndustryOptions();
   const hint=document.createElement("p");hint.className="mobile-list-hint";hint.textContent="點選公司名稱，即可查看完整資料。";const records=section.querySelector(".records");if(records)records.before(hint);
  });
 })();
-</script><script src="home-company-search.js?v=20261030-visit-pending-v1"></script></body></html>
-
-
-
+</script><script src="home-company-search.js?v=20261030-visit-pending-v1"></script>
+<script>
+/* Contact columns use matching newline indexes, preserving compatibility with existing cloud columns and Excel exports. */
+const ContactGroups=(()=>{
+ const configs={form:["contact_name","position","extension","email"],exhibitionsForm:["contact","title","extension","email"],prospectingForm:["contact","title","extension","email"]};
+ const labels=["聯絡人","職位／部門","分機","Email"],states=new Map();
+ const isField=key=>["contact_name","position","contact","title","extension","email"].includes(key);
+ function readColumns(values){const columns=values.map(v=>String(v??"").split(/\r?\n/));return Array.from({length:Math.max(1,...columns.map(c=>c.length))},(_,i)=>columns.map(c=>c[i]||""))}
+ function load(id){const state=states.get(id);if(!state)return;draw(state,readColumns(state.sources.map(el=>el.value)))}
+ function collect(state){return Array.from(state.list.children).map(row=>Array.from(row.querySelectorAll("input")).map(el=>el.value.trim())).filter(row=>row.some(Boolean))}
+ function sync(state){const rows=collect(state);state.sources.forEach((el,i)=>{el.value=rows.map(row=>row[i]).join("\n");el.dispatchEvent(new Event("input",{bubbles:true}))});if(state.form.id==="form")syncMailStatus();if(state.form.id==="exhibitionsForm"){const select=state.form.querySelector('[name="emailSent"]');if(select){select.value=rows.some(row=>row[3])?"true":"false";state.form.querySelectorAll('[data-exhibition-mail]').forEach(button=>button.classList.toggle("selected",button.dataset.exhibitionMail===select.value))}}}
+ function draw(state,rows){state.list.replaceChildren();(rows.length?rows:[["","","",""]]).forEach(values=>add(state,values))}
+ function add(state,values=["","","",""]){
+  const row=document.createElement("fieldset");row.className="grouped-contact";
+  const legend=document.createElement("legend");legend.textContent="聯絡人資料";row.append(legend);
+  labels.forEach((text,i)=>{const label=document.createElement("label");label.textContent=text;const input=document.createElement("input");input.type=i===3?"email":"text";input.value=values[i]||"";input.placeholder=i===1?"例如：採購經理、業務部":text;input.addEventListener("input",()=>sync(state));label.append(input);row.append(label)});
+  const remove=document.createElement("button");remove.type="button";remove.className="btn danger";remove.textContent="移除此聯絡人";remove.onclick=()=>{row.remove();if(!state.list.children.length)add(state);sync(state)};row.append(remove);state.list.append(row);
+ }
+ for(const [id,keys] of Object.entries(configs)){
+  const form=document.getElementById(id);if(!form)continue;
+  const originals=keys.map(key=>id==="form"?document.getElementById(key):form.querySelector('[name="'+key+'"]'));if(originals.some(el=>!el))continue;
+  const box=document.createElement("section");box.className="grouped-contacts";const heading=document.createElement("h3");heading.textContent="聯絡人資料";box.append(heading);originals[0].parentElement.before(box);
+  const sources=originals.map(old=>{const source=document.createElement("textarea");for(const attr of ["id","name"])if(old.hasAttribute(attr))source.setAttribute(attr,old.getAttribute(attr));source.hidden=true;source.value=old.value;const field=old.parentElement;old.replaceWith(source);field.hidden=true;return source});
+  const list=document.createElement("div");box.append(list);const state={form,sources,list};states.set(id,state);
+  const button=document.createElement("button");button.type="button";button.className="btn";button.textContent="＋ 新增聯絡人";button.onclick=()=>add(state);box.append(button);
+  form.addEventListener("reset",()=>queueMicrotask(()=>load(id)));
+  form.addEventListener("submit",()=>sync(state),true);load(id);
+ }
+ function summary(row,domestic=false){const keys=domestic?configs.form:configs.exhibitionsForm;return readColumns(keys.map(key=>row[key])).map((values,i)=>"聯絡人 "+(i+1)+"："+values.map((value,j)=>labels[j]+"："+(value||"—")).join("｜")).join("\n")}
+ return {load,isField,readColumns,summary};
+})();
+</script>
+<style>
+#form .grid>.grouped-contacts,.grouped-contacts{grid-column:1 / -1!important;grid-row:auto!important;min-width:0;padding:14px;border:1px solid #c7def8;border-radius:12px;background:#f7fbff}
+.grouped-contacts h3{margin:0 0 12px;font-size:17px}.grouped-contact{margin:0 0 12px;padding:12px;border:1px solid #c7def8;border-radius:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;background:white;min-width:0}.grouped-contact legend{font-weight:700;padding:0 5px}.grouped-contact label{margin:0}.grouped-contact input{margin-top:5px}.grouped-contact button{justify-self:start;grid-column:1 / -1}.company-detail-item strong,.exhibitions-company-detail-item strong{white-space:pre-line!important}
+@media(max-width:600px){.grouped-contact{grid-template-columns:minmax(0,1fr)}}
+</style>
+</body></html>
