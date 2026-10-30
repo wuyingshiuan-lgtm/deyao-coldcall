@@ -35,7 +35,7 @@ document.head.appendChild(responsiveStyle);
 const home=document.querySelector("#homeSection .home-links");
 if(home){const a=document.createElement("a");a.href="#bulkHistory";a.setAttribute("aria-label","Excel 批次匯入聯繫紀錄");a.className="home-feature home-feature-4 admin-excel";a.innerHTML='<span class="home-feature-top"><span class="home-feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M3 9h18M9 9v12m6-12v12M3 15h18"/></svg></span><span class="home-feature-category">聯繫管理</span></span><strong>Excel 批次匯入聯繫紀錄</strong><span class="home-feature-description">一次新增多位客戶的後續聯繫歷史</span><span class="home-feature-action">批次匯入<span aria-hidden="true">↗</span></span>';home.appendChild(a);}
 const main=document.querySelector("main.wrap");
-const section=document.createElement("section");section.id="bulkHistorySection";section.className="box hidden";section.innerHTML='<div class="history-page-head"><button class="btn" type="button" id="bulkBack">← 返回首頁</button><h2>Excel 批次匯入聯繫紀錄</h2></div><p class="bulk-note">支援五欄範本，或直接匯入含「電子信箱、Created Date」的 Excel。Email 模式會比對各分頁客戶的所有信箱，聯繫結果固定為「已寄回信」，只取 Created Date 的日期。多位符合時請選擇客戶；找不到及重複紀錄會略過。只新增聯繫歷史，保留原有資料。</p><div class="bulk-choices"><button type="button" class="bulk-choice" id="bulkTemplate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg><strong>下載 Excel 範本</strong><small>含分頁及聯繫結果下拉選單</small></button><button type="button" class="bulk-choice" id="bulkUpload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m-5 5 5-5 5 5M4 7V4h16v3"/></svg><strong>匯入 Excel 資料</strong><small>自動分配至對應公司</small></button></div><input id="bulkFile" class="hidden" type="file" accept=".xlsx,.xls"><div id="bulkStatus" role="status" aria-live="polite" class="bulk-note"></div><div id="bulkPreview" class="hidden"><h3>匯入前確認</h3><p id="bulkSummary"></p><div class="bulk-table-wrap"><table class="bulk-table"><thead><tr><th>列</th><th>分頁</th><th>日期</th><th>公司</th><th>備註</th><th>結果</th><th>檢查結果／處理</th></tr></thead><tbody id="bulkRows"></tbody></table></div><div class="actions"><button type="button" class="btn primary" id="bulkConfirm">確認新增可匯入資料</button><button type="button" class="btn" id="bulkReset">清除預覽</button></div></div>';
+const section=document.createElement("section");section.id="bulkHistorySection";section.className="box hidden";section.innerHTML='<div class="history-page-head"><button class="btn" type="button" id="bulkBack">← 返回首頁</button><h2>Excel 批次匯入聯繫紀錄</h2></div><p class="bulk-note">支援五欄範本，或含「電子信箱」的 Excel。沒有 Created Date 時，請先指定下方的聯繫日期。Email 模式會比對各分頁客戶的所有信箱，聯繫結果固定為「已寄回信」，只取 Created Date 的日期。多位符合時請選擇客戶；找不到及重複紀錄會略過。只新增聯繫歷史，保留原有資料。</p><div class="bulk-note"><label for="bulkFallbackDate">缺少 Created Date 時使用的聯繫日期</label><input id="bulkFallbackDate" type="date" style="max-width:240px"><small>只套用至缺少日期的 Email 資料；有 Created Date 的列保留原日期。</small></div><div class="bulk-choices"><button type="button" class="bulk-choice" id="bulkTemplate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg><strong>下載 Excel 範本</strong><small>含分頁及聯繫結果下拉選單</small></button><button type="button" class="bulk-choice" id="bulkUpload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m-5 5 5-5 5 5M4 7V4h16v3"/></svg><strong>匯入 Excel 資料</strong><small>自動分配至對應公司</small></button></div><input id="bulkFile" class="hidden" type="file" accept=".xlsx,.xls"><div id="bulkStatus" role="status" aria-live="polite" class="bulk-note"></div><div id="bulkPreview" class="hidden"><h3>匯入前確認</h3><p id="bulkSummary"></p><div class="bulk-table-wrap"><table class="bulk-table"><thead><tr><th>列</th><th>分頁</th><th>日期</th><th>公司</th><th>備註</th><th>結果</th><th>檢查結果／處理</th></tr></thead><tbody id="bulkRows"></tbody></table></div><div class="actions"><button type="button" class="btn primary" id="bulkConfirm">確認新增可匯入資料</button><button type="button" class="btn" id="bulkReset">清除預覽</button></div></div>';
 const before=document.getElementById("rangeReportSection");main.insertBefore(section,before||main.firstChild);
 pages.bulkHistory="bulkHistorySection";
 // Register before the first signed-in navigation, including direct links.
@@ -131,7 +131,7 @@ function readBulkWorkbook(wb){
   "電子信箱":["電子信箱","電子郵件","電子郵箱","email","e-mail","email address","mail"],
   "Created Date":["Created Date","CreatedDate","created_date","建立日期","建立時間","創建日期"]
  };
- const headerKey=value=>norm(value).replace(/[\\u200B-\\u200D\\uFEFF_\\-]/g,"");
+ const headerKey=value=>norm(value).replace(/[\u200B-\u200D\uFEFF_-]/g,"");
  const lookup=new Map(Object.entries(aliases).flatMap(([label,names])=>names.map(name=>[headerKey(name),label])));
  const entries=[],found=[];
  for(const sheetName of wb.SheetNames){
@@ -139,7 +139,7 @@ function readBulkWorkbook(wb){
   let headerIndex=-1,headers=[],emailMode=false;
   for(let i=0;i<matrix.length;i++){
    const labels=matrix[i].map(value=>lookup.get(headerKey(value))||"");
-   const email=labels.includes("電子信箱")&&labels.includes("Created Date");
+   const email=labels.includes("電子信箱");
    const template=["分頁屬性","聯繫日期","公司名","聯繫結果"].every(label=>labels.includes(label));
    if(email||template){headerIndex=i;headers=labels;emailMode=email;break;}
   }
@@ -161,10 +161,11 @@ $b("bulkFile").onchange=async e=>{
  status("正在讀取 Excel 與最新雲端客戶資料…");$b("bulkPreview").classList.add("hidden");
  const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true}),entries=readBulkWorkbook(wb);
  if(entries.length>2000)throw Error("單次最多匯入 2,000 筆。");
- candidates=entries.map(({row:r,emailMode,sheet,excelRow},i)=>({...emailMode?({emailMode:true,email:String(r["電子信箱"]||"").trim().toLowerCase(),key:"",rawCategory:"依 Email 配對",date:createdDate(r["Created Date"]),company:String(r["公司名"]||"").trim(),notes:"",result:"已寄回信",chosen:""}):({key:categoryOf(r["分頁屬性"]),rawCategory:r["分頁屬性"],date:formatDate(r["聯繫日期"]),company:String(r["公司名"]||"").trim(),notes:String(r["備註"]||"").trim(),result:String(r["聯繫結果"]||"").trim(),chosen:"",allowDuplicate:false,duplicate:false}),index:i,sheet,excelRow}));
- cloudGroups=await allCloudRows();renderPreview();status("已完成雲端比對；請確認檢查結果，再按新增。");
+ candidates=entries.map(({row:r,emailMode,sheet,excelRow},i)=>({...emailMode?({emailMode:true,email:String(r["電子信箱"]||"").trim().toLowerCase(),key:"",rawCategory:"依 Email 配對",date:createdDate(r["Created Date"])||(!String(r["Created Date"]??"").trim()?formatDate($b("bulkFallbackDate").value):""),needsDate:!String(r["Created Date"]??"").trim(),company:String(r["公司名"]||"").trim(),notes:"",result:"已寄回信",chosen:""}):({key:categoryOf(r["分頁屬性"]),rawCategory:r["分頁屬性"],date:formatDate(r["聯繫日期"]),company:String(r["公司名"]||"").trim(),notes:String(r["備註"]||"").trim(),result:String(r["聯繫結果"]||"").trim(),chosen:"",allowDuplicate:false,duplicate:false}),index:i,sheet,excelRow}));
+ cloudGroups=await allCloudRows();renderPreview();status(candidates.some(c=>c.needsDate&&!c.date)?"已讀取 "+candidates.length+" 筆。此名單缺少 Created Date，請在上方指定聯繫日期；設定後將更新預覽。":"已完成雲端比對；請確認檢查結果，再按新增。");
  }catch(err){status("匯入檢查失敗："+err.message);}finally{e.target.value="";}
 };
+$b("bulkFallbackDate").addEventListener("change",()=>{candidates.filter(c=>c.needsDate).forEach(c=>{c.date=formatDate($b("bulkFallbackDate").value);});if(candidates.length&&cloudGroups){renderPreview();status(candidates.some(c=>c.needsDate&&!c.date)?"請指定聯繫日期。":"日期已更新，請確認預覽後再新增。");}});
 $b("bulkReset").onclick=()=>{if(busy)return;candidates=[];$b("bulkPreview").classList.add("hidden");status("");};
 async function saveOne(c){
  c.entryId ||= crypto.randomUUID();
