@@ -18,7 +18,7 @@
  const form=panel.querySelector('form'),input=panel.querySelector('input'),submit=form.querySelector('[type="submit"]'),status=panel.querySelector('[role="status"]'),results=panel.querySelector('.home-company-search-results'),pagination=panel.querySelector('nav');
  let matches=[],page=0,request=0,searchedTerm='';const pageSize=20;
  function detailMarkup({key,row}){
-  const known=reportFields(key),extra=Object.keys(row).filter(field=>!field.startsWith('_')&&!['id','created_at','createdAt','contactHistory'].includes(field)&&!known.some(([name])=>name===field)).map(field=>[field,field]);
+  const known=reportFields(key),extra=Object.keys(row).filter(field=>!field.startsWith('_')&&!['id','created_at','createdAt','updated_at','updatedAt','created_by','updated_by','contactHistory'].includes(field)&&!known.some(([name])=>name===field)).map(field=>[field,field]);
   return '<div class="home-company-fields">'+[...known,...extra].map(([field,label])=>{
    let value=row[field];if(field==='emails'&&Array.isArray(value))value=value.map(contact=>[contact.name,contact.position,contact.email].filter(Boolean).join('／')).join('\n');
    const text=reportValue(value)||'—';let link='';
