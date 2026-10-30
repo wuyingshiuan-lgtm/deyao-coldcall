@@ -109,6 +109,7 @@ async function openCustomerImport(wb,key){
  const entries=wb?customerImportStage(wb,key):customerImportSessions.get(key);if(!entries.length)throw Error('檔案內沒有資料');customerImportSessions.set(key,entries);
  let phoneEnabled=key!=='foreignEmail';
  let importSource='馬太平台';
+ let importIndustry='';
  let cloudNames=new Set(),cloudReady=false,busy=false,page=0,filter='pending',editingEntry=null;
  const dialog=document.createElement('dialog');dialog.id='customerImportPreview';dialog.setAttribute('aria-labelledby','customerImportTitle');
  dialog.style.cssText='width:min(1200px,94vw);max-height:90vh;border:1px solid #d5e0eb;border-radius:16px;padding:24px;color:#31485f;background:#ffffff;box-shadow:0 20px 80px #30203544;';
@@ -125,9 +126,23 @@ async function openCustomerImport(wb,key){
    importSource=button.dataset.importSource;render();
   });
  }
+ if(key==='foreignEmail'){
+  const industryField=document.createElement('fieldset');
+  industryField.style.cssText='border:1px solid #cbddeb;border-radius:10px;padding:12px;margin:12px 0';
+  const industries=Array.from(document.querySelectorAll('#foreignEmailForm [data-industry]')).map(button=>button.dataset.industry);
+  industryField.innerHTML='<legend>本批匯入資料的產業類別</legend><div style="display:flex;gap:10px;flex-wrap:wrap">'+['',...new Set(industries)].map(industry=>'<button type="button" class="btn" data-import-industry="'+esc(industry)+'" aria-pressed="false">'+esc(industry||'保留檔案原有類別')+'</button>').join('')+'</div><p data-import-industry-summary role="status"></p>';
+  dialog.querySelector('[data-import-summary]').before(industryField);
+  industryField.addEventListener('click',event=>{
+   const button=event.target.closest('[data-import-industry]');
+   if(!button||busy)return;
+   importIndustry=button.dataset.importIndustry;render();
+  });
+ }
  document.body.appendChild(dialog);dialog.showModal();
  const q=selector=>dialog.querySelector(selector),msg=q('[data-import-message]');
  function render(){
+  dialog.querySelectorAll('[data-import-industry]').forEach(button=>{const selected=button.dataset.importIndustry===importIndustry;button.classList.toggle('primary',selected);button.setAttribute('aria-pressed',String(selected));button.disabled=busy;});
+  const industrySummary=dialog.querySelector('[data-import-industry-summary]');if(industrySummary)industrySummary.textContent=importIndustry?'本次勾選匯入的所有資料將統一設為：'+importIndustry+'。':'目前保留各筆資料原有的產業類別；點選類別可整批套用。';
   dialog.querySelectorAll('[data-import-source]').forEach(button=>{const selected=button.dataset.importSource===importSource;button.classList.toggle('primary',selected);button.setAttribute('aria-pressed',String(selected));button.disabled=busy;});
   const sourceSummary=dialog.querySelector('[data-import-source-summary]');if(sourceSummary)sourceSummary.textContent='本次勾選匯入的資料將統一設為：'+importSource+'。';
   const ready=validateCustomerImport(entries,cloudNames,key),saved=entries.filter(e=>e.saved).length;
@@ -192,7 +207,7 @@ async function openCustomerImport(wb,key){
     });
    }
    const mapped=key==='domestic'?mapDomesticImport(raw):mapOutreachImport(raw,key);
-   if(key==='foreignEmail')mapped.forEach(row=>row.source=importSource);
+   if(key==='foreignEmail')mapped.forEach(row=>{row.source=importSource;if(importIndustry)row.industry=importIndustry;});
    mapped.forEach((row,i)=>{const region=resolveCustomerImportRegion(raw[i],phoneEnabled).city;if(region)row[key==='domestic'?'area':'region']=region;});
    if(mapped.length!==raw.length)throw Error('資料筆數不一致，已停止寫入。');
    // Only atomic bulk insert errors are retried; completed rows are never resubmitted.
