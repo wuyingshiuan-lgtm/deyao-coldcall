@@ -3757,7 +3757,7 @@ const ContactGroups=(()=>{
 </script>
 <style>
 #form .grid>.grouped-contacts,.grouped-contacts{grid-column:1 / -1!important;grid-row:auto!important;min-width:0;padding:14px;border:1px solid #c7def8;border-radius:12px;background:#f7fbff}
-.grouped-contacts h3{margin:0 0 12px;font-size:17px}.grouped-contact{margin:0 0 12px;padding:12px;border:1px solid #c7def8;border-radius:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;background:white;min-width:0}.grouped-contact legend{font-weight:700;padding:0 5px}.grouped-contact label{margin:0}.grouped-contact input{margin-top:5px}.grouped-contact button{justify-self:start;grid-column:1 / -1}.company-detail-item strong,.exhibitions-company-detail-item strong{white-space:pre-line!important}
-@media(max-width:600px){.grouped-contact{grid-template-columns:minmax(0,1fr)}}
+.grouped-contacts h3{margin:0 0 12px;font-size:17px}.grouped-contact{margin:0 0 12px;padding:12px;border:1px solid #c7def8;border-radius:10px;display:grid;grid-template-columns:minmax(85px,.8fr) minmax(110px,1fr) minmax(60px,.45fr) minmax(170px,2fr) auto;gap:10px;background:white;min-width:0;align-items:end}.grouped-contact legend{font-weight:700;padding:0 5px}.grouped-contact label{margin:0}.grouped-contact input{margin-top:5px}.grouped-contact button{justify-self:start;grid-column:auto;align-self:end;white-space:nowrap;padding:10px;font-size:12px}.company-detail-item strong,.exhibitions-company-detail-item strong{white-space:pre-line!important}
+@media(max-width:760px){.grouped-contacts>div{overflow-x:auto}.grouped-contact{min-width:680px}}
 </style>
 </body></html>
