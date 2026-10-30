@@ -2472,7 +2472,7 @@ body #summary.customer-search-summary,body #foreignEmailListSummary.customer-sea
 <div class="footer-phrase">💗 積極聯繫　│　▥ 持續追蹤　│　♟ 拓展客戶　│　⭐ 達成目標　　Together for a Better Tomorrow!</div>
 </main>
 <script>const statusDock=document.createElement('div');statusDock.className='status-dock';statusDock.setAttribute('aria-label','登入狀態與帳號操作');statusDock.append(document.getElementById('onlineCount'),document.querySelector('.account-actions'));document.querySelector("header").insertAdjacentElement("afterend",statusDock);document.querySelector(".skip-to-main")?.addEventListener("click",event=>{event.preventDefault();document.getElementById("mainContent")?.focus();});</script>
-<script src="contact-history-tools.js?v=20261030-preserve-first-v1"></script><script src="site-dialogs.js?v=20261021b"></script><script src="customer-import.js?v=20261030-visit-pending-v1"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
+<script src="contact-history-tools.js?v=20261030-preserve-first-v1"></script><script src="site-dialogs.js?v=20261021b"></script><script src="customer-import.js?v=20261030-company-country-v2"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
 // Initialize city aliases before any startup rendering or cloud callbacks.
 const CITY_ALIASES=[["台北市",["台北市","臺北市"]],["新北市",["新北市","台北縣","臺北縣"]],["基隆市",["基隆市"]],["桃園市",["桃園市","桃園縣"]],["新竹市",["新竹市"]],["新竹縣",["新竹縣"]],["苗栗縣",["苗栗縣"]],["台中市",["台中市","臺中市","台中縣","臺中縣"]],["彰化縣",["彰化縣"]],["南投縣",["南投縣"]],["雲林縣",["雲林縣"]],["嘉義市",["嘉義市"]],["嘉義縣",["嘉義縣"]],["台南市",["台南市","臺南市","台南縣","臺南縣"]],["高雄市",["高雄市","高雄縣"]],["屏東縣",["屏東縣"]],["宜蘭縣",["宜蘭縣"]],["花蓮縣",["花蓮縣"]],["台東縣",["台東縣","臺東縣"]],["澎湖縣",["澎湖縣"]],["金門縣",["金門縣"]],["連江縣",["連江縣"]]];
 function industryBadge(value){
@@ -2856,15 +2856,15 @@ async function readAllCompanyRows(table,columns){
  const rows=[];for(let offset=0;;offset+=500){const {data:page,error}=await sb.from(table).select(columns).order("id").range(offset,offset+499);if(error)throw new Error("無法確認雲端公司名單，已停止儲存："+error.message);rows.push(...(page||[]));if((page||[]).length<500)return rows}
 }
 let customerWriteQueue=Promise.resolve();
-function customerWrite(rows,exclude,write){
+function customerWrite(rows,exclude,write,category="domestic"){
  const task=customerWriteQueue.then(async()=>{
   const [domestic,outreach]=await Promise.all([readAllCompanyRows("cold_call_records","id,company_name"),readAllCompanyRows("outreach_records","id,category,data")]);
-  const locations=CustomerImport.companyLocations(domestic,outreach,exclude),seen=new Set();
+  const locations=CustomerImport.companyLocations(domestic,outreach,exclude,category),seen=new Set();
   for(const r of rows){
-   const name=String(r.company_name??r.company??"").trim(),key=CustomerImport.companyKey(name);
-   if(!key)throw new Error("公司名稱不可空白，資料未新增。");
+   const name=String(r.company_name??r.company??"").trim(),key=CustomerImport.companyIdentity(r,category);
+   if(!CustomerImport.companyKey(name))throw new Error("公司名稱不可空白，資料未新增。");
    if(locations.has(key)||seen.has(key)){
-    const message=locations.has(key)?CustomerImport.duplicateMessage(name,locations.get(key)):"公司名稱「"+name+"」在本次匯入已存在，不可重複新增。請修正本次匯入的重複公司。";
+    const message=locations.has(key)?CustomerImport.duplicateMessage(name,locations.get(key),category==="foreignEmail"?r.country:undefined):"公司名稱「"+name+"」在本次匯入已存在，不可重複新增。請修正本次匯入的重複公司。";
     appNotice(message);throw new Error(message);
    }
    seen.add(key);
@@ -2874,7 +2874,7 @@ function customerWrite(rows,exclude,write){
 }
 async function insertOutreachRows(key,rows){
  if(!currentProfile)throw new Error("請先登入系統。");
- await customerWrite(rows,null,async()=>{const payload=rows.map(row=>({category:key,data:row,created_by:currentProfile.id}));const {error}=await sb.from("outreach_records").insert(payload);if(error)throw error});
+ await customerWrite(rows,null,async()=>{const payload=rows.map(row=>({category:key,data:row,created_by:currentProfile.id}));const {error}=await sb.from("outreach_records").insert(payload);if(error)throw error},key);
  await loadOutreachCloud();
 }
 
@@ -3206,7 +3206,7 @@ function bindOutreachForm(formId,key,targetId){
   if(key==="foreignEmail"&&!window.currentForeignEmailEditId)record.contactHistory=[{date:String(record.date||today()),notes:String(record.notes||"")}];
   if(key==="foreignEmail"){record.emails=readForeignEmailContacts(form);record.contact=record.emails.map(x=>x.name).filter(Boolean).join(", ");delete record.emailContactName;delete record.emailAddress;delete record.emailPosition;record.email=record.emails.map(x=>x.email).filter(Boolean).join(", ")}
   if(record.address)record.region=detectCity(record.address)||record.region||"";record.createdAt=new Date().toISOString();
-  try{const editIdForCheck=key==="foreignEmail"?window.currentForeignEmailEditId:key==="exhibitions"?window.currentExhibitionEditId:null;if(editIdForCheck)await customerWrite([record],{table:"outreach_records",id:editIdForCheck},async()=>{});if(key==="foreignEmail"&&window.currentForeignEmailEditId){const editId=String(window.currentForeignEmailEditId),existing=getOutreachRows(key).find(r=>String(r._cloudId)===editId);if(!existing)throw new Error("找不到要修改的雲端資料，請重新整理後再試。");record.contactHistory=Array.isArray(existing.contactHistory)?existing.contactHistory:[];record.createdAt=existing.createdAt||record.createdAt;const clean={...existing,...record};delete clean._cloudId;delete clean._createdAt;const {error}=await sb.from("outreach_records").update({data:clean}).eq("id",editId).eq("category",key);if(error)throw error;await loadOutreachCloud();window.currentForeignEmailEditId=null;$("cancelForeignEmailEdit").classList.remove("hidden");form.reset();form.querySelector('button[type="submit"]').textContent="新增客戶";$("foreignEmailSection").querySelector("h2").textContent="新增國外 Email 開發";}else if(key==="exhibitions"&&window.currentExhibitionEditId){const editId=window.currentExhibitionEditId,existing=getOutreachRows(key).find(r=>String(r._cloudId)===String(editId));if(!existing)throw new Error("找不到要修改的雲端資料，請重新整理後再試。");const clean={...record,contactHistory:Array.isArray(existing.contactHistory)?existing.contactHistory:[],createdAt:existing.createdAt||record.createdAt};delete clean._cloudId;delete clean._createdAt;const {error}=await sb.from("outreach_records").update({data:clean}).eq("id",editId).eq("category",key);if(error)throw error;await loadOutreachCloud();window.currentExhibitionEditId=null;$("cancelExhibitionEdit")?.classList.remove("hidden");form.reset();form.querySelector('button[type="submit"]').textContent="新增客戶";$("formTitle")?.replaceChildren(document.createTextNode("新增展覽客戶紀錄"));}else{if(key==="prospecting")await saveProspectingRecord(record);else await insertOutreachRows(key,[record]);form.reset();if(key==="prospecting"){syncProspectingRegion();$("prospectingSaveMsg").textContent="✓ 已儲存雲端，客戶列表與每日統計已同步。"}}if(key==="exhibitions"){const recorder=form.querySelector('input[name="recorder"]');if(recorder)recorder.value=currentProfile?.name||"";const contactDateField=form.querySelector('input[name="contactDate"]');if(contactDateField)contactDateField.value=today();if(dateInput)dateInput.value=today().slice(0,7);if(followUpInput)followUpInput.value=today()}if(key==="foreignEmail"&&!window.currentForeignEmailEditId){fillForeignEmailRecorder();const contacts=$("foreignEmailContacts");if(contacts)contacts.innerHTML='<div class="foreign-email-contact-group"><div class="email-contact-row"><label>聯絡人姓名</label><input name="emailContactName" autocomplete="name" placeholder="請輸入聯絡人姓名"></div><div class="email-contact-row"><label>所屬職位／部門</label><input name="emailPosition" placeholder="例如：採購經理、業務部"></div><div class="email-contact-row"><label>Email</label><input type="email" name="emailAddress" placeholder="name@company.com"></div></div>'}if(dateInput)dateInput.value=dateInput.type==="month"?today().slice(0,7):today();renderOutreachRecords(key,targetId);renderOutreachStats(key);if(editIdForCheck)returnToCustomerList(key);if(key==="foreignEmail"||key==="exhibitions")appNotice("✓ "+(key==="foreignEmail"?"國外 Email":"展覽")+"客戶資料已成功儲存至雲端。")}
+  try{const editIdForCheck=key==="foreignEmail"?window.currentForeignEmailEditId:key==="exhibitions"?window.currentExhibitionEditId:null;if(editIdForCheck)await customerWrite([record],{table:"outreach_records",id:editIdForCheck},async()=>{},key);if(key==="foreignEmail"&&window.currentForeignEmailEditId){const editId=String(window.currentForeignEmailEditId),existing=getOutreachRows(key).find(r=>String(r._cloudId)===editId);if(!existing)throw new Error("找不到要修改的雲端資料，請重新整理後再試。");record.contactHistory=Array.isArray(existing.contactHistory)?existing.contactHistory:[];record.createdAt=existing.createdAt||record.createdAt;const clean={...existing,...record};delete clean._cloudId;delete clean._createdAt;const {error}=await sb.from("outreach_records").update({data:clean}).eq("id",editId).eq("category",key);if(error)throw error;await loadOutreachCloud();window.currentForeignEmailEditId=null;$("cancelForeignEmailEdit").classList.remove("hidden");form.reset();form.querySelector('button[type="submit"]').textContent="新增客戶";$("foreignEmailSection").querySelector("h2").textContent="新增國外 Email 開發";}else if(key==="exhibitions"&&window.currentExhibitionEditId){const editId=window.currentExhibitionEditId,existing=getOutreachRows(key).find(r=>String(r._cloudId)===String(editId));if(!existing)throw new Error("找不到要修改的雲端資料，請重新整理後再試。");const clean={...record,contactHistory:Array.isArray(existing.contactHistory)?existing.contactHistory:[],createdAt:existing.createdAt||record.createdAt};delete clean._cloudId;delete clean._createdAt;const {error}=await sb.from("outreach_records").update({data:clean}).eq("id",editId).eq("category",key);if(error)throw error;await loadOutreachCloud();window.currentExhibitionEditId=null;$("cancelExhibitionEdit")?.classList.remove("hidden");form.reset();form.querySelector('button[type="submit"]').textContent="新增客戶";$("formTitle")?.replaceChildren(document.createTextNode("新增展覽客戶紀錄"));}else{if(key==="prospecting")await saveProspectingRecord(record);else await insertOutreachRows(key,[record]);form.reset();if(key==="prospecting"){syncProspectingRegion();$("prospectingSaveMsg").textContent="✓ 已儲存雲端，客戶列表與每日統計已同步。"}}if(key==="exhibitions"){const recorder=form.querySelector('input[name="recorder"]');if(recorder)recorder.value=currentProfile?.name||"";const contactDateField=form.querySelector('input[name="contactDate"]');if(contactDateField)contactDateField.value=today();if(dateInput)dateInput.value=today().slice(0,7);if(followUpInput)followUpInput.value=today()}if(key==="foreignEmail"&&!window.currentForeignEmailEditId){fillForeignEmailRecorder();const contacts=$("foreignEmailContacts");if(contacts)contacts.innerHTML='<div class="foreign-email-contact-group"><div class="email-contact-row"><label>聯絡人姓名</label><input name="emailContactName" autocomplete="name" placeholder="請輸入聯絡人姓名"></div><div class="email-contact-row"><label>所屬職位／部門</label><input name="emailPosition" placeholder="例如：採購經理、業務部"></div><div class="email-contact-row"><label>Email</label><input type="email" name="emailAddress" placeholder="name@company.com"></div></div>'}if(dateInput)dateInput.value=dateInput.type==="month"?today().slice(0,7):today();renderOutreachRecords(key,targetId);renderOutreachStats(key);if(editIdForCheck)returnToCustomerList(key);if(key==="foreignEmail"||key==="exhibitions")appNotice("✓ "+(key==="foreignEmail"?"國外 Email":"展覽")+"客戶資料已成功儲存至雲端。")}
   catch(err){if(key==="prospecting")$("prospectingSaveMsg").textContent="儲存或同步未完成："+(err.message||err);appNotice("雲端儲存失敗，表單資料仍保留，請截圖錯誤訊息："+(err.message||err))}
   finally{if(key==="prospecting"){delete form.dataset.saving;form.querySelector('button[type="submit"]').disabled=false}}
  });
@@ -3324,7 +3324,7 @@ $("prospecting-address").addEventListener("input",syncProspectingRegion);
 $("prospecting-address").addEventListener("change",syncProspectingRegion);
 async function saveProspectingRecord(record){
  record.address=String(record.address||"").trim();record.region=detectCity(record.address);record.recorder=currentProfile?.name||"";
- const {data:saved,error}=await customerWrite([record],null,()=>sb.from("outreach_records").insert({category:"prospecting",data:record,created_by:currentProfile.id}).select("id,data").single());
+ const {data:saved,error}=await customerWrite([record],null,()=>sb.from("outreach_records").insert({category:"prospecting",data:record,created_by:currentProfile.id}).select("id,data").single(),"prospecting");
  if(error)throw error;
  if(!saved?.id)throw new Error("雲端未回傳儲存確認，請先檢查客戶列表再重試。");
  await loadOutreachCloud();
@@ -3372,7 +3372,7 @@ async function updateProspectingRecord(id,record){
  const changes=Object.fromEntries(prospectingEditableFields.map(field=>[field,(ContactGroups.isField(field)?String(record[field]??""):String(record[field]??"").trim())]));
  changes.region=detectCity(changes.address);
  const clean={...cloud.data,...changes};
- await customerWrite([clean],{table:"outreach_records",id},async()=>{});
+ await customerWrite([clean],{table:"outreach_records",id},async()=>{},"prospecting");
  const {data:saved,error}=await sb.from("outreach_records").update({data:clean}).eq("id",id).eq("category","prospecting").eq("data",JSON.stringify(cloud.data)).select("id").maybeSingle();
  if(error)throw error;if(!saved)throw new Error("客戶資料剛被其他操作更新，請再次儲存。");
  await loadOutreachCloud();
@@ -3710,7 +3710,7 @@ document.querySelectorAll('.industry-value').forEach(input=>{
  input.form.addEventListener('reset',()=>queueMicrotask(syncIndustryOptions));
 });
 syncIndustryOptions();
-</script><script src="customer-import-preview.js?v=20261030-batch-send-date-v1"></script><script src="address-region-tools.js?v=20261029-complete-region-v3"></script><script src="bulk-history.js?v=20261030-html-xls-v4"></script><script src="business-address-lookup.js?v=20261029-notes-cleanup-v1"></script><script src="exhibition-mail-status.js?v=20261030-order-won-v1"></script><script>
+</script><script src="customer-import-preview.js?v=20261030-company-country-v2"></script><script src="address-region-tools.js?v=20261029-complete-region-v3"></script><script src="bulk-history.js?v=20261030-html-xls-v4"></script><script src="business-address-lookup.js?v=20261029-notes-cleanup-v1"></script><script src="exhibition-mail-status.js?v=20261030-order-won-v1"></script><script>
 (function(){
  const sections=[["customerSection","search"],["foreignEmailCustomerSection","foreignEmailSearch"],["exhibitionsCustomerSection","exhibitionsSearch"],["prospectingCustomerSection","prospectingSearch"]];
  sections.forEach(([id,searchId])=>{
