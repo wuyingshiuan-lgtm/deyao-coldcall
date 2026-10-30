@@ -110,6 +110,7 @@ async function openCustomerImport(wb,key){
  let phoneEnabled=key!=='foreignEmail';
  let importSource='馬太平台';
  let importIndustry='';
+ let importDate='';
  let cloudNames=new Set(),cloudReady=false,busy=false,page=0,filter='pending',editingEntry=null;
  const dialog=document.createElement('dialog');dialog.id='customerImportPreview';dialog.setAttribute('aria-labelledby','customerImportTitle');
  dialog.style.cssText='width:min(1200px,94vw);max-height:90vh;border:1px solid #d5e0eb;border-radius:16px;padding:24px;color:#31485f;background:#ffffff;box-shadow:0 20px 80px #30203544;';
@@ -138,9 +139,23 @@ async function openCustomerImport(wb,key){
    importIndustry=button.dataset.importIndustry;render();
   });
  }
+ if(key==='foreignEmail'){
+  const dateField=document.createElement('fieldset');
+  dateField.style.cssText='border:1px solid #cbddeb;border-radius:10px;padding:12px;margin:12px 0';
+  dateField.innerHTML='<legend>本批匯入資料的寄出日期</legend><label for="foreignImportSendDate">選擇寄出日期（套用本次所有勾選資料）</label><input type="date" id="foreignImportSendDate" data-import-date><div class="actions"><button type="button" class="btn" data-import-date-today>今天</button><button type="button" class="btn" data-import-date-clear>保留檔案原有日期</button></div><p data-import-date-summary role="status"></p>';
+  dialog.querySelector('[data-import-summary]').before(dateField);
+  dateField.querySelector('[data-import-date]').addEventListener('change',event=>{
+   if(busy)return;importDate=event.target.value;render();
+  });
+  dateField.querySelector('[data-import-date-today]').onclick=()=>{if(busy)return;importDate=today();render();};
+  dateField.querySelector('[data-import-date-clear]').onclick=()=>{if(busy)return;importDate='';render();};
+ }
  document.body.appendChild(dialog);dialog.showModal();
  const q=selector=>dialog.querySelector(selector),msg=q('[data-import-message]');
  function render(){
+  const dateInput=dialog.querySelector('[data-import-date]');if(dateInput){dateInput.value=importDate;dateInput.disabled=busy;}
+  dialog.querySelectorAll('[data-import-date-today],[data-import-date-clear]').forEach(button=>button.disabled=busy);
+  const dateSummary=dialog.querySelector('[data-import-date-summary]');if(dateSummary)dateSummary.textContent=importDate?'本次勾選匯入的所有資料，寄出日期將統一設為：'+importDate+'。':'目前保留檔案原有寄出日期；原日期空白時自動帶入今天。';
   dialog.querySelectorAll('[data-import-industry]').forEach(button=>{const selected=button.dataset.importIndustry===importIndustry;button.classList.toggle('primary',selected);button.setAttribute('aria-pressed',String(selected));button.disabled=busy;});
   const industrySummary=dialog.querySelector('[data-import-industry-summary]');if(industrySummary)industrySummary.textContent=importIndustry?'本次勾選匯入的所有資料將統一設為：'+importIndustry+'。':'目前保留各筆資料原有的產業類別；點選類別可整批套用。';
   dialog.querySelectorAll('[data-import-source]').forEach(button=>{const selected=button.dataset.importSource===importSource;button.classList.toggle('primary',selected);button.setAttribute('aria-pressed',String(selected));button.disabled=busy;});
@@ -207,7 +222,7 @@ async function openCustomerImport(wb,key){
     });
    }
    const mapped=key==='domestic'?mapDomesticImport(raw):mapOutreachImport(raw,key);
-   if(key==='foreignEmail')mapped.forEach(row=>{row.recorder=String(currentProfile?.name||currentProfile?.employee_no||'').trim();row.source=importSource;if(importIndustry)row.industry=importIndustry;});
+   if(key==='foreignEmail')mapped.forEach(row=>{row.recorder=String(currentProfile?.name||currentProfile?.employee_no||'').trim();row.source=importSource;if(importIndustry)row.industry=importIndustry;if(importDate)row.date=CustomerImport.normalizeImportDate(importDate);});
    mapped.forEach((row,i)=>{const region=resolveCustomerImportRegion(raw[i],phoneEnabled).city;if(region)row[key==='domestic'?'area':'region']=region;});
    if(mapped.length!==raw.length)throw Error('資料筆數不一致，已停止寫入。');
    // Only atomic bulk insert errors are retried; completed rows are never resubmitted.
