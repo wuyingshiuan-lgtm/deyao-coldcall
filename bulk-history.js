@@ -138,31 +138,9 @@ $b("bulkFile").onchange=async e=>{
 };
 $b("bulkReset").onclick=()=>{if(busy)return;candidates=[];$b("bulkPreview").classList.add("hidden");status("");};
 async function saveOne(c){
- const id=c.target.id;
- if(c.key==="domestic"){
- const {data:parent,error:pe}=await sb.from("cold_call_records").select("id,visit_date").eq("id",id).single();if(pe)throw pe;
- const {data:hist,error:he}=await sb.from("cold_call_history").select("contact_number,contact_date,contact_result,notes").eq("record_id",id);if(he)throw he;
- if((hist||[]).some(h=>signature(h.contact_date,h.contact_result,h.notes)===signature(c.date,c.result,c.notes)))return "skip";
- const num=Math.max(parent.visit_date?1:0,...(hist||[]).map(h=>Number(h.contact_number)||0))+1;
- const {error}=await sb.from("cold_call_history").insert({record_id:id,contact_date:c.date,contact_number:num,contact_result:c.result,notes:c.notes,created_by:currentProfile.id});
- if(error)throw error;
- const {data:verified,error:ve}=await sb.from("cold_call_history").select("contact_date,contact_result,notes").eq("record_id",id).eq("contact_number",num);
- if(ve)throw ve;
- if(!(verified||[]).some(h=>signature(h.contact_date,h.contact_result,h.notes)===signature(c.date,c.result,c.notes)))throw Error("雲端寫入後驗證未完成，請重新檢查；重試時會再次比對重複資料。");
- return "saved";
- }
- const {data:current,error:readErr}=await sb.from("outreach_records").select("id,data").eq("id",id).eq("category",c.key).single();if(readErr)throw readErr;
- const row=current.data||{},history=Array.isArray(row.contactHistory)?row.contactHistory.slice():[];
- const prev=c.key==="foreignEmail"?getForeignEmailHistoryParts(row).followups:history;
- if(prev.some(h=>signature(h.date,h.result,h.notes)===signature(c.date,c.result,c.notes)))return "skip";
- history.push({id:crypto.randomUUID(),date:c.date,result:c.result,notes:c.notes,number:(row.date||row.contactDate?1:0)+prev.length+1,recorder:currentProfile.name||"",createdAt:new Date().toISOString()});
- const {data:saved,error}=await sb.from("outreach_records").update({data:{...row,contactHistory:history}}).eq("id",id).eq("category",c.key).eq("data",JSON.stringify(row)).select("id").maybeSingle();
- if(error)throw error;if(!saved)throw Error("資料已被其他人更新，請重新匯入該筆。");
- const entryId=history[history.length-1].id;
- const {data:verified,error:ve}=await sb.from("outreach_records").select("data").eq("id",id).eq("category",c.key).single();
- if(ve)throw ve;
- if(!verified?.data?.contactHistory?.some(h=>h.id===entryId&&signature(h.date,h.result,h.notes)===signature(c.date,c.result,c.notes)))throw Error("雲端寫入後驗證未完成，請重新檢查；重試時會再次比對重複資料。");
- return "saved";
+ c.entryId ||= crypto.randomUUID();
+ const saved=await ContactHistoryTools.append(sb,c.key,c.target.id,{id:c.entryId,date:c.date,result:c.result,notes:c.notes});
+ return saved.status==="saved"?"saved":"skip";
 }
 $b("bulkConfirm").onclick=async()=>{
  if(busy||currentProfile?.role!=="admin")return;

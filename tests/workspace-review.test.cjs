@@ -11,7 +11,7 @@ const client={from(){let update=null;return {select(){return this},eq(){return t
 
 })();
 (function(){
-const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');const s=fs.readFileSync('index.html','utf8');const context={historyData:[]};vm.createContext(context);
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');const s=fs.readFileSync('index.html','utf8');const context={historyData:[],ContactHistoryTools:require("../contact-history-tools.js")};vm.createContext(context);
 vm.runInContext(s.slice(s.indexOf('function normalizeExhibitionMonth'),s.indexOf('async function fetchAllReportRows'))+s.slice(s.indexOf('function sharedEntryList'),s.indexOf('function renderSharedHistory')),context);
 for(const value of ['2026-8月','2026/8','2026年8月','２０２６-８月','2026-08-21'])assert.equal(context.normalizeExhibitionMonth(value),'2026-08');
 for(const value of ['',null,'2026-0','2026-13','2026-123','unknown'])assert.equal(context.normalizeExhibitionMonth(value),'');
